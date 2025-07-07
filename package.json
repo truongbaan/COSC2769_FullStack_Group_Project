@@ -1,0 +1,22 @@
+{
+  "name": "cosc2769_fullstack_group_project",
+  "version": "1.0.0",
+  "description": "for fullstack team",
+  "scripts": {
+    "install:all": "cd frontend && npm install && cd ../backend && npm install",
+    "install:frontend": "cd frontend && npm install",
+    "install:backend": "cd backend && npm install"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/truongbaan/COSC2769_FullStack_Group_Project.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/truongbaan/COSC2769_FullStack_Group_Project/issues"
+  },
+  "homepage": "https://github.com/truongbaan/COSC2769_FullStack_Group_Project#readme"
+}

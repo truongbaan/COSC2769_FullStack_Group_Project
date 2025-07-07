@@ -1,0 +1,3 @@
+create: 
+npm create vite@latest frontend -- --template react
+choose typescript
