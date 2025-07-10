@@ -3,3 +3,5 @@ npm install express mongoose dotenv
 npm install --save-dev nodemon
 npm install ejs
 npm install --save-dev ts-node
+npm install cors
+npm install --save-dev @types/express @types/mongoose @types/node @types/cors
