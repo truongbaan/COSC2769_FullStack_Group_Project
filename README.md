@@ -3,14 +3,14 @@ FullStack group project
 
 current:
 frontend - vite + react + typescript
-backend - expressjs
+backend - expressjs + typescript
 
 Add node_modules:
-``bash
+```bash
 npm run install:all
-``
+```
 
 Build docker:
-``bash
+```bash
 docker-compose up --build
-``
+```
