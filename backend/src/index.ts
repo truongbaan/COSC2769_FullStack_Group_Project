@@ -9,4 +9,9 @@ app.get('/', (req : any, res : any) => {
     console.log('Running')
     res.render("index")//file name in the views
 })
+
+app.get('/api', (req : any, res : any) => {
+    console.log("Hello frontend")
+    res.json("Hi frontend")
+})
 app.listen(PORT)
