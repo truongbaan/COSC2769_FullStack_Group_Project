@@ -22,5 +22,8 @@
   "homepage": "https://github.com/truongbaan/COSC2769_FullStack_Group_Project#readme",
   "devDependencies": {
     "concurrently": "^9.2.0"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.53.0"
   }
 }
