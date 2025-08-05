@@ -1,17 +1,23 @@
-//same like index.js, just change to js, if use import, then would require install extra @types
+/* RMIT University Vietnam 
+# Course: COSC2769 - Full Stack Development 
+# Semester: 2025B 
+# Assessment: Assignment 02 
+# Author: Truong Ba An
+# ID: s3999568 */
+
 const PORT = 5000
-const express = require('express')
-const app = express()
+import express from 'express';
+import apiRouter from './routes/auth.router';
 
-app.set("view engine", "ejs")
+const app = express();
 
-app.get('/', (req : any, res : any) => {
-    console.log('Running')
-    res.render("index")//file name in the views
-})
+// Middleware to parse JSON bodies
+app.use(express.json());
 
-app.get('/api', (req : any, res : any) => {
-    console.log("Hello frontend")
-    res.json("Hi frontend")
-})
-app.listen(PORT)
+// Mount the main API router under the '/api' base path.
+app.use('/api', apiRouter);
+
+// Start the server
+app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+});
