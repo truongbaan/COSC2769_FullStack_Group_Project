@@ -19,7 +19,7 @@ export type Json =
 // ----- Database schema -----
 // Define schema once so all CRUD calls infer Row/Insert/Update types automatically
 // so later if create new table, could use this for easier coding
-// this is not real db yet, just a sample how ut looks like
+// how db right now looks like
 export interface Database {
     public: {
         Tables: {
@@ -27,24 +27,45 @@ export interface Database {
                 // .select() for table 'users'
                 Row: {
                     id: string // using uuid to create this
-                    username: string
+                    email: string // for login using authen of supabase
                     password: string
+                    username: string
                     profile_picture: string
                     role: string
                 }
                 // .insert() for table 'users'
                 Insert: {
-                    username: string
+                    id: string // using uuid to create this
+                    email: string // for login using authen of supabase
                     password: string
+                    username: string
                     profile_picture: string
                     role: string
                 }
                 // .update() in table 'users'
                 Update: {
                     password: string
-                    profile_picture: string
+                    profile_picture: string                    
                 }
             }
+
+            distribution_hubs: {
+                Row: {
+                    id: string 
+                    name: string
+                    address: string
+                }
+                Insert: {
+                    id: string 
+                    name: string
+                    address: string
+                }
+                Update: {
+                    name: string
+                    address: string
+                }
+            }
+
             vendors: {
                 Row: {
                     id: string // from users id
@@ -61,22 +82,124 @@ export interface Database {
                     business_address: string
                 }
             }
+
+            customers: {
+                Row: {
+                    id: string // from users id
+                    address: string
+                    name: string
+                }
+                Insert: {
+                    id: string // from users id
+                    address: string
+                    name: string
+                }
+                Update: {
+                    address: string
+                    name: string
+                }
+            }
+
             shippers: {
-
+                Row: {
+                    id: string // from users id
+                    hub_id: string
+                }
+                Insert: {
+                    id: string // from users id
+                    hub_id: string
+                }
+                Update: {
+                    hub_id: string
+                }
             }
-            orders: {
 
-            }
-            order_items: {
-
-            }
             products: {
-
+                Row: {
+                    id: string 
+                    vendor_id: string // from vendor->id
+                    name: string
+                    price: number
+                    description: string
+                    image: string
+                }
+                Insert: {
+                    id: string 
+                    vendor_id: string // from vendor->id
+                    name: string
+                    price: number
+                    description: string
+                    image: string
+                }
+                Update: {
+                    name: string
+                    price: number
+                    description: string
+                    image: string
+                }
             }
-            shopping_cart: {
 
+            shopping_cart: { // this will store for not items not bought and in cart
+                Row: {
+                    id: string
+                    customer_id: string // from customer
+                    product_id: string // from product
+                    quantity: number
+                }
+                Insert: {
+                    id: string
+                    customer_id: string // from customer
+                    product_id: string // from product
+                    quantity: number
+                }
+                Update: {
+                    quantity: number
+                }
             }
-            // add other tables here...
+
+            orders: {
+                Row: {
+                    id: string 
+                    customer_id: string
+                    hub_id: string
+                    status: string
+                    total_price: number
+                }
+                Insert: {
+                    id: string 
+                    customer_id: string
+                    hub_id: string
+                    status: string
+                    total_price: number
+                }
+                Update: {
+                    status: string
+                }
+            }
+
+            order_items: {
+                Row: {
+                    id: string
+                    order_id: string
+                    product_id: string
+                    quantity: string
+                    price_at_order_time: number
+                }
+                Insert: {
+                    id: string
+                    order_id: string
+                    product_id: string
+                    quantity: string
+                    price_at_order_time: number
+                }
+                Update: { // might not be used since order has been made, cant change items
+                    id: string
+                    order_id: string
+                    product_id: string
+                    quantity: string
+                    price_at_order_time: number
+                }
+            }
         }
         Views: {}
         Functions: {}
@@ -128,4 +251,17 @@ export async function signUpUser(email: string, password: string):
     }
 
     return data.session;
+}
+
+export async function changePassword(newPassword: string): Promise<boolean> {
+    const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+    });
+
+    if (error) {
+        console.error('Error changing password:', error.message);
+        return false;
+    }
+
+    return true;
 }
