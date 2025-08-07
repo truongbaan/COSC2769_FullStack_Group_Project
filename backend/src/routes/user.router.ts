@@ -7,7 +7,7 @@
 
 import { Router, Request, Response } from 'express';
 import { ErrorJsonResponse, SuccessJsonResponse } from '../utils/json_mes';
-import { UserService } from '../service/user.service'
+import { UserService, User } from '../service/user.service'
 
 const UserRouter = Router();
 
@@ -16,12 +16,15 @@ UserRouter.get('/', async (req: Request, res: Response) => {
     const queries = Object.keys(req.query)
     try {
         if (queries.length === 0) {
-            const users: any[] = await UserService.getAllUsers()
+            const users: User[] | null = await UserService.getAllUsers()
+            if(!users){
+                return SuccessJsonResponse(res, 200, 'No users but still success call')
+            }
             return SuccessJsonResponse(res, 200, users)
         }
         if (queries.length === 1 && 'id' in req.query) { // this is same as ?id=number
             
-            const user = await UserService.getUserById(req.query.id)
+            const user : User | null = await UserService.getUserById(String(req.query.id))
                 
             if (!user) { // return data is null
                 return ErrorJsonResponse(res, 404, 'user not found')

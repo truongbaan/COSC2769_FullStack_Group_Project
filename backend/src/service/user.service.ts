@@ -1,8 +1,10 @@
-import { supabase } from "../db/db"
+import { supabase, Database } from "../db/db"
+
+export type User = Database['public']['Tables']['users']['Row']
 
 export const UserService = {
     /** Fetch all users*/
-    async getAllUsers(): Promise<any[]> {
+    async getAllUsers(): Promise<User[] | null> {
         const { data, error } = await supabase
             .from('users')
             .select('*')
@@ -20,11 +22,15 @@ export const UserService = {
             throw error
         }
         console.log(data)
-        return data!
+
+        if (!data) {
+            return null  // explicitly return null to trigger 404 in route
+        }
+        return data
     },
 
     /** Fetch a single user by id */
-    async getUserById(id: string | any): Promise<any> {
+    async getUserById(id: string ): Promise<User | null> {
         const { data, error } = await supabase
             .from('users')
             .select('*')
