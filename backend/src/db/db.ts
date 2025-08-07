@@ -28,21 +28,53 @@ export interface Database {
                 Row: {
                     id: string // using uuid to create this
                     username: string
+                    password: string
                     profile_picture: string
                     role: string
-                    email: string
                 }
                 // .insert() for table 'users'
                 Insert: {
                     username: string
+                    password: string
                     profile_picture: string
                     role: string
-                    email: string
                 }
                 // .update() in table 'users'
                 Update: {
+                    password: string
                     profile_picture: string
                 }
+            }
+            vendors: {
+                Row: {
+                    id: string // from users id
+                    business_name: string
+                    business_address: string
+                }
+                Insert: {
+                    id: string // from users id
+                    businessname: string
+                    business_address: string
+                }
+                Update: {
+                    businessname: string
+                    business_address: string
+                }
+            }
+            shippers: {
+
+            }
+            orders: {
+
+            }
+            order_items: {
+
+            }
+            products: {
+
+            }
+            shopping_cart: {
+
             }
             // add other tables here...
         }
@@ -64,7 +96,7 @@ if (!supabaseUrl || !supabaseKey) {
     console.error('Supabase URL or Anon Key is missing from environment variables!')
 }
 
-export const supabase: SupabaseClient<Database> = createClient < Database > (
+export const supabase: SupabaseClient<Database> = createClient<Database>(
     supabaseUrl,
     supabaseKey
 )
