@@ -9,7 +9,7 @@ import { type Request, type Response, type NextFunction } from 'express'
 import { ErrorJsonResponse } from "../utils/json_mes"
 import { supabase } from "../db/db"
 
-async function requireAuth(req: Request, res: Response, next: NextFunction) {
+export async function requireAuth(req: Request, res: Response, next: NextFunction) {
     const token = req.cookies.access_token
     console.log('Access token:', token)
     if (!token) {
