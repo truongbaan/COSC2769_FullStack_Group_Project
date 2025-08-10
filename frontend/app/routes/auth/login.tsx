@@ -54,7 +54,7 @@ export default function Login() {
 
       navigate(redirectPath);
     } catch (error) {
-      setError("root", { message: "Invalid username or password" });
+      setError("root", { message: "Invalid email or password" });
     } finally {
       setIsLoading(false);
     }
@@ -76,14 +76,15 @@ export default function Login() {
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
               <Field
-                id='username'
-                label='Username'
-                error={formState.errors.username?.message}
+                id='email'
+                label='Email'
+                error={formState.errors.email?.message}
               >
                 <Input
-                  id='username'
-                  placeholder='Enter your username'
-                  {...register("username")}
+                  id='email'
+                  type='email'
+                  placeholder='Enter your email'
+                  {...register("email")}
                 />
               </Field>
 
@@ -128,8 +129,8 @@ export default function Login() {
 
             <div className='mt-6 space-y-4'>
               <div className='text-center text-sm text-gray-600'>
-                Demo credentials: Try usernames starting with "ven", "shi", or
-                any other prefix
+                Demo credentials: Try emails like vendor@example.com, shipper@example.com, or
+                customer@example.com
               </div>
 
               <div className='border-t pt-4'>

@@ -42,7 +42,7 @@ export const priceFilterSchema = z
   );
 
 export const loginSchema = z.object({
-  username: usernameSchema,
+  email: z.string().email("Please enter a valid email address"),
   password: passwordSchema,
 });
 
