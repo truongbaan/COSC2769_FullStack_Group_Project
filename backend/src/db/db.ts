@@ -211,8 +211,8 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 // Client
-const supabaseUrl = process.env.VITE_SUPABASE_URL!
-const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY!
+const supabaseUrl = process.env.SUPABASE_URL!
+const supabaseKey = process.env.SUPABASE_SECRET_KEY!
 
 
 if (!supabaseUrl || !supabaseKey) {
@@ -264,4 +264,40 @@ export async function changePassword(newPassword: string): Promise<boolean> {
     }
 
     return true;
+}
+
+export async function uploadImage(file: File, userId: string): Promise<string | null> {
+    const filePath = `${userId}/${Date.now()}-${file.name}`
+
+    const { data, error } = await supabase.storage
+        .from('images') // bucket name
+        .upload(filePath, file)
+
+    if (error) {
+        console.error('Error uploading image:', error.message)
+        return null
+    }
+
+    return filePath // store this in users.profile_picture or products.image
+}
+
+export function getPublicImageUrl(filePath: string): string {
+    const { data } = supabase.storage
+        .from('images')
+        .getPublicUrl(filePath)
+
+    return data.publicUrl
+}
+
+export async function deleteImage(filePath: string): Promise<boolean> {
+    const { error } = await supabase.storage
+        .from('images')
+        .remove([filePath])
+
+    if (error) {
+        console.error('Error deleting image:', error.message)
+        return false
+    }
+
+    return true
 }
