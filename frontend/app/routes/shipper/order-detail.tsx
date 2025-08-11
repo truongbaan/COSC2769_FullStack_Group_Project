@@ -10,6 +10,14 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "~/components/ui/dialog";
 import { useAuth } from "~/lib/auth";
 import { fetchOrder, updateOrderStatusApi } from "~/lib/api";
 import { toast } from "sonner";
@@ -42,6 +50,8 @@ export default function OrderDetail() {
   const navigate = useNavigate();
   const [order, setOrder] = useState<any>(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState<"delivered" | "cancelled" | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -71,14 +81,20 @@ export default function OrderDetail() {
     return null; // Will redirect
   }
 
-  const handleUpdateStatus = async (status: "delivered" | "cancelled") => {
+  const handleUpdateStatus = (status: "delivered" | "cancelled") => {
+    setPendingAction(status);
+    setConfirmDialogOpen(true);
+  };
+
+  const confirmUpdateStatus = async () => {
+    if (!pendingAction) return;
+    
+    const status = pendingAction;
     const action = status === "delivered" ? "mark as delivered" : "cancel";
 
-    if (!window.confirm(`Are you sure you want to ${action} this order?`)) {
-      return;
-    }
-
     setIsUpdating(true);
+    setConfirmDialogOpen(false);
+    
     try {
       const { success } = await updateOrderStatusApi(order.id, status);
       if (success) {
@@ -96,7 +112,13 @@ export default function OrderDetail() {
       console.error("Error updating order:", error);
     } finally {
       setIsUpdating(false);
+      setPendingAction(null);
     }
+  };
+
+  const cancelUpdateStatus = () => {
+    setConfirmDialogOpen(false);
+    setPendingAction(null);
   };
 
   if (order.status !== "active") {
@@ -308,6 +330,41 @@ export default function OrderDetail() {
           </div>
         </div>
       </div>
+      
+      {/* Confirmation Dialog */}
+      <Dialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {pendingAction === "delivered" ? "Mark Order as Delivered" : "Cancel Order"}
+            </DialogTitle>
+            <DialogDescription>
+              {pendingAction === "delivered"
+                ? `Are you sure you want to mark order ${order?.id} as delivered? This action cannot be undone.`
+                : `Are you sure you want to cancel order ${order?.id}? This action cannot be undone.`}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={cancelUpdateStatus}
+              disabled={isUpdating}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant={pendingAction === "delivered" ? "default" : "destructive"}
+              onClick={confirmUpdateStatus}
+              disabled={isUpdating}
+            >
+              {isUpdating ? "Updating..." : 
+                pendingAction === "delivered" ? "Mark as Delivered" : "Cancel Order"
+              }
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

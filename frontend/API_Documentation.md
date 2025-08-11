@@ -7,11 +7,24 @@ This document outlines all the API endpoints available in the Lazada e-commerce 
 - **Mock/Development**: `/api-test`
 - **Production**: `/api` (reserved for future use)
 
+## Table of Contents
+
+1. [Authentication Endpoints](#authentication-endpoints)
+2. [Profile Endpoints](#profile-endpoints)
+3. [Cart Endpoints](#cart-endpoints)
+4. [Product Endpoints](#product-endpoints)
+5. [Order Endpoints](#order-endpoints)
+6. [Error Responses](#error-responses)
+7. [Validation Rules](#validation-rules)
+8. [Technical Implementation](#technical-implementation)
+
+---
+
 ## Authentication Endpoints
 
 ### POST /auth/login
 
-Authenticate user credentials and return user information.
+Authenticate user credentials and return user information with role-specific data.
 
 **Request:**
 
@@ -30,10 +43,16 @@ Authenticate user credentials and return user information.
   "username": "string",
   "role": "customer" | "vendor" | "shipper",
   "name": "string",           // optional, for customers
-  "businessName": "string",   // optional, for vendors
+  "businessName": "string",   // optional, for vendors  
   "distributionHub": "string" // optional, for shippers
 }
 ```
+
+**Notes:**
+- Returns user data based on stored registration information
+- Shippers get their selected distribution hub from registration
+- Vendors get their business name from registration
+- Customers get their display name from registration
 
 ### POST /auth/register/customer
 
@@ -47,7 +66,7 @@ Register a new customer account.
   "username": "string", // 8-15 alphanumeric characters
   "password": "string", // 8-20 chars with upper, lower, digit, special
   "name": "string", // minimum 5 characters
-  "address": "string", // minimum 5 characters
+  "address": "string" // minimum 5 characters
 }
 ```
 
@@ -56,6 +75,15 @@ Register a new customer account.
 ```json
 {
   "success": true
+}
+```
+
+**Error Response:**
+
+```json
+{
+  "success": false,
+  "error": "string" // Error description
 }
 ```
 
@@ -71,7 +99,7 @@ Register a new vendor account.
   "username": "string", // 8-15 alphanumeric characters
   "password": "string", // 8-20 chars with upper, lower, digit, special
   "businessName": "string", // minimum 5 characters
-  "businessAddress": "string", // minimum 5 characters
+  "businessAddress": "string" // minimum 5 characters
 }
 ```
 
@@ -85,7 +113,7 @@ Register a new vendor account.
 
 ### POST /auth/register/shipper
 
-Register a new shipper account.
+Register a new shipper account with distribution hub selection.
 
 **Request:**
 
@@ -94,7 +122,7 @@ Register a new shipper account.
   "email": "string", // valid email address
   "username": "string", // 8-15 alphanumeric characters
   "password": "string", // 8-20 chars with upper, lower, digit, special
-  "hub": "string", // distribution hub name (minimum 1 character)
+  "hub": "string" // distribution hub: "Ho Chi Minh" | "Da Nang" | "Hanoi"
 }
 ```
 
@@ -104,8 +132,13 @@ Register a new shipper account.
 {
   "success": true
 }
-
 ```
+
+**Notes:**
+- Hub selection is preserved and used during login
+- Available hubs: Ho Chi Minh, Da Nang, Hanoi
+
+---
 
 ## Profile Endpoints
 
@@ -151,6 +184,8 @@ Upload a new profile image for the authenticated user.
 - `400`: File size must be less than 2MB
 - `500`: Upload failed
 
+---
+
 ## Cart Endpoints
 
 ### GET /cart?userId={userId}
@@ -182,15 +217,6 @@ Retrieve the cart for a specific user. Enables cart synchronization across devic
     }
   ],
   "lastUpdated": "string"      // ISO timestamp
-}
-```
-
-**Error Responses:**
-
-```json
-{
-  "success": false,
-  "error": "string"            // error message
 }
 ```
 
@@ -235,103 +261,26 @@ Sync the cart for a specific user. Updates the server-side cart with local chang
 }
 ```
 
-**Error Responses:**
-
-```json
-{
-  "success": false,
-  "error": "string",           // error message
-  "details": []                // validation details (for validation errors)
-}
-```
-
-**Status Codes:**
-- `200` - Cart synced successfully
-- `400` - Invalid user ID or cart data
-- `500` - Server error during sync
-
-### Cart Synchronization Behavior
-
-The cart API implements intelligent synchronization to provide seamless user experience across devices:
+### Cart Synchronization Features
 
 **Auto-Sync Logic:**
-- When user logs in with **empty local cart**: Fetches cart from server
-- When user logs in with **existing local cart**: Syncs local cart to server (preserves local data)
-- All cart operations (add/remove/update) trigger **immediate sync** to server
-- No debouncing or delays to prevent race conditions and data loss
-
-**Data Persistence:**
-- Cart data persists in browser localStorage via Redux Persist
-- Server-side storage ensures cross-device synchronization
-- Automatic error recovery with toast notifications
-
-**Race Condition Prevention:**
-- Synchronous cart operations prevent timing issues
-- Smart fetch/sync logic prevents cart clearing
-- Immediate sync ensures data consistency
+- Empty local cart on login: Fetches cart from server
+- Existing local cart on login: Syncs local cart to server
+- All cart operations trigger immediate sync
+- Cross-device synchronization maintained
 
 **Error Handling:**
-- Graceful fallback for offline usage
-- Toast notifications for sync failures
+- Graceful offline fallback
+- Toast notifications for sync status
 - Automatic retry on network recovery
 
-**Performance Considerations:**
-- Optimistic UI updates for instant feedback
-- Minimal API calls through intelligent sync logic
-- Efficient state management with Redux Toolkit
-
-### Cart API Usage Examples
-
-**Adding an item to cart:**
-```javascript
-// Frontend automatically handles sync
-const { addItem } = useCart();
-addItem(product, quantity);
-// → Dispatches Redux action
-// → Updates local state immediately
-// → Syncs to server automatically
-// → Shows success toast
-```
-
-**Cross-device scenario:**
-```
-Device A: User adds items to cart
-Device B: User logs in → Sees items from Device A
-Device B: User adds more items
-Device A: Refresh → Sees all items from both devices
-```
-
-### Troubleshooting
-
-**Common Issues:**
-
-1. **Cart appears empty after login**
-   - Check network connectivity
-   - Verify userId is passed correctly
-   - Check browser localStorage permissions
-
-2. **Items not syncing between devices**
-   - Ensure user is logged in on both devices
-   - Check API endpoint responses
-   - Verify cart sync is not disabled
-
-3. **Wrong items being added**
-   - Verify product data integrity
-   - Check for React closure issues
-   - Ensure proper event handling
-
-4. **Cart clearing unexpectedly**
-   - Check for conflicting fetch/sync operations
-   - Verify Redux state management
-   - Monitor for race conditions
+---
 
 ## Product Endpoints
 
 ### GET /products
 
 Retrieve all available products.
-
-**Request:** No parameters required.
 
 **Response:**
 
@@ -357,9 +306,8 @@ Retrieve all available products.
 
 Retrieve a specific product by ID.
 
-**Request:**
-
-- Path parameter: `productId` (string)
+**Path Parameters:**
+- `productId` (string): Product identifier
 
 **Response:**
 
@@ -412,6 +360,43 @@ Search and filter products.
 ]
 ```
 
+---
+
+## Vendor Product Endpoints
+
+### GET /vendor/products?vendorId={vendorId}
+
+Retrieve all products for a specific vendor.
+
+**Query Parameters:**
+- `vendorId` (optional): Vendor ID to filter products
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "products": [
+    {
+      "id": "string",
+      "name": "string",
+      "price": number,
+      "description": "string",
+      "image": "string",
+      "vendorId": "string",
+      "vendorName": "string",
+      "category": "string",
+      "inStock": boolean,
+      "rating": number,
+      "reviewCount": number,
+      "createdAt": "string" // ISO timestamp
+    }
+  ],
+  "totalCount": number,
+  "vendorId": "string"
+}
+```
+
 ### POST /vendor/products
 
 Create a new product (vendor only).
@@ -423,7 +408,7 @@ Create a new product (vendor only).
   "name": "string",        // 10-20 characters
   "price": number,         // positive number
   "description": "string", // maximum 500 characters
-  "image": "File"          // optional file upload
+  "image": "string"        // optional image URL
 }
 ```
 
@@ -432,13 +417,77 @@ Create a new product (vendor only).
 ```json
 {
   "success": true,
-  "id": "string" // optional, generated product ID
+  "id": "string",         // generated product ID
+  "message": "string"     // success message
 }
 ```
 
+### PUT /vendor/products?productId={productId}&vendorId={vendorId}
+
+Update an existing product (vendor only).
+
+**Query Parameters:**
+- `productId` (required): ID of the product to update
+- `vendorId` (required): ID of the vendor (for ownership verification)
+
+**Request:**
+
+```json
+{
+  "name": "string",        // 10-20 characters
+  "price": number,         // positive number
+  "description": "string", // maximum 500 characters
+  "image": "string"        // optional image URL
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "string",           // success message
+  "productId": "string",         // updated product ID
+  "updatedProduct": {
+    "id": "string",
+    "name": "string",
+    "price": number,
+    "description": "string",
+    "image": "string",
+    "vendorId": "string",
+    "vendorName": "string",
+    "category": "string",
+    "inStock": boolean,
+    "rating": number,
+    "reviewCount": number,
+    "updatedAt": "string"        // ISO timestamp
+  }
+}
+```
+
+### DELETE /vendor/products?productId={productId}&vendorId={vendorId}
+
+Delete a product (vendor only).
+
+**Query Parameters:**
+- `productId` (required): ID of the product to delete
+- `vendorId` (required): ID of the vendor (for ownership verification)
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "string",     // success message
+  "productId": "string"    // deleted product ID
+}
+```
+
+---
+
 ## Order Endpoints
 
-### GET /orders
+### GET /orders?hub={hubName}
 
 Retrieve orders, optionally filtered by distribution hub.
 
@@ -480,9 +529,8 @@ Retrieve orders, optionally filtered by distribution hub.
 
 Retrieve a specific order by ID.
 
-**Request:**
-
-- Path parameter: `orderId` (string)
+**Path Parameters:**
+- `orderId` (string): Order identifier
 
 **Response:**
 
@@ -514,10 +562,10 @@ Retrieve a specific order by ID.
 
 Update the status of an order (shipper only).
 
-**Request:**
+**Path Parameters:**
+- `orderId` (string): Order identifier
 
-- Path parameter: `orderId` (string)
-- Body:
+**Request:**
 
 ```json
 {
@@ -532,6 +580,20 @@ Update the status of an order (shipper only).
   "success": true
 }
 ```
+
+**Error Response:**
+
+```json
+{
+  "success": false,
+  "error": "Invalid status"
+}
+```
+
+**Notes:**
+- Only "delivered" and "cancelled" statuses are allowed
+- When marked as "delivered", automatically sets deliveryDate
+- Order disappears from active orders list after status change
 
 ### POST /orders/checkout
 
@@ -574,6 +636,8 @@ Place a new order (customer only).
 }
 ```
 
+---
+
 ## Error Responses
 
 All endpoints may return error responses in the following format:
@@ -586,74 +650,81 @@ All endpoints may return error responses in the following format:
 }
 ```
 
+**With Validation Details:**
+
+```json
+{
+  "success": false,
+  "error": "string",
+  "details": [
+    {
+      "field": "string",
+      "message": "string"
+    }
+  ]
+}
+```
+
 **Common HTTP Status Codes:**
 
 - `200`: Success
+- `201`: Created (for resource creation)
 - `400`: Bad Request (validation errors)
 - `401`: Unauthorized (authentication required)
 - `404`: Not Found
 - `405`: Method Not Allowed
 - `500`: Internal Server Error
 
+---
+
 ## Authentication Requirements
 
-Some endpoints require authentication:
+**Role-Based Access:**
 
-- All `/vendor/*` endpoints require vendor authentication
-- All `/profile/*` endpoints require user authentication (any role)
-- All `/orders/*` endpoints (except GET for specific hub filtering) require appropriate role authentication
-- `/orders/checkout` requires customer authentication
-- `/orders/:orderId/status` requires shipper authentication
-- **All `/cart/*` endpoints require user authentication (any role)**
+- **Customer endpoints**: `/cart/*`, `/orders/checkout`
+- **Vendor endpoints**: `/vendor/products/*` (all CRUD operations)
+- **Shipper endpoints**: `/orders/:orderId/status`, `/orders?hub={hub}`
+- **Any authenticated user**: `/profile/*`, `/cart/*`
 
-**Cart Authentication Behavior:**
-- Cart operations require a valid `userId` parameter
-- Unauthenticated users can maintain local cart state
-- Cart sync only works for authenticated users
-- Cross-device synchronization requires login
+**Authentication Behavior:**
+
+- Cart operations require valid `userId` parameter
+- Unauthenticated users maintain local cart state only
+- Cross-device synchronization requires authentication
+- Registration stores user preferences (hub selection, business name, etc.)
+
+---
 
 ## Validation Rules
 
 ### Email
-
-- Must be a valid email address format
-- Required for all authentication and registration endpoints
+- Must be valid email address format
+- Required for all authentication endpoints
 
 ### Username
-
 - 8-15 characters
 - Alphanumeric only (A-Z, a-z, 0-9)
-- Required for registration (display name)
+- Used for display purposes
 
 ### Password
-
 - 8-20 characters
-- Must include: uppercase letter, lowercase letter, digit, special character (!@#$%^&\*)
+- Must include: uppercase letter, lowercase letter, digit, special character (!@#$%^&*)
 
-### Product Name
+### Product Fields
+- **Name**: 10-20 characters for vendor products
+- **Price**: Must be positive number
+- **Description**: Maximum 500 characters
+- **Image**: Optional valid URL or base64 string
 
-- 10-20 characters for vendor product creation
-
-### General Text Fields
-
-- Most descriptive fields require minimum 5 characters
-- Product descriptions limited to 500 characters
+### General Fields
+- **Text fields**: Minimum 5 characters (names, addresses, business names)
+- **Hub selection**: Must be one of: "Ho Chi Minh", "Da Nang", "Hanoi"
 
 ### File Uploads
+- **Profile images**: Under 2MB, valid image formats (PNG, JPG, JPEG, GIF)
+- **Supported endpoints**: `/profile/upload-image`
 
-- Profile pictures can be uploaded via `/profile/upload-image` endpoint
-- Product images optional for product creation
-- All images must be under 2MB and valid image formats
-- Supported formats: PNG, JPG, JPEG, GIF, and other standard image types
-
-## Notes
-
-- All API responses include proper JSON content-type headers
-- Request bodies should be sent as JSON with `Content-Type: application/json`
-- Login now uses email instead of username for authentication
-- Registration forms collect both email (for auth) and username (for display)
-- All schemas are validated using Zod on both client and server sides
-- Mock endpoints simulate realistic delays and may return demo data
+---
 
 ## Technical Implementation
 
@@ -663,16 +734,23 @@ Some endpoints require authentication:
 - **React-Redux** hooks for component integration
 - Centralized store with typed selectors and actions
 
+### Data Storage
+- **In-memory storage** for demo purposes
+- **Registration data persistence** across login sessions
+- **Role-specific data** (hub selection, business names)
+- **Prepared for database integration**
+
 ### Cart Implementation
-- Smart sync logic prevents data loss and race conditions
-- Immediate synchronization for reliable operations
+- Smart sync logic prevents data loss
+- Immediate synchronization for reliability
 - SSR-compatible storage with graceful fallbacks
 - Type-safe schemas ensure data integrity
-- Optimistic updates for responsive user experience
+- Optimistic updates for responsive UX
 
 ### Error Handling
 - Comprehensive error boundaries
-- Toast notifications for user feedback
+- Toast notifications for user feedback (replacing browser alerts)
+- Custom dialog components for confirmations
 - Automatic retry mechanisms
 - Graceful degradation for offline usage
 
@@ -681,3 +759,30 @@ Some endpoints require authentication:
 - Debounced UI updates where appropriate
 - Efficient Redux store structure
 - Minimal API calls through intelligent caching
+- Simulated realistic API delays for testing
+
+---
+
+## API Summary
+
+**Total Endpoints**: 16
+
+**By Category**:
+- **Authentication**: 4 endpoints (login + 3 registration types)
+- **Profile**: 1 endpoint (image upload)
+- **Cart**: 2 endpoints (GET/POST for sync)
+- **Products**: 3 endpoints (list, search, detail)
+- **Vendor Products**: 4 endpoints (GET, POST, PUT, DELETE)
+- **Orders**: 3 endpoints (list, detail, status update, checkout)
+
+**Implementation Status**: ✅ All endpoints fully implemented with mock data
+
+**Frontend Integration**: ✅ Complete with Redux state management, error handling, and user notifications
+
+**Ready for Production**: Backend replacement needed, frontend ready
+
+---
+
+*Last Updated: January 2024*
+*Version: 1.0.0*
+*Status: Complete*

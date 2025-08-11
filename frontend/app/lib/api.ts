@@ -178,6 +178,87 @@ export async function createProductApi(data: {
   );
 }
 
+// Delete vendor product
+export async function deleteVendorProductApi(
+  productId: string,
+  vendorId: string
+): Promise<{ success: boolean; message?: string; productId?: string }> {
+  const url = `${API_BASE}/vendor/products?productId=${encodeURIComponent(productId)}&vendorId=${encodeURIComponent(vendorId)}`;
+  
+  const response = await fetch(url, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => "");
+    throw new Error(`API ${response.status}: ${text || response.statusText}`);
+  }
+
+  const data = await response.json();
+  const schema = z.object({
+    success: z.boolean(),
+    message: z.string().optional(),
+    productId: z.string().optional()
+  });
+
+  const parsed = schema.safeParse(data);
+  if (!parsed.success) {
+    throw new Error(parsed.error.message);
+  }
+
+  return parsed.data;
+}
+
+// Edit vendor product
+export async function editVendorProductApi(
+  productId: string,
+  vendorId: string,
+  productData: {
+    name: string;
+    price: number;
+    description: string;
+    image?: string;
+  }
+): Promise<{ 
+  success: boolean; 
+  message?: string; 
+  productId?: string;
+  updatedProduct?: any;
+}> {
+  const url = `${API_BASE}/vendor/products?productId=${encodeURIComponent(productId)}&vendorId=${encodeURIComponent(vendorId)}`;
+  
+  const response = await fetch(url, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(productData),
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => "");
+    throw new Error(`API ${response.status}: ${text || response.statusText}`);
+  }
+
+  const data = await response.json();
+  const schema = z.object({
+    success: z.boolean(),
+    message: z.string().optional(),
+    productId: z.string().optional(),
+    updatedProduct: z.any().optional()
+  });
+
+  const parsed = schema.safeParse(data);
+  if (!parsed.success) {
+    throw new Error(parsed.error.message);
+  }
+
+  return parsed.data;
+}
+
 // Checkout (enhanced)
 export async function placeOrderApi(payload: {
   items: Array<{ productId: string; quantity: number; price: number }>;
