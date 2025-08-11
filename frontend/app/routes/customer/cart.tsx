@@ -18,6 +18,10 @@ import {
   Trash2,
   CreditCard,
   ArrowLeft,
+  RefreshCw,
+  CheckCircle,
+  Clock,
+  AlertCircle,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -36,9 +40,14 @@ export function meta({}: Route.MetaArgs) {
 export default function Cart() {
   const {
     items,
+    isLoading,
+    isSync,
+    error,
+    lastSynced,
     updateQuantity,
     removeItem,
     clearCart,
+    forceSync,
     getTotalItems,
     getTotalPrice,
   } = useCart();
@@ -54,7 +63,7 @@ export default function Cart() {
 
     setIsOrdering(true);
     try {
-      await placeOrderApi({
+      const result = await placeOrderApi({
         items: items.map((i) => ({
           productId: i.product.id,
           quantity: i.quantity,
@@ -63,10 +72,18 @@ export default function Cart() {
         total: getTotalPrice(),
       });
 
-      clearCart();
-      toast.success("Order placed successfully");
-      navigate("/products");
+      if (result.success) {
+        clearCart();
+        toast.success(result.message || "Order placed successfully");
+        if (result.orderId) {
+          console.log("Order ID:", result.orderId);
+        }
+        navigate("/products");
+      } else {
+        toast.error(result.error || "Failed to place order. Please try again.");
+      }
     } catch (error) {
+      console.error("Checkout error:", error);
       toast.error("Failed to place order. Please try again.");
     } finally {
       setIsOrdering(false);
@@ -107,11 +124,58 @@ export default function Cart() {
             <ArrowLeft className='mr-2 h-4 w-4' />
             Continue Shopping
           </Link>
-          <h1 className='text-3xl font-bold text-gray-900'>Shopping Cart</h1>
-          <p className='text-gray-600'>
-            {getTotalItems()} item{getTotalItems() !== 1 ? "s" : ""} in your
-            cart
-          </p>
+          <div className='flex items-center justify-between mb-2'>
+            <h1 className='text-3xl font-bold text-gray-900'>Shopping Cart</h1>
+            {isAuthenticated() && (
+              <div className='flex items-center gap-2'>
+                {isLoading && (
+                  <div className='flex items-center text-sm text-gray-500'>
+                    <RefreshCw className='h-4 w-4 mr-1 animate-spin' />
+                    Syncing...
+                  </div>
+                )}
+                {!isLoading && isSync && (
+                  <div className='flex items-center text-sm text-green-600'>
+                    <CheckCircle className='h-4 w-4 mr-1' />
+                    Synced
+                  </div>
+                )}
+                {!isLoading && !isSync && (
+                  <div className='flex items-center text-sm text-orange-500'>
+                    <Clock className='h-4 w-4 mr-1' />
+                    Pending sync
+                  </div>
+                )}
+                <Button
+                  variant='outline'
+                  size='sm'
+                  onClick={forceSync}
+                  disabled={isLoading || !isAuthenticated()}
+                  className='text-xs'
+                >
+                  <RefreshCw className={`h-3 w-3 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
+                  Sync
+                </Button>
+              </div>
+            )}
+          </div>
+          <div className='flex items-center justify-between'>
+            <p className='text-gray-600'>
+              {getTotalItems()} item{getTotalItems() !== 1 ? "s" : ""} in your
+              cart
+            </p>
+            {lastSynced && isAuthenticated() && (
+              <p className='text-xs text-gray-400'>
+                Last synced: {new Date(lastSynced).toLocaleTimeString()}
+              </p>
+            )}
+          </div>
+          {error && (
+            <div className='flex items-center text-sm text-red-600 mt-2'>
+              <AlertCircle className='h-4 w-4 mr-1' />
+              {error}
+            </div>
+          )}
         </div>
 
         <div className='grid grid-cols-1 lg:grid-cols-3 gap-8'>
@@ -119,7 +183,7 @@ export default function Cart() {
           <div className='lg:col-span-2 space-y-4'>
             {items.map((item) => (
               <Card key={item.product.id}>
-                <CardContent className='p-6'>
+                <CardContent className=''>
                   <div className='flex flex-col sm:flex-row gap-4'>
                     {/* Product Image */}
                     <div className='flex-shrink-0'>
@@ -147,9 +211,7 @@ export default function Cart() {
                           <p className='text-gray-600 text-sm'>
                             by {item.product.vendorName}
                           </p>
-                          <Badge variant='secondary' className='text-xs'>
-                            {item.product.category}
-                          </Badge>
+                       
                         </div>
                         <Button
                           variant='ghost'

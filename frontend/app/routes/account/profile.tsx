@@ -1,5 +1,9 @@
 import type { Route } from "./+types/profile";
 import { useAuth } from "~/lib/auth";
+import { uploadProfileImageApi } from "~/lib/api";
+import { profileImageUploadSchema } from "~/lib/validators";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import {
@@ -11,9 +15,11 @@ import {
 } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 import { Avatar, AvatarFallback } from "~/components/ui/avatar";
+import { Field } from "~/components/shared/Field";
 import { useNavigate } from "react-router";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import type { z } from "zod";
 import {
   User,
   Package,
@@ -21,7 +27,10 @@ import {
   Upload,
   Settings,
   ArrowRight,
+  XCircle,
 } from "~/components/ui/icons";
+
+type ProfileImageFormValues = z.infer<typeof profileImageUploadSchema>;
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -36,8 +45,14 @@ export function meta({}: Route.MetaArgs) {
 export default function Profile() {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [file, setFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  
+  const { register, handleSubmit, formState, watch, reset } = useForm<ProfileImageFormValues>({
+    resolver: zodResolver(profileImageUploadSchema),
+  });
+  
+  const watchedFile = watch("profileImage");
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -84,20 +99,61 @@ export default function Profile() {
     }
   };
 
-  const handleUpload = async () => {
-    if (!file) return;
+  // Handle file selection and preview
+  useEffect(() => {
+    if (watchedFile && watchedFile[0]) {
+      const file = watchedFile[0];
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+      
+      // Cleanup function
+      return () => {
+        URL.revokeObjectURL(url);
+      };
+    } else {
+      setPreviewUrl(null);
+    }
+  }, [watchedFile]);
 
+  // Cleanup preview URL when component unmounts
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
+  const onSubmit = async (data: ProfileImageFormValues) => {
+    const file = data.profileImage[0];
+    
     setIsUploading(true);
     try {
-      // TODO: Implement actual file upload
-      await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate upload
-      toast.success("Profile picture updated");
-      setFile(null);
+      const result = await uploadProfileImageApi(file);
+      
+      if (result.success) {
+        toast.success("Profile picture updated successfully!");
+        if (result.imageUrl) {
+          // In a real app, you might update the user's profile image URL here
+          console.log("New profile image URL:", result.imageUrl);
+        }
+        reset();
+        setPreviewUrl(null);
+      } else {
+        toast.error("Upload failed. Please try again.");
+      }
     } catch (error) {
+      console.error("Upload error:", error);
       toast.error("Upload failed. Please try again.");
     } finally {
       setIsUploading(false);
     }
+  };
+
+  const handleCancelUpload = () => {
+    reset();
+    setPreviewUrl(null);
+    toast.info("Image selection cancelled");
   };
 
   return (
@@ -185,7 +241,7 @@ export default function Profile() {
                       className='group w-full inline-flex items-center justify-between rounded-lg border px-3 py-2 text-left hover:bg-gray-50'
                     >
                       <span className='inline-flex items-center gap-2'>
-                        <Settings className='h-4 w-4' />
+                        
                         {link.label}
                       </span>
                       <ArrowRight className='h-4 w-4 opacity-70 transition-transform group-hover:translate-x-0.5' />
@@ -210,96 +266,66 @@ export default function Profile() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className='space-y-4'>
-              <div className='flex items-center gap-4'>
-                <Input
-                  type='file'
-                  accept='image/*'
-                  onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-                  className='flex-1 border-dashed'
-                />
-                <Button
-                  onClick={handleUpload}
-                  disabled={!file || isUploading}
-                  className='min-w-[110px]'
-                >
-                  {isUploading ? "Uploading..." : "Upload"}
-                </Button>
-              </div>
-              <p className='text-xs text-gray-600'>PNG or JPG up to 2MB.</p>
-              {file && (
-                <p className='text-sm text-gray-600'>
-                  Selected: {file.name} ({(file.size / 1024 / 1024).toFixed(2)}{" "}
-                  MB)
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Account Stats */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Account Activity</CardTitle>
-            <CardDescription>
-              Your activity summary on Lazada Lite
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className='grid grid-cols-2 md:grid-cols-4 gap-4 text-center'>
-              <div className='space-y-2 rounded-lg border p-4'>
-                <div className='text-2xl font-bold text-gray-900'>
-                  {user.role === "customer"
-                    ? "12"
-                    : user.role === "vendor"
-                      ? "8"
-                      : "25"}
+            <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
+              <Field
+                id='profileImage'
+                label='Select Image File'
+                error={formState.errors.profileImage?.message as string}
+              >
+                <div className='space-y-4'>
+                  <div className='flex items-center gap-4'>
+                    <Input
+                      type='file'
+                      accept='image/*'
+                      {...register("profileImage")}
+                      className='flex-1 border-dashed'
+                    />
+                    <div className='flex gap-2'>
+                      <Button
+                        type='submit'
+                        disabled={!watchedFile?.[0] || isUploading}
+                        className='min-w-[110px]'
+                      >
+                        {isUploading ? "Uploading..." : "Upload"}
+                      </Button>
+                      {watchedFile?.[0] && (
+                        <Button
+                          type='button'
+                          onClick={handleCancelUpload}
+                          variant='outline'
+                          disabled={isUploading}
+                          className='min-w-[90px]'
+                        >
+                          <XCircle className='h-4 w-4 mr-2' />
+                          Cancel
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <p className='text-xs text-gray-600'>PNG or JPG up to 2MB.</p>
+                  
+                  {watchedFile?.[0] && (
+                    <div className='space-y-2'>
+                      <p className='text-sm text-gray-600'>
+                        Selected: {watchedFile[0].name} ({(watchedFile[0].size / 1024 / 1024).toFixed(2)}{" "}
+                        MB)
+                      </p>
+                      {previewUrl && (
+                        <div className='flex items-center gap-3'>
+                          <span className='text-sm text-gray-600'>Preview:</span>
+                          <img 
+                            src={previewUrl} 
+                            alt="Preview" 
+                            className='w-16 h-16 object-cover rounded-md border'
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
-                <div className='text-sm text-gray-600'>
-                  {user.role === "customer"
-                    ? "Orders Placed"
-                    : user.role === "vendor"
-                      ? "Products Listed"
-                      : "Deliveries Made"}
-                </div>
-              </div>
-              <div className='space-y-2 rounded-lg border p-4'>
-                <div className='text-2xl font-bold text-gray-900'>
-                  {user.role === "customer"
-                    ? "3"
-                    : user.role === "vendor"
-                      ? "45"
-                      : "98%"}
-                </div>
-                <div className='text-sm text-gray-600'>
-                  {user.role === "customer"
-                    ? "Items in Cart"
-                    : user.role === "vendor"
-                      ? "Total Sales"
-                      : "Success Rate"}
-                </div>
-              </div>
-              <div className='space-y-2 rounded-lg border p-4'>
-                <div className='text-2xl font-bold text-gray-900'>
-                  {user.role === "customer"
-                    ? "5"
-                    : user.role === "vendor"
-                      ? "4.8"
-                      : "4.9"}
-                </div>
-                <div className='text-sm text-gray-600'>
-                  {user.role === "customer"
-                    ? "Wishlist Items"
-                    : user.role === "vendor"
-                      ? "Avg Rating"
-                      : "Customer Rating"}
-                </div>
-              </div>
-              <div className='space-y-2 rounded-lg border p-4'>
-                <div className='text-2xl font-bold text-gray-900'>7</div>
-                <div className='text-sm text-gray-600'>Days Active</div>
-              </div>
-            </div>
+              </Field>
+            </form>
           </CardContent>
         </Card>
 

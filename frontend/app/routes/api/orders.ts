@@ -8,18 +8,3 @@ export async function loader({ request }: { request: Request }) {
     headers: { "Content-Type": "application/json" },
   });
 }
-
-export async function action({ request }: { request: Request }) {
-  const url = new URL(request.url);
-  if (url.pathname.endsWith("/checkout")) {
-    // accept any payload and return success
-    await request.json().catch(() => ({}));
-    return new Response(JSON.stringify({ success: true }), {
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-  return new Response(JSON.stringify({ error: "Unknown action" }), {
-    status: 400,
-    headers: { "Content-Type": "application/json" },
-  });
-}

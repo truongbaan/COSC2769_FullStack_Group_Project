@@ -47,39 +47,86 @@ export const loginSchema = z.object({
 });
 
 export const customerRegistrationSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
   username: usernameSchema,
   password: passwordSchema,
   name: minLen5,
   address: minLen5,
-  profilePic: z
-    .any()
-    .refine(
-      (f) => f instanceof FileList && f.length > 0,
-      "Profile picture required"
-    ),
 });
 
 export const vendorRegistrationSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
   username: usernameSchema,
   password: passwordSchema,
   businessName: minLen5,
   businessAddress: minLen5,
-  profilePic: z
-    .any()
-    .refine(
-      (f) => f instanceof FileList && f.length > 0,
-      "Profile picture required"
-    ),
 });
 
 export const shipperRegistrationSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
   username: usernameSchema,
   password: passwordSchema,
   hub: z.string().min(1, "Select a hub"),
-  profilePic: z
+});
+
+export const profileImageUploadSchema = z.object({
+  profileImage: z
     .any()
+    .refine((files) => files instanceof FileList && files.length > 0, "Please select an image file")
     .refine(
-      (f) => f instanceof FileList && f.length > 0,
-      "Profile picture required"
+      (files) => files instanceof FileList && files[0]?.type?.startsWith('image/'),
+      "File must be an image"
+    )
+    .refine(
+      (files) => files instanceof FileList && files[0]?.size <= 2 * 1024 * 1024,
+      "File size must be less than 2MB"
     ),
+});
+
+export const checkoutSchema = z.object({
+  items: z.array(
+    z.object({
+      productId: z.string().min(1, "Product ID is required"),
+      quantity: z.number().int().positive("Quantity must be a positive integer"),
+      price: z.number().positive("Price must be positive"),
+    })
+  ).min(1, "At least one item is required"),
+  total: z.number().positive("Total must be positive"),
+});
+
+// Cart schemas
+export const cartItemSchema = z.object({
+  product: z.object({
+    id: z.string(),
+    name: z.string(),
+    price: z.number(),
+    description: z.string(),
+    imageUrl: z.string(),
+    vendorId: z.string(),
+    vendorName: z.string(),
+    category: z.string(),
+    inStock: z.boolean(),
+    rating: z.number(),
+    reviewCount: z.number(),
+  }),
+  quantity: z.number().positive("Quantity must be positive"),
+});
+
+export const cartSyncSchema = z.object({
+  items: z.array(cartItemSchema),
+});
+
+export const cartResponseSchema = z.object({
+  success: z.boolean(),
+  items: z.array(cartItemSchema),
+  lastUpdated: z.string().optional(),
+  error: z.string().optional(),
+});
+
+export const cartSyncResponseSchema = z.object({
+  success: z.boolean(),
+  message: z.string().optional(),
+  itemCount: z.number().optional(),
+  lastUpdated: z.string().optional(),
+  error: z.string().optional(),
 });

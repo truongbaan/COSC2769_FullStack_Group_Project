@@ -38,9 +38,11 @@ export default function Header() {
         return (
           <>
             <DropdownMenuItem asChild>
+
               <Link to='/vendor/products'>My Products</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
+
               <Link to='/vendor/products/new'>Add Product</Link>
             </DropdownMenuItem>
           </>
@@ -55,7 +57,7 @@ export default function Header() {
         return (
           <DropdownMenuItem asChild>
             <Link to='/cart'>
-              <ShoppingCart className='h-4 w-4 mr-2' />
+              
               Shopping Cart
             </Link>
           </DropdownMenuItem>

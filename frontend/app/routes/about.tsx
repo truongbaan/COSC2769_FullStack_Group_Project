@@ -99,13 +99,13 @@ export default function About() {
                   </ul>
                 </div>
                 <div>
-                  <strong>State Management:</strong>
-                  <ul className='mt-2 space-y-1'>
-                    <li>• Zustand</li>
-                    <li>• React Hook Form</li>
-                    <li>• Zod Validation</li>
-                    <li>• Local Storage</li>
-                  </ul>
+                              <strong>State Management:</strong>
+            <ul className='mt-2 space-y-1'>
+              <li>• Redux Toolkit</li>
+              <li>• React Hook Form</li>
+              <li>• Zod Validation</li>
+              <li>• Redux Persist</li>
+            </ul>
                 </div>
                 <div>
                   <strong>Development:</strong>

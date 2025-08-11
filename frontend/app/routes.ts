@@ -34,6 +34,7 @@ export default [
   route("api-test/products/search", "routes/api/products.search.ts"),
   route("api-test/products/:productId", "routes/api/products.$productId.ts"),
   route("api-test/orders", "routes/api/orders.ts"),
+  route("api-test/orders/checkout", "routes/api/orders.checkout.ts"),
   route("api-test/orders/:orderId", "routes/api/orders.$orderId.ts"),
   route(
     "api-test/orders/:orderId/status",
@@ -49,4 +50,6 @@ export default [
     "api-test/auth/register/shipper",
     "routes/api/auth.register.shipper.ts"
   ),
+  route("api-test/profile/upload-image", "routes/api/profile.upload-image.ts"),
+  route("api-test/cart", "routes/api/cart.ts"),
 ] satisfies RouteConfig;

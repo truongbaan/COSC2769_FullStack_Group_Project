@@ -134,6 +134,18 @@ export default function Register() {
                   className='space-y-5'
                 >
                   <Field
+                    id='c_email'
+                    label='Email'
+                    error={customerForm.formState.errors.email?.message}
+                  >
+                    <Input
+                      id='c_email'
+                      type='email'
+                      placeholder='your.email@example.com'
+                      {...customerForm.register("email")}
+                    />
+                  </Field>
+                  <Field
                     id='c_username'
                     label='Username'
                     error={customerForm.formState.errors.username?.message}
@@ -196,6 +208,18 @@ export default function Register() {
                   className='space-y-5'
                 >
                   <Field
+                    id='v_email'
+                    label='Email'
+                    error={vendorForm.formState.errors.email?.message}
+                  >
+                    <Input
+                      id='v_email'
+                      type='email'
+                      placeholder='vendor@example.com'
+                      {...vendorForm.register("email")}
+                    />
+                  </Field>
+                  <Field
                     id='v_username'
                     label='Username'
                     error={vendorForm.formState.errors.username?.message}
@@ -257,6 +281,18 @@ export default function Register() {
                   onSubmit={shipperForm.handleSubmit(onShipperSubmit)}
                   className='space-y-5'
                 >
+                  <Field
+                    id='s_email'
+                    label='Email'
+                    error={shipperForm.formState.errors.email?.message}
+                  >
+                    <Input
+                      id='s_email'
+                      type='email'
+                      placeholder='shipper@example.com'
+                      {...shipperForm.register("email")}
+                    />
+                  </Field>
                   <Field
                     id='s_username'
                     label='Username'

@@ -19,6 +19,7 @@ import { type Product } from "~/lib/data/products";
 import { fetchProducts, searchProductsApi } from "~/lib/api";
 import { useCart } from "~/lib/cart";
 import { ShoppingCart, Search, Star } from "~/components/ui/icons";
+import { toast } from "sonner";
 import {
   Select,
   SelectContent,
@@ -112,9 +113,9 @@ export default function Products() {
     }
   }, [filteredProducts, sortBy]);
 
-  const handleAddToCart = (product: any) => {
+  const handleAddToCart = (product: Product) => {
     addItem(product);
-    // You could add a toast notification here
+    toast.success(`${product.name} added to cart!`);
   };
 
   return (

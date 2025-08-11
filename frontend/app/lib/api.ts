@@ -14,7 +14,38 @@ import {
   vendorRegistrationSchema,
   shipperRegistrationSchema,
   loginSchema,
+  cartSyncSchema,
+  cartResponseSchema,
+  cartSyncResponseSchema,
 } from "~/lib/validators";
+
+// Mock cart storage (in a real app, this would be in a database)
+const mockCartStorage = new Map<string, any[]>();
+
+// Mock cart handlers
+export function mockGetCart(userId: string) {
+  const userCart = mockCartStorage.get(userId) || [];
+  return {
+    success: true,
+    items: userCart,
+    lastUpdated: new Date().toISOString(),
+  };
+}
+
+export function mockSyncCart(userId: string, cartData: any) {
+  // Validate cart data
+  const validatedData = cartSyncSchema.parse(cartData);
+  
+  // Save cart to mock storage
+  mockCartStorage.set(userId, validatedData.items);
+  
+  return {
+    success: true,
+    message: "Cart synced successfully",
+    itemCount: validatedData.items.length,
+    lastUpdated: new Date().toISOString(),
+  };
+}
 
 // Shared fetch helper with zod parsing
 async function request<T>(
@@ -147,14 +178,150 @@ export async function createProductApi(data: {
   );
 }
 
-// Checkout (demo)
+// Checkout (enhanced)
 export async function placeOrderApi(payload: {
   items: Array<{ productId: string; quantity: number; price: number }>;
   total: number;
-}): Promise<{ success: boolean }> {
+}): Promise<{ 
+  success: boolean; 
+  orderId?: string; 
+  message?: string; 
+  total?: number; 
+  itemCount?: number;
+  error?: string;
+  details?: any;
+}> {
   return request(
     `${API_BASE}/orders/checkout`,
-    z.object({ success: z.boolean() }),
+    z.object({ 
+      success: z.boolean(),
+      orderId: z.string().optional(),
+      message: z.string().optional(),
+      total: z.number().optional(),
+      itemCount: z.number().optional(),
+      error: z.string().optional(),
+      details: z.any().optional(),
+    }),
     { method: "POST", body: JSON.stringify(payload) }
   );
+}
+
+// Profile image upload
+export async function uploadProfileImageApi(file: File): Promise<{ 
+  success: boolean; 
+  imageUrl?: string; 
+}> {
+  const formData = new FormData();
+  formData.append('profileImage', file);
+  
+  const res = await fetch(`${API_BASE}/profile/upload-image`, {
+    method: "POST",
+    body: formData,
+  });
+  
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`API ${res.status}: ${text || res.statusText}`);
+  }
+  
+  const data = await res.json();
+  const parsed = z.object({ 
+    success: z.boolean(), 
+    imageUrl: z.string().optional() 
+  }).safeParse(data);
+  
+  if (!parsed.success) {
+    throw new Error(parsed.error.message);
+  }
+  
+  return parsed.data;
+}
+
+// Cart API functions
+export async function fetchCartApi(userId: string): Promise<{
+  success: boolean;
+  items: Array<{
+    product: {
+      id: string;
+      name: string;
+      price: number;
+      description: string;
+      imageUrl: string;
+      vendorId: string;
+      vendorName: string;
+      category: string;
+      inStock: boolean;
+      rating: number;
+      reviewCount: number;
+    };
+    quantity: number;
+  }>;
+  lastUpdated?: string;
+  error?: string;
+}> {
+  const res = await fetch(`${API_BASE}/cart?userId=${encodeURIComponent(userId)}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`API ${res.status}: ${text || res.statusText}`);
+  }
+
+  const data = await res.json();
+  const parsed = cartResponseSchema.safeParse(data);
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.message);
+  }
+
+  return parsed.data;
+}
+
+export async function syncCartApi(userId: string, items: Array<{
+  product: {
+    id: string;
+    name: string;
+    price: number;
+    description: string;
+    imageUrl: string;
+    vendorId: string;
+    vendorName: string;
+    category: string;
+    inStock: boolean;
+    rating: number;
+    reviewCount: number;
+  };
+  quantity: number;
+}>): Promise<{
+  success: boolean;
+  message?: string;
+  itemCount?: number;
+  lastUpdated?: string;
+  error?: string;
+}> {
+  const res = await fetch(`${API_BASE}/cart?userId=${encodeURIComponent(userId)}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ items }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`API ${res.status}: ${text || res.statusText}`);
+  }
+
+  const data = await res.json();
+  const parsed = cartSyncResponseSchema.safeParse(data);
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.message);
+  }
+
+  return parsed.data;
 }
