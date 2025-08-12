@@ -9,11 +9,20 @@ import { Router, Request, Response } from 'express';
 import { changePassword, signInUser, signUpUser } from '../db/db';
 import { ErrorJsonResponse, SuccessJsonResponse } from '../utils/json_mes';
 import { requireAuth } from '../middleware/requireAuth'
+import { UserService } from '../service/user.service';
+import {hasUnknownFields} from '../utils/validation';
 
 const authRouter = Router();
+const allowedFieldForRegister = ['id', 'email', 'password', 'username', 'profile_picture', 'role', 'name', 'address', 'hub_id', 'business_name', 'business_address'];
 
 authRouter.post('/login', async (req: Request, res: Response) => {
     try {
+        //check if the body is valid or not
+        const Invalid = hasUnknownFields(allowedFieldForRegister, req.body);
+        if (Invalid){
+            return ErrorJsonResponse(res, 400, "Unknown fields detect in request")
+        }
+
         const { email, password } = req.body
         
         if (!email || !password) {
@@ -39,13 +48,18 @@ authRouter.post('/login', async (req: Request, res: Response) => {
             secure: process.env.PRODUCTION_SITE === 'true', // http or https
             path: '/',
         })
-        
+
+        //get user through email
+        const user = await UserService.getUserById(session.user.id)
+
+        console.log(user)
+
         // Return success with tokens
         SuccessJsonResponse(res, 200, {
             data: {
                 access_token: session.access_token,
                 refresh_token: session.refresh_token,
-                user: session.user
+                user: user
             }
         })
         
@@ -56,17 +70,24 @@ authRouter.post('/login', async (req: Request, res: Response) => {
 
 authRouter.post('/signup', async (req: Request, res: Response) => {
     try {
+        const Invalid = hasUnknownFields(allowedFieldForRegister, req.body);
+        if (Invalid){
+            return ErrorJsonResponse(res, 400, "Unknown fields detect in request")
+        }
+
         const { email, password } = req.body
-        
-        // Validate input
+        // Validate input for login
         if (!email || !password) {
             return ErrorJsonResponse(res, 400, 'Email and password are required')
         }
+        //try signup
         const session = await signUpUser(email, password)
         
         if (!session) {
             return ErrorJsonResponse(res, 400, 'Error creating user, or user already exists.')
         }
+
+        // const user = await UserService.createUser(req)
         
         //add cookie
         res.cookie('access_token', session.access_token, {
@@ -80,7 +101,7 @@ authRouter.post('/signup', async (req: Request, res: Response) => {
             secure: process.env.PRODUCTION_SITE === 'true', // http or https
             path: '/',
         })
-        
+
         SuccessJsonResponse(res, 200, {
             data: {
                 access_token: session.access_token,
