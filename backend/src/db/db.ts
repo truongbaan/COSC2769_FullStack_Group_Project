@@ -122,6 +122,8 @@ export interface Database {
                     price: number
                     description: string
                     image: string
+                    category: string
+                    instock: boolean
                 }
                 Insert: {
                     id: string 
@@ -130,12 +132,16 @@ export interface Database {
                     price: number
                     description: string
                     image: string
+                    category: string
+                    instock: boolean
                 }
                 Update: {
                     name: string
                     price: number
                     description: string
                     image: string
+                    category: string
+                    instock: boolean
                 }
             }
 
@@ -213,12 +219,19 @@ dotenv.config()
 // Client
 const supabaseUrl = process.env.SUPABASE_URL!
 const supabaseKey = process.env.SUPABASE_SECRET_KEY!
+const supabaseClientKey = process.env.VITE_SUPABASE_ANON_KEY!
 
-
-if (!supabaseUrl || !supabaseKey) {
-    console.error('Supabase URL or Anon Key is missing from environment variables!')
+if (!supabaseUrl || !supabaseKey || !supabaseClientKey) {
+    console.error('Supabase URL or Anon Key or Secret Key is missing from environment variables!')
 }
 
+//this is for login through auth
+export const supabaseClient: SupabaseClient<Database> = createClient<Database>(
+    supabaseUrl,
+    supabaseClientKey
+)
+
+//this is for querying database
 export const supabase: SupabaseClient<Database> = createClient<Database>(
     supabaseUrl,
     supabaseKey
@@ -226,7 +239,7 @@ export const supabase: SupabaseClient<Database> = createClient<Database>(
 
 export async function signInUser(email: string, password: string):
     Promise<null | { user: any; access_token: string; refresh_token: string }> {
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
         email,
         password,
     })
@@ -240,7 +253,7 @@ export async function signInUser(email: string, password: string):
 
 export async function signUpUser(email: string, password: string):
     Promise<null | { user: any; access_token: string; refresh_token: string }> {
-    const { data, error } = await supabase.auth.signUp({
+    const { data, error } = await supabaseClient.auth.signUp({
         email,
         password,
     });
@@ -254,7 +267,7 @@ export async function signUpUser(email: string, password: string):
 }
 
 export async function changePassword(newPassword: string): Promise<boolean> {
-    const { error } = await supabase.auth.updateUser({
+    const { error } = await supabaseClient.auth.updateUser({
         password: newPassword,
     });
 
