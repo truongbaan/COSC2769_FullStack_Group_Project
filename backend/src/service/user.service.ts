@@ -1,4 +1,5 @@
 import { supabase, Database } from "../db/db"
+import { CustomerService } from "./customer.service"
 
 export type User = Database['public']['Tables']['users']['Row']
 
@@ -43,10 +44,72 @@ export const UserService = {
             console.error(`Error fetching user ${id}:`, error)
             throw error
         }
-        if (!data) {
+        if (!data || !data.role) {
             return null  // explicitly return null to trigger 404 in route
         }
+        
+        switch(data.role){
+            case "customer":
+                const customer_data = await CustomerService.getCustomerById(data.id)
+                return { ...data, ...customer_data}
+            case "shipper":
+                return null
+            case "vendor":
+                return null
+        }
 
-        return data
+        return null
     },
+
+    //for login through authentication
+    async getUserByEmail(email: string ): Promise<User | null> {
+        
+        const { data, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('email', email.trim().toLowerCase())
+            .maybeSingle()
+
+        if (error) {
+            console.error(`Error fetching user ${email}:`, error)
+            throw error
+        }
+        if (!data || !data.role) {
+            return null  // explicitly return null to trigger 404 in route
+        }
+        
+        switch(data.role){
+            case "customer":
+                const customer_data = await CustomerService.getCustomerById(data.id)
+                return { ...data, ...customer_data}
+            case "shipper":
+                return null
+            case "vendor":
+                return null
+        }
+
+        return null
+    },
+
+    async createUser(user : User): Promise<User | null> {
+        const {data, error} = await supabase
+            .from('customers')
+            .insert({
+                id: user.id,
+                email: user.email,
+                password: user.password,
+                username: user.username,
+                profile_picture: user.profile_picture,
+                role: user.role
+            })
+            .select()
+            .maybeSingle();
+
+        if (error || !data) {
+            console.error('Error creating customer:', error);
+            return null;
+        }
+
+        return data;
+    }
 }
