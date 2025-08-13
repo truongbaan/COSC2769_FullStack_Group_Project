@@ -9,8 +9,9 @@ import { Router, Request, Response } from 'express';
 import { changePassword, signInUser, signUpUser } from '../db/db';
 import { ErrorJsonResponse, SuccessJsonResponse } from '../utils/json_mes';
 import { requireAuth } from '../middleware/requireAuth'
-import { UserService } from '../service/user.service';
+import { User, UserService } from '../service/user.service';
 import {hasUnknownFields} from '../utils/validation';
+import { Customer, CustomerService } from '../service/customer.service';
 
 const authRouter = Router();
 const allowedFieldForRegister = ['id', 'email', 'password', 'username', 'profile_picture', 'role', 'name', 'address', 'hub_id', 'business_name', 'business_address'];
@@ -49,17 +50,18 @@ authRouter.post('/login', async (req: Request, res: Response) => {
             path: '/',
         })
 
-        //get user through email
+        //get user through id
         const user = await UserService.getUserById(session.user.id)
 
-        console.log(user)
+        if(user === null){//this mean the user is created in authen but not in the db table (!critical if happens)
+            return ErrorJsonResponse(res, 404, "Unknown user")
+        }
 
         // Return success with tokens
         SuccessJsonResponse(res, 200, {
             data: {
                 access_token: session.access_token,
                 refresh_token: session.refresh_token,
-                user: user
             }
         })
         
@@ -76,7 +78,8 @@ authRouter.post('/signup', async (req: Request, res: Response) => {
         }
 
         const { email, password } = req.body
-        // Validate input for login
+        
+        // Validate input
         if (!email || !password) {
             return ErrorJsonResponse(res, 400, 'Email and password are required')
         }
@@ -86,8 +89,42 @@ authRouter.post('/signup', async (req: Request, res: Response) => {
         if (!session) {
             return ErrorJsonResponse(res, 400, 'Error creating user, or user already exists.')
         }
+        //how to check for all field need before create the temp_user to add?
+        
+        const temp_user : User = {
+            id: session.user.id,
+            email: req.body.email,
+            password: req.body.password,
+            username: req.body.username,
+            profile_picture: req.body.profile_picture,
+            role: req.body.role
+        }
 
-        // const user = await UserService.createUser(req)
+        const user = await UserService.createUser(temp_user)
+        let data_return = null // init
+
+        if(!user){
+            return ErrorJsonResponse(res, 400, 'Error creating user in db users')
+        }
+
+        switch(req.body.role){
+            case "customer":
+                const temp_customer : Customer = {
+                    id: session.user.id,
+                    address: req.body.address,
+                    name: req.body.name,
+                }
+                const customer = await CustomerService.createCustomer(temp_customer)
+                if(!customer){
+                    return ErrorJsonResponse(res, 400, "Fail to create customer at db customer")
+                }
+                data_return = { ...user, ...customer}
+                break
+            case "shipper":
+                return ErrorJsonResponse(res, 400, 'Shipper role not yet supported');
+            case "vendor":
+                return ErrorJsonResponse(res, 400, 'Vendor role not yet supported');
+        }
         
         //add cookie
         res.cookie('access_token', session.access_token, {
@@ -101,12 +138,12 @@ authRouter.post('/signup', async (req: Request, res: Response) => {
             secure: process.env.PRODUCTION_SITE === 'true', // http or https
             path: '/',
         })
-
+        
         SuccessJsonResponse(res, 200, {
             data: {
                 access_token: session.access_token,
                 refresh_token: session.refresh_token,
-                user: session.user
+                user: data_return
             }
         })
         
