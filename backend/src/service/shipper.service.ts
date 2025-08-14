@@ -1,3 +1,10 @@
+/* RMIT University Vietnam 
+# Course: COSC2769 - Full Stack Development 
+# Semester: 2025B 
+# Assessment: Assignment 02 
+# Author: Truong Ba An
+# ID: s3999568 */
+
 import { supabase, Database } from "../db/db"
 
 export type Shipper = Database['public']['Tables']['shippers']['Row']
@@ -66,5 +73,19 @@ export const ShipperService = {
         }
 
         return data;
+    },
+
+    async deleteShipper(id : string): Promise<boolean>{
+        const { error } = await supabase
+            .from('shippers')
+            .delete()
+            .eq('id', id)
+        
+        if (error) {
+            console.error(`Error deleting shipper ${id}:`, error)
+            return false
+        }
+        
+        return true
     }
 }

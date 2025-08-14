@@ -1,3 +1,10 @@
+/* RMIT University Vietnam 
+# Course: COSC2769 - Full Stack Development 
+# Semester: 2025B 
+# Assessment: Assignment 02 
+# Author: Truong Ba An
+# ID: s3999568 */
+
 import { supabase, Database } from "../db/db"
 import { CustomerService } from "./customer.service"
 import { ShipperService } from "./shipper.service"
@@ -68,7 +75,7 @@ export const UserService = {
 
     async createUser(user : User): Promise<User | null> {
         const {data, error} = await supabase
-            .from('customers')
+            .from('users')
             .insert({
                 id: user.id,
                 email: user.email,
@@ -86,5 +93,19 @@ export const UserService = {
         }
 
         return data;
+    },
+
+    async deleteUser(id : string): Promise<boolean>{
+        const { error } = await supabase
+            .from('users')
+            .delete()
+            .eq('id', id)
+        
+        if (error) {
+            console.error(`Error deleting user ${id}:`, error)
+            return false
+        }
+        
+        return true
     }
 }

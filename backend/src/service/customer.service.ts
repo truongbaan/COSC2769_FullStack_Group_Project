@@ -1,3 +1,10 @@
+/* RMIT University Vietnam 
+# Course: COSC2769 - Full Stack Development 
+# Semester: 2025B 
+# Assessment: Assignment 02 
+# Author: Truong Ba An
+# ID: s3999568 */
+
 import { supabase, Database } from "../db/db"
 
 export type Customer = Database['public']['Tables']['customers']['Row']
@@ -50,27 +57,8 @@ export const CustomerService = {
         return data
     },
 
-    //for login through authentication
-    async getCustomerByEmail(email: string ): Promise<Customer | null> {
-        
-        const { data, error } = await supabase
-            .from('customers')
-            .select('*')
-            .eq('email', email.trim().toLowerCase())
-            .maybeSingle()
-
-        if (error) {
-            console.error(`Error fetching Customer ${email}:`, error)
-            throw error
-        }
-        if (!data) {
-            return null  // explicitly return null to trigger 404 in route
-        }
-        
-        return data //return id, address, name field
-    },
-
     async createCustomer(customer : Customer) : Promise<Customer | null> {
+        console.log("Customer data in createCustomer", customer)
         const {data, error} = await supabase
             .from('customers')
             .insert({
@@ -87,5 +75,19 @@ export const CustomerService = {
         }
 
         return data;
+    },
+
+    async deleteCustomer(id : string): Promise<boolean>{
+        const { error } = await supabase
+            .from('customers')
+            .delete()
+            .eq('id', id)
+                
+        if (error) {
+            console.error(`Error deleting customer ${id}:`, error)
+            return false
+        }
+        
+        return true
     }
 }

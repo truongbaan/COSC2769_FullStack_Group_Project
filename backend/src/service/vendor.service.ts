@@ -1,3 +1,10 @@
+/* RMIT University Vietnam 
+# Course: COSC2769 - Full Stack Development 
+# Semester: 2025B 
+# Assessment: Assignment 02 
+# Author: Truong Ba An
+# ID: s3999568 */
+
 import { supabase, Database } from "../db/db"
 
 export type Vendor = Database['public']['Tables']['vendors']['Row']
@@ -6,7 +13,7 @@ export const VendorService = {
     /** Fetch all Vendors*/
     async getAllVendors(): Promise<Vendor[] | null> {
         const { data, error } = await supabase
-            .from('Vendors')
+            .from('vendors')
             .select('*')
             .order('id', { ascending: false })
 
@@ -54,20 +61,35 @@ export const VendorService = {
     //create
     async createVendor(vendor : Vendor) : Promise<Vendor | null> {
         const {data, error} = await supabase
-            .from('Vendors')
+            .from('vendors')
             .insert({
                 id: vendor.id,
-                bussiness_name: vendor.business_name,
-                bussiness_address: vendor.business_address
+                business_name: vendor.business_name,
+                business_address: vendor.business_address
             })
             .select()
             .maybeSingle();
 
         if (error || !data) {
-            console.error('Error creating Vendor:', error);
+            console.error('Error creating vendor:', error);
             return null;
         }
 
         return data;
+    },
+
+    async deleteVendor(id : string): Promise<boolean>{
+        const { error } = await supabase
+            .from('vendors')
+            .delete()
+            .eq('id', id)
+
+        if (error) {
+            console.error(`Error deleting vendor ${id}:`, error)
+            return false
+        }
+        
+        return true
     }
+
 }

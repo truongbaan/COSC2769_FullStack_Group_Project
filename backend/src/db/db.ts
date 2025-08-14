@@ -266,6 +266,24 @@ export async function signUpUser(email: string, password: string):
     return data.session;
 }
 
+//for delete user in authentication table
+export async function deleteAuthenUser(userId: string) {
+  try {
+    const { data, error } = await supabase.auth.admin.deleteUser(userId);
+
+    if (error) {
+      console.error('Error deleting user:', error.message);
+      return { success: false, message: error.message };
+    }
+
+    console.log('User deleted successfully:', data);
+    return { success: true, data };
+  } catch (err) {
+    console.error('An unexpected error occurred:', err);
+    return { success: false, message: 'An unexpected error occurred' };
+  }
+}
+
 export async function changePassword(newPassword: string): Promise<boolean> {
     const { error } = await supabaseClient.auth.updateUser({
         password: newPassword,
