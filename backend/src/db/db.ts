@@ -45,18 +45,18 @@ export interface Database {
                 // .update() in table 'users'
                 Update: {
                     password: string
-                    profile_picture: string                    
+                    profile_picture: string
                 }
             }
 
             distribution_hubs: {
                 Row: {
-                    id: string 
+                    id: string
                     name: string
                     address: string
                 }
                 Insert: {
-                    id: string 
+                    id: string
                     name: string
                     address: string
                 }
@@ -116,26 +116,32 @@ export interface Database {
 
             products: {
                 Row: {
-                    id: string 
+                    id: string
                     vendor_id: string // from vendor->id
                     name: string
                     price: number
                     description: string
                     image: string
+                    category: string
+                    instock: boolean
                 }
                 Insert: {
-                    id: string 
+                    id: string
                     vendor_id: string // from vendor->id
                     name: string
                     price: number
                     description: string
                     image: string
+                    category: string
+                    instock: boolean
                 }
                 Update: {
                     name: string
                     price: number
                     description: string
                     image: string
+                    category: string
+                    instock: boolean
                 }
             }
 
@@ -159,14 +165,14 @@ export interface Database {
 
             orders: {
                 Row: {
-                    id: string 
+                    id: string
                     customer_id: string
                     hub_id: string
                     status: string
                     total_price: number
                 }
                 Insert: {
-                    id: string 
+                    id: string
                     customer_id: string
                     hub_id: string
                     status: string
@@ -211,14 +217,21 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 // Client
-const supabaseUrl = process.env.VITE_SUPABASE_URL!
-const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY!
+const supabaseUrl = process.env.SUPABASE_URL!
+const supabaseKey = process.env.SUPABASE_SECRET_KEY!
+const supabaseClientKey = process.env.VITE_SUPABASE_ANON_KEY!
 
-
-if (!supabaseUrl || !supabaseKey) {
-    console.error('Supabase URL or Anon Key is missing from environment variables!')
+if (!supabaseUrl || !supabaseKey || !supabaseClientKey) {
+    console.error('Supabase URL or Anon Key or Secret Key is missing from environment variables!')
 }
 
+//this is for login through auth
+export const supabaseClient: SupabaseClient<Database> = createClient<Database>(
+    supabaseUrl,
+    supabaseClientKey
+)
+
+//this is for querying database
 export const supabase: SupabaseClient<Database> = createClient<Database>(
     supabaseUrl,
     supabaseKey
@@ -226,7 +239,7 @@ export const supabase: SupabaseClient<Database> = createClient<Database>(
 
 export async function signInUser(email: string, password: string):
     Promise<null | { user: any; access_token: string; refresh_token: string }> {
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
         email,
         password,
     })
@@ -240,7 +253,7 @@ export async function signInUser(email: string, password: string):
 
 export async function signUpUser(email: string, password: string):
     Promise<null | { user: any; access_token: string; refresh_token: string }> {
-    const { data, error } = await supabase.auth.signUp({
+    const { data, error } = await supabaseClient.auth.signUp({
         email,
         password,
     });
@@ -253,8 +266,26 @@ export async function signUpUser(email: string, password: string):
     return data.session;
 }
 
+//for delete user in authentication table
+export async function deleteAuthenUser(userId: string) {
+    try {
+        const { data, error } = await supabase.auth.admin.deleteUser(userId);
+
+        if (error) {
+            console.error('Error deleting user:', error.message);
+            return { success: false, message: error.message };
+        }
+
+        console.log('User deleted successfully:', data);
+        return { success: true, data };
+    } catch (err) {
+        console.error('An unexpected error occurred:', err);
+        return { success: false, message: 'An unexpected error occurred' };
+    }
+}
+
 export async function changePassword(newPassword: string): Promise<boolean> {
-    const { error } = await supabase.auth.updateUser({
+    const { error } = await supabaseClient.auth.updateUser({
         password: newPassword,
     });
 
@@ -264,4 +295,40 @@ export async function changePassword(newPassword: string): Promise<boolean> {
     }
 
     return true;
+}
+
+export async function uploadImage(file: File, userId: string): Promise<string | null> {
+    const filePath = `${userId}/${Date.now()}-${file.name}`
+
+    const { data, error } = await supabase.storage
+        .from('images') // bucket name
+        .upload(filePath, file)
+
+    if (error) {
+        console.error('Error uploading image:', error.message)
+        return null
+    }
+
+    return filePath // store this in users.profile_picture or products.image
+}
+
+export function getPublicImageUrl(filePath: string): string {
+    const { data } = supabase.storage
+        .from('images')
+        .getPublicUrl(filePath)
+
+    return data.publicUrl
+}
+
+export async function deleteImage(filePath: string): Promise<boolean> {
+    const { error } = await supabase.storage
+        .from('images')
+        .remove([filePath])
+
+    if (error) {
+        console.error('Error deleting image:', error.message)
+        return false
+    }
+
+    return true
 }

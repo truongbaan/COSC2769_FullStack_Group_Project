@@ -5,6 +5,8 @@
 # Author: Truong Ba An
 # ID: s3999568 */
 
+import 'dotenv/config';
+
 const PORT = 5000
 import express from 'express';
 import apiRouter from './routes/router';
