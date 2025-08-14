@@ -1,5 +1,7 @@
 import { supabase, Database } from "../db/db"
 import { CustomerService } from "./customer.service"
+import { ShipperService } from "./shipper.service"
+import { VendorService } from "./vendor.service"
 
 export type User = Database['public']['Tables']['users']['Row']
 
@@ -31,6 +33,7 @@ export const UserService = {
     },
 
     /** Fetch a single user by id */
+    //also get data for authen
     async getUserById(id: string ): Promise<User | null> {
         const { data, error } = await supabase
             .from('users')
@@ -53,39 +56,11 @@ export const UserService = {
                 const customer_data = await CustomerService.getCustomerById(data.id)
                 return { ...data, ...customer_data}
             case "shipper":
-                return null
+                const shipper_data = await ShipperService.getShipperById(data.id)
+                return { ...data, ...shipper_data}
             case "vendor":
-                return null
-        }
-
-        return null
-    },
-
-    //for login through authentication
-    async getUserByEmail(email: string ): Promise<User | null> {
-        
-        const { data, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('email', email.trim().toLowerCase())
-            .maybeSingle()
-
-        if (error) {
-            console.error(`Error fetching user ${email}:`, error)
-            throw error
-        }
-        if (!data || !data.role) {
-            return null  // explicitly return null to trigger 404 in route
-        }
-        
-        switch(data.role){
-            case "customer":
-                const customer_data = await CustomerService.getCustomerById(data.id)
-                return { ...data, ...customer_data}
-            case "shipper":
-                return null
-            case "vendor":
-                return null
+                const vendor_data = await VendorService.getVendorById(data.id)
+                return { ...data, ...vendor_data}
         }
 
         return null
