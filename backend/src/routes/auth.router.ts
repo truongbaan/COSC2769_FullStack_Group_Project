@@ -60,8 +60,9 @@ authRouter.post('/login', async (req: Request, res: Response) => {
         // Return success with tokens
         SuccessJsonResponse(res, 200, {
             data: {
-                access_token: session.access_token,
-                refresh_token: session.refresh_token,
+                // access_token: session.access_token,
+                // refresh_token: session.refresh_token,
+                user: user
             }
         })
         
