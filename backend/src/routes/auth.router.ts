@@ -12,6 +12,9 @@ import { requireAuth } from '../middleware/requireAuth'
 import { User, UserService } from '../service/user.service';
 import {hasUnknownFields} from '../utils/validation';
 import { Customer, CustomerService } from '../service/customer.service';
+import { Shipper, ShipperService } from '../service/shipper.service';
+import { Vendor, VendorService } from '../service/vendor.service';
+import { AuthService } from '../service/auth.service';
 
 const authRouter = Router();
 const allowedFieldForRegister = ['id', 'email', 'password', 'username', 'profile_picture', 'role', 'name', 'address', 'hub_id', 'business_name', 'business_address'];
@@ -71,89 +74,55 @@ authRouter.post('/login', async (req: Request, res: Response) => {
     }
 })
 
-authRouter.post('/signup', async (req: Request, res: Response) => {
+authRouter.post('/register/customer', async (req: Request, res: Response) => {
     try {
+        //check valid field input
         const Invalid = hasUnknownFields(allowedFieldForRegister, req.body);
         if (Invalid){
             return ErrorJsonResponse(res, 400, "Unknown fields detect in request")
         }
 
-        const { email, password } = req.body
-        
-        // Validate input
-        if (!email || !password) {
-            return ErrorJsonResponse(res, 400, 'Email and password are required')
-        }
-        //try signup
-        const session = await signUpUser(email, password)
-        
-        if (!session) {
-            return ErrorJsonResponse(res, 400, 'Error creating user, or user already exists.')
-        }
-        //how to check for all field need before create the temp_user to add?
-        
-        const temp_user : User = {
-            id: session.user.id,
-            email: req.body.email,
-            password: req.body.password,
-            username: req.body.username,
-            profile_picture: req.body.profile_picture,
-            role: req.body.role
-        }
-
-        const user = await UserService.createUser(temp_user)
-        let data_return = null // init
-
-        if(!user){
-            return ErrorJsonResponse(res, 400, 'Error creating user in db users')
-        }
-
-        switch(req.body.role){
-            case "customer":
-                const temp_customer : Customer = {
-                    id: session.user.id,
-                    address: req.body.address,
-                    name: req.body.name,
-                }
-                const customer = await CustomerService.createCustomer(temp_customer)
-                if(!customer){
-                    return ErrorJsonResponse(res, 400, "Fail to create customer at db customer")
-                }
-                data_return = { ...user, ...customer}
-                break
-            case "shipper":
-                return ErrorJsonResponse(res, 400, 'Shipper role not yet supported');
-            case "vendor":
-                return ErrorJsonResponse(res, 400, 'Vendor role not yet supported');
-        }
-        
-        //add cookie
-        res.cookie('access_token', session.access_token, {
-            httpOnly: true,
-            secure: process.env.PRODUCTION_SITE === 'true', // http or https
-            path: '/',
-        })
-        
-        res.cookie('refresh_token', session.refresh_token, {
-            httpOnly: true,
-            secure: process.env.PRODUCTION_SITE === 'true', // http or https
-            path: '/',
-        })
-        
-        SuccessJsonResponse(res, 200, {
-            data: {
-                access_token: session.access_token,
-                refresh_token: session.refresh_token,
-                user: data_return
-            }
-        })
+        const result = await AuthService.registerCustomer(req, res)
+        return result
         
     } catch (error) {
         ErrorJsonResponse(res, 500, 'Internal server error')
     }
 })
 
-//change password for authen, for db, would go after user router instead
+
+authRouter.post('/register/shipper', async (req: Request, res: Response) => {
+    try {
+        const Invalid = hasUnknownFields(allowedFieldForRegister, req.body);
+        if (Invalid){
+            return ErrorJsonResponse(res, 400, "Unknown fields detect in request")
+        }
+
+        const result = await AuthService.registerShipper(req, res)
+        return result
+        
+    } catch (error) {
+        ErrorJsonResponse(res, 500, 'Internal server error')
+    }
+})
+
+
+authRouter.post('/register/vendor', async (req: Request, res: Response) => {
+    try {
+        const Invalid = hasUnknownFields(allowedFieldForRegister, req.body);
+        if (Invalid){
+            return ErrorJsonResponse(res, 400, "Unknown fields detect in request")
+        }
+
+        const result = await AuthService.registerVendor(req, res)
+        return result
+        
+    } catch (error) {
+        ErrorJsonResponse(res, 500, 'Internal server error')
+    }
+})
+
+//change password for authen, for db, would go after user router instead, not move to service yet, have to do later
 authRouter.post('/changepassword', requireAuth, async (req: Request, res: Response) => {
     try {
         const { email, password } = req.body
