@@ -41,13 +41,32 @@ export const OrderSchema = z.object({
 export type OrderDto = z.infer<typeof OrderSchema>;
 export const OrdersSchema = z.array(OrderSchema);
 
-// Auth DTO (optional)
-export const LoginSchema = z.object({
+// Auth DTO (updated to match backend response structure)
+export const UserSchema = z.object({
   id: z.string(),
   username: z.string(),
+  email: z.string(),
+  password: z.string(),
+  profile_picture: z.string().nullable(),
   role: z.enum(["customer", "vendor", "shipper"]),
+  // Customer-specific fields
   name: z.string().optional(),
-  businessName: z.string().optional(),
-  distributionHub: z.string().optional(),
+  address: z.string().optional(),
+  // Vendor-specific fields
+  business_name: z.string().optional(),
+  business_address: z.string().optional(),
+  // Shipper-specific fields
+  hub_id: z.string().optional(),
 });
+
+export const LoginSchema = z.object({
+  success: z.boolean(),
+  message: z.object({
+    data: z.object({
+      user: UserSchema,
+    }),
+  }),
+});
+
 export type LoginDto = z.infer<typeof LoginSchema>;
+export type UserDto = z.infer<typeof UserSchema>;
