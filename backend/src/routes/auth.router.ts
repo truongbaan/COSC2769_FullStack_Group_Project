@@ -11,7 +11,7 @@ import { ErrorJsonResponse, SuccessJsonResponse } from '../utils/json_mes';
 import { requireAuth } from '../middleware/requireAuth'
 import {hasUnknownFields} from '../utils/validation';
 import { AuthService } from '../service/auth.service';
-import { loginBodySchema, loginController } from '../controllers/login.controller';
+import { loginBodySchema, loginController } from '../controllers/auth.controller';
 import { validationMiddleware } from '../middleware/validation.middleware';
 
 const authRouter = Router();
