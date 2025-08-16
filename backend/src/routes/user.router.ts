@@ -10,6 +10,7 @@ import { ErrorJsonResponse, SuccessJsonResponse } from '../utils/json_mes';
 import { UserService, User } from '../service/user.service'
 
 const UserRouter = Router();
+//NOTE on work: prepare to move to controller
 
 //getting all users from db
 UserRouter.get('/', async (req: Request, res: Response) => {
@@ -31,7 +32,7 @@ UserRouter.get('/', async (req: Request, res: Response) => {
             }
             return res.json(user)
         }
-        console.log('TESTTTTTTT')
+
         return ErrorJsonResponse(res, 500, 'Invalid query parameters')
     } catch (error) {
         return ErrorJsonResponse(res, 500, 'Failed to fetch user(s)')
