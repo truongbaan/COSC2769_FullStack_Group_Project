@@ -6,10 +6,11 @@
 # ID:  */
 
 import { Router, Request, Response } from 'express';
-import { getAllDistributionHubsController } from '../controllers/distribution_hubs/getDistributionHubs.controller';
+import { getAllDistributionHubsController, getAllHubsQuerrySchema } from '../controllers/distribution_hubs/getDistributionHubs.controller';
+import { validationMiddleware } from '../middleware/validation.middleware';
 
 const DistributionHubRouter = Router();
 
-DistributionHubRouter.get("/", getAllDistributionHubsController);
+DistributionHubRouter.get("/", validationMiddleware(getAllHubsQuerrySchema, 'query'), getAllDistributionHubsController);
 
 export default DistributionHubRouter;

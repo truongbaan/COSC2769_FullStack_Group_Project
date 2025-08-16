@@ -10,7 +10,7 @@ import { Request, Response } from "express";
 import { ProductService } from "../../service/products.service";
 import { ErrorJsonResponse, SuccessJsonResponse } from "../../utils/json_mes";
 
-export const getProductsQuerySchema = z.object({
+export const getProductsQuerrySchema = z.object({
     page: z.coerce.number().min(1).default(1),
     size: z.coerce.number().min(1).max(30).default(10),
     category: z.string().trim().max(100).optional(),
@@ -18,13 +18,13 @@ export const getProductsQuerySchema = z.object({
     priceMax: z.coerce.number().min(0).max(100000000).optional(), // 0
 }).strict();
 
-type GetProductsQueryType = z.output<typeof getProductsQuerySchema>;
+type GetProductsQuerryType = z.output<typeof getProductsQuerrySchema>;
 
 
 // Request < params type, response body, request body, request query 
 export const getProductsController = async (req: Request, res: Response) => {
     try {
-        const { page, size, category, priceMin, priceMax } = (req as unknown as Record<string, unknown> & { validatedquery: GetProductsQueryType }).validatedquery;
+        const { page, size, category, priceMin, priceMax } = (req as unknown as Record<string, unknown> & { validatedquery: GetProductsQuerryType }).validatedquery;
 
         const products = await ProductService.getProducts(
             { page, size },

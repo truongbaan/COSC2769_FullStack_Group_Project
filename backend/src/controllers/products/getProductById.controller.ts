@@ -14,8 +14,10 @@ export const getProductByIdParamsSchema = z.object({
     productId: z.string(),
 }).strict();
 
+type GetProductByIdParams = z.output<typeof getProductByIdParamsSchema>;
+
 export const getProductByIdController = async (req: Request, res: Response) => {
-    const { productId } = req.params;
+   const { productId }  = (req as unknown as Record<string, unknown> & { validatedparams: GetProductByIdParams }).validatedparams;
 
     const product = await ProductService.getProductById(productId);
 

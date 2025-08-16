@@ -21,13 +21,6 @@ export const DistributionHubService = {
             .order('id', { ascending: false })
             .range(offset, offset + size - 1);
 
-        //DEBUG, will be remove
-        console.log('📊 Raw Supabase response:')
-        console.log('  - Data:', data)
-        console.log('  - Error:', error)
-        console.log('  - Data length:', data?.length)
-        //
-
         if (error) {
             console.error('Error fetching user:', error)
             throw error

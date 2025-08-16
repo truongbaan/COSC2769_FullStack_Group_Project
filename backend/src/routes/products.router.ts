@@ -12,13 +12,13 @@ import { getProductByIdController, getProductByIdParamsSchema } from '../control
 import { validationMiddleware } from '../middleware/validation.middleware';
 import { createProductBodySchema } from '../controllers/products/createProduct.controller';
 import { deleteProductParamsSchema } from '../controllers/products/deleteProduct.controller';
-import { getProductsController, getProductsQuerySchema } from '../controllers/products/getProducts.controller';
+import { getProductsController, getProductsQuerrySchema } from '../controllers/products/getProducts.controller';
 import { id } from 'zod/v4/locales/index.cjs';
 
 const ProductRouter = Router();
 
 // Get products with pagination and fitlers
-ProductRouter.get("/", validationMiddleware(getProductsQuerySchema, 'query'), getProductsController);
+ProductRouter.get("/", validationMiddleware(getProductsQuerrySchema, 'query'), getProductsController);
 
 // Get product details by id
 ProductRouter.get("/:productId", validationMiddleware(getProductByIdParamsSchema, "params"), getProductByIdController);
