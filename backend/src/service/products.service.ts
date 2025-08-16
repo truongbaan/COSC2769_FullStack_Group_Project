@@ -2,8 +2,8 @@
 # Course: COSC2769 - Full Stack Development 
 # Semester: 2025B 
 # Assessment: Assignment 02 
-# Author: Nguyen Vo Truong Toan
-# ID: s3979056 */
+# Author: 
+# ID: */
 
 import { supabase, Database } from "../db/db";
 
@@ -11,10 +11,8 @@ export type Product = Database["public"]["Tables"]["products"]["Row"];
 
 export type ProductsFilters = {
   category?: string;
-  price?: {
-    min?: number;
-    max?: number;
-  }
+  priceMin?: number;
+  priceMax?: number;
 }
 
 export type Pagination = {
@@ -35,16 +33,16 @@ export const ProductService = {
       .range(offset, offset + size - 1)
       .order("id", { ascending: false });
 
-    if (filters?.category !== undefined && filters.category !== "") {
+    if (filters?.category) {
       query.eq('category', filters?.category); // WHERE category = {category}
     }
 
-    if (filters?.price?.min !== undefined) { //no skip 0
-      query.gte('price', filters?.price?.min); // WHERE price >= {min}
+    if (filters?.priceMin !== undefined) { //no skip 0
+      query.gte('price', filters?.priceMin); // WHERE price >= {min}
     }
 
-    if (filters?.price?.max !== undefined) { //no skip 0
-      query.lte('price', filters?.price?.max); // WHERE price <= {max}
+    if (filters?.priceMax !== undefined) { //no skip 0
+      query.lte('price', filters?.priceMax); // WHERE price <= {max}
     }
 
     const { data, error } = await query;
@@ -54,7 +52,6 @@ export const ProductService = {
     console.log("  - Data:", data);
     console.log("  - Error:", error);
     console.log("  - Data length:", data?.length);
-    //
 
     if (error) {
       console.error("Error fetching product:", error);
@@ -86,24 +83,6 @@ export const ProductService = {
 
     return data || null;
   },
-
-  // //Get Product By Category
-  // async getProductsByCategory(category: string): Promise<Product[] | null> {
-  //   const cat = (category ?? "").trim();
-  //   if (!cat) return null;
-
-  //   const { data, error } = await supabase
-  //     .from("products")
-  //     .select("*")
-  //     .eq("category", cat)
-  //     .order("id", { ascending: false });
-
-  //   if (error) {
-  //     console.error(`Error fetching products by category "${cat}":`, error);
-  //     throw error;
-  //   }
-  //   return data ?? null;
-  // },
 
   async createProduct(product: {
     name: string;
@@ -152,19 +131,4 @@ export const ProductService = {
 
     return data as Product;
   },
-
-  // async deleteProduct(id: string): Promise<boolean> {
-  //   const { error } = await supabase
-  //     .from('products')
-  //     .delete()
-  //     .eq('id', id);
-
-  //   if (error) {
-  //     console.error(`Error deleting product ${id}:`, error);
-  //     return false;
-  //   }
-
-  //   return true;
-  // }
-
 };

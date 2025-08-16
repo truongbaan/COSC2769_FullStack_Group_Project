@@ -2,48 +2,33 @@
 # Course: COSC2769 - Full Stack Development 
 # Semester: 2025B 
 # Assessment: Assignment 02 
-# Author: Nguyen Vo Truong Toan
-# ID: s3979056 */
+# Author: 
+# ID:  */
 
 import * as z from "zod";
 import { Request, Response } from "express";
 import { ProductService } from "../../service/products.service";
 import { ErrorJsonResponse, SuccessJsonResponse } from "../../utils/json_mes";
 
-// export const getProductsQuerySchema = z.object({
-//     page: z.coerce.number().min(1).default(1),
-//     size: z.coerce.number().min(1).max(30).default(10),
-//     category: z.string().trim().max(100).optional(),
-//     min: z.coerce.number().min(0).optional(),
-//     max: z.coerce.number().min(0).max(1_000_000).optional(),
-//     // price: z.object({
-//     //     min: z.coerce.number().min(0).optional(),
-//     // //     max: z.coerce.number().min(0).max(1000000).optional(),
-//     // }).strict().optional()
-//     // }).strict(),
-// }).refine(
-//     (d) => d.min === undefined || d.max === undefined || d.min <= d.max,
-//     { message: "min must be <= max", path: ["min"] }
-// );
-
 export const getProductsQuerySchema = z.object({
-    page: z.coerce.number().int().min(1).default(1),
-    size: z.coerce.number().int().min(1).max(30).default(10),
+    page: z.coerce.number().min(1).default(1),
+    size: z.coerce.number().min(1).max(30).default(10),
     category: z.string().trim().max(100).optional(),
-    min: z.coerce.number().min(0).optional(),
-    max: z.coerce.number().min(0).max(1_000_000).optional(),
-}).refine(
-    (d) => d.min === undefined || d.max === undefined || d.min <= d.max,
-    { message: "min must be <= max", path: ["min"] }
-);
+    priceMin: z.coerce.number().min(0).optional(), // 10000
+    priceMax: z.coerce.number().min(0).max(100000000).optional(), // 0
+}).strict();
 
+type GetProductsQueryType = z.output<typeof getProductsQuerySchema>;
+
+
+// Request < params type, response body, request body, request query 
 export const getProductsController = async (req: Request, res: Response) => {
     try {
-        const { page, size, category, min, max } = getProductsQuerySchema.parse(req.query);
+        const { page, size, category, priceMin, priceMax } = (req as unknown as Record<string, unknown> & { validatedquery: GetProductsQueryType }).validatedquery;
 
         const products = await ProductService.getProducts(
             { page, size },
-            { category, price: { min, max } }
+            { category, priceMax, priceMin }
         );
 
         if (products === null) {
@@ -57,6 +42,7 @@ export const getProductsController = async (req: Request, res: Response) => {
         if (err?.issues) {
             return ErrorJsonResponse(res, 400, err.issues[0].message);
         }
+        console.log('ERRRRR: ', err);
         return ErrorJsonResponse(res, 500, "Unexpected error while fetching products");
     }
 };

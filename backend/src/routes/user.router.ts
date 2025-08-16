@@ -31,6 +31,7 @@ UserRouter.get('/', async (req: Request, res: Response) => {
             }
             return res.json(user)
         }
+        console.log('TESTTTTTTT')
         return ErrorJsonResponse(res, 500, 'Invalid query parameters')
     } catch (error) {
         return ErrorJsonResponse(res, 500, 'Failed to fetch user(s)')

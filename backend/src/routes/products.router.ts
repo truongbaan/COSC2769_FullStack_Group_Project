@@ -2,8 +2,8 @@
 # Course: COSC2769 - Full Stack Development 
 # Semester: 2025B 
 # Assessment: Assignment 02 
-# Author: Nguyen Vo Truong Toan
-# ID: s3979056 */
+# Author: 
+# ID:  */
 
 import { Router, Request, Response } from 'express';
 import { Product, ProductService } from '../service/products.service';
@@ -12,57 +12,16 @@ import { getProductByIdController, getProductByIdParamsSchema } from '../control
 import { validationMiddleware } from '../middleware/validation.middleware';
 import { createProductBodySchema } from '../controllers/products/createProduct.controller';
 import { deleteProductParamsSchema } from '../controllers/products/deleteProduct.controller';
-// import { getProductsByCategoryController, getProductsByCategoryParamsSchema } from '../controllers/products/getProductByCategory.controller';
 import { getProductsController, getProductsQuerySchema } from '../controllers/products/getProducts.controller';
 import { id } from 'zod/v4/locales/index.cjs';
 
 const ProductRouter = Router();
 
-ProductRouter.get("/", async (req, res) => {
-    try {
-        const { page, size, category, min, max } = getProductsQuerySchema.parse(req.query);
+// Get products with pagination and fitlers
+ProductRouter.get("/", validationMiddleware(getProductsQuerySchema, 'query'), getProductsController);
 
-        const price = (min !== undefined || max !== undefined) ? { min, max } : undefined;
-
-        const products = await ProductService.getProducts({ page, size }, { category, price });
-
-        return SuccessJsonResponse(res, 200, {
-            data: { products: products ?? [], count: products?.length ?? 0, page, size },
-        });
-    } catch (err: any) {
-        if (err?.issues?.length) return ErrorJsonResponse(res, 400, err.issues[0].message);
-        console.error(err);
-        return ErrorJsonResponse(res, 500, "Failed to fetch product(s)");
-    }
-});
-
-ProductRouter.get("/:id", async (req, res) => {
-    try {
-        const id = String(req.params.id);
-        const products = await ProductService.getProductById(id);
-
-        if (products === null) {
-            return ErrorJsonResponse(res, 500, "Failed to fetch products");
-        }
-
-        return SuccessJsonResponse(res, 200, {
-            data: { products, count: products },
-        });
-    } catch (err: any) {
-        if (err?.issues) {
-            return ErrorJsonResponse(res, 400, err.issues?.[0]?.message || "Invalid query parameters");
-        }
-        return ErrorJsonResponse(res, 500, "Failed to fetch product(s)");
-    }
-});
-// // Get by category
-// ProductRouter.get("/category/:category", validationMiddleware(getProductsByCategoryParamsSchema, "params"), getProductsByCategoryController);
-
-// // Get by id
-// ProductRouter.get("/:productId", validationMiddleware(getProductByIdParamsSchema, "params"), getProductByIdController);
-
-// // Get all
-// ProductRouter.get("/", getProductsController);
+// Get product details by id
+ProductRouter.get("/:productId", validationMiddleware(getProductByIdParamsSchema, "params"), getProductByIdController);
 
 /** POST /products  (Add New Product) */
 ProductRouter.post('/', validationMiddleware(createProductBodySchema, 'body'),
