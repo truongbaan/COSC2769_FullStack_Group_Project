@@ -12,40 +12,49 @@ import { getProductByIdController, getProductByIdParamsSchema } from '../control
 import { validationMiddleware } from '../middleware/validation.middleware';
 import { createProductBodySchema } from '../controllers/products/createProduct.controller';
 import { deleteProductParamsSchema } from '../controllers/products/deleteProduct.controller';
+import { getProductsByCategoryController, getProductsByCategoryParamsSchema } from '../controllers/products/getProductByCategory.controller';
+import { getAllProductsController } from '../controllers/products/getAllProducts.controller';
 
 const ProductRouter = Router();
 
-ProductRouter.get('/', async (req: Request, res: Response) => {
-    const queries = Object.keys(req.query)
-    try {
-        if (queries.length === 1 && 'category' in req.query) {
-            const category = String(req.query.category);
-            const products = await ProductService.getProductsByCategory(category);
-            return SuccessJsonResponse(res, 200, products ?? []);
-        }
-        if (queries.length === 0) {
-            const users: Product[] | null = await ProductService.getAllProducts()
-            if (!users) {
-                return SuccessJsonResponse(res, 200, 'No users but still success call')
-            }
-            return SuccessJsonResponse(res, 200, users)
-        }
-        if (queries.length === 1 && 'id' in req.query) { // this is same as ?id=number
+// ProductRouter.get('/', async (req: Request, res: Response) => {
+//     const queries = Object.keys(req.query)
+//     try {
+//         // if (queries.length === 1 && 'category' in req.query) {
+//         //     const category = String(req.query.category);
+//         //     const products = await ProductService.getProductsByCategory(category);
+//         //     return SuccessJsonResponse(res, 200, products ?? []);
+//         // }
+//         if (queries.length === 0) {
+//             const users: Product[] | null = await ProductService.getAllProducts()
+//             if (!users) {
+//                 return SuccessJsonResponse(res, 200, 'No users but still success call')
+//             }
+//             return SuccessJsonResponse(res, 200, users)
+//         }
+//         // if (queries.length === 1 && 'id' in req.query) { // this is same as ?id=number
 
-            const user: Product | null = await ProductService.getProductById(String(req.query.id))
+//         //     const user: Product | null = await ProductService.getProductById(String(req.query.id))
 
-            if (!user) { // return data is null
-                return ErrorJsonResponse(res, 404, 'user not found')
-            }
-            return res.json(user)
-        }
-        return ErrorJsonResponse(res, 500, 'Invalid query parameters')
-    } catch (error) {
-        return ErrorJsonResponse(res, 500, 'Failed to fetch user(s)')
-    }
-})
+//         //     if (!user) { // return data is null
+//         //         return ErrorJsonResponse(res, 404, 'user not found')
+//         //     }
+//         //     return res.json(user)
+//         // }
+//         return ErrorJsonResponse(res, 500, 'Invalid query parameters')
+//     } catch (error) {
+//         return ErrorJsonResponse(res, 500, 'Failed to fetch user(s)')
+//     }
+// })
 
-ProductRouter.get('/:productId', validationMiddleware(getProductByIdParamsSchema, 'params'), getProductByIdController);
+// Get by category
+ProductRouter.get("/category/:category", validationMiddleware(getProductsByCategoryParamsSchema, "params"), getProductsByCategoryController);
+
+// Get by id
+ProductRouter.get("/:productId", validationMiddleware(getProductByIdParamsSchema, "params"), getProductByIdController);
+
+// Get all
+ProductRouter.get("/", getAllProductsController);
 
 /** POST /products  (Add New Product) */
 ProductRouter.post('/', validationMiddleware(createProductBodySchema, 'body'),
