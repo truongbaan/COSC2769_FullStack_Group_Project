@@ -11,13 +11,17 @@ import { ErrorJsonResponse, SuccessJsonResponse } from '../utils/json_mes';
 import { requireAuth } from '../middleware/requireAuth'
 import {hasUnknownFields} from '../utils/validation';
 import { AuthService } from '../service/auth.service';
-import { loginBodySchema, loginController } from '../controllers/auth.controller';
+import { loginBodySchema, loginController, registerCustomerBodySchema, registerCustomerController, registerShipperBodySchema, registerShipperController, registerVendorBodySchema, registerVendorController } from '../controllers/auth.controller';
 import { validationMiddleware } from '../middleware/validation.middleware';
 
 const authRouter = Router();
 const allowedFieldForRegister = ['id', 'email', 'password', 'username', 'profile_picture', 'role', 'name', 'address', 'hub_id', 'business_name', 'business_address'];
 
 authRouter.post('/login', validationMiddleware(loginBodySchema, 'body'), loginController);
+//NOTE on work: move controller and modify service to correct layer usage
+// authRouter.post('/register/customer', validationMiddleware(registerCustomerBodySchema, 'body'), registerCustomerController);
+// authRouter.post('/register/shipper', validationMiddleware(registerShipperBodySchema, 'body'), registerShipperController);
+// authRouter.post('/register/vendor', validationMiddleware(registerVendorBodySchema, 'body'), registerVendorController);
 
 authRouter.post('/register/customer', async (req: Request, res: Response) => {
     try {

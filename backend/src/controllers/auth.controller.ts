@@ -10,16 +10,23 @@ import { Request, Response } from "express";
 import { signInUser } from "../db/db";
 import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes";
 import { UserService } from "../service/user.service";
+ 
+//xin frontend nhá =))
+const usernameRegex = /^[A-Za-z0-9]{8,15}$/;
+const passwordRegex =/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,20}$/;
+const usernameSchema = z.string().regex(usernameRegex, "Username must be 8-15 letters/digits").trim();
+const passwordSchema = z.string().regex(passwordRegex,"Password 8-20, includes upper, lower, digit, special !@#$%^&*").trim();
+
 
 export const loginBodySchema = z.object({
-    email: z.string(),
-    password: z.string()
-}).strict();
+    email: z.email("Invalid email format").trim(),
+    password: passwordSchema
+}).strict(); 
 
 export const registerCustomerBodySchema = z.object({
-    email: z.string().trim(),
-    password: z.string().trim(),
-    username: z.string().trim(),
+    email: z.email("Invalid email format").trim(),
+    password: passwordSchema,
+    username: usernameSchema,
     profile_picture: z.string().trim(),
     role: z.literal("customer"),
     address: z.string().trim(),
@@ -27,18 +34,18 @@ export const registerCustomerBodySchema = z.object({
 }).strict();
 
 export const registerShipperBodySchema = z.object({
-    email: z.string().trim(),
-    password: z.string().trim(),
-    username: z.string().trim(),
+    email: z.email("Invalid email format").trim(),
+    password: passwordSchema,
+    username: usernameSchema,
     profile_picture: z.string().trim(),
     role: z.literal("shipper"),
     hub_id: z.string().trim()
 }).strict();
 
 export const registerVendorBodySchema = z.object({
-    email: z.string().trim(),
-    password: z.string().trim(),
-    username: z.string().trim(),
+    email: z.email("Invalid email format").trim(),
+    password: passwordSchema,
+    username: usernameSchema,
     profile_picture: z.string().trim(),
     role: z.literal("shipper"),
     business_address: z.string().trim(),
@@ -48,42 +55,55 @@ export const registerVendorBodySchema = z.object({
 export const loginController = async (req: Request, res: Response) => {
     try {
         const { email, password } = req.body
-        
+
         const session = await signInUser(email, password)
-        
+
         if (!session) {
             return ErrorJsonResponse(res, 401, 'Invalid credentials')
         }
-        
+
         //get user through id
         const user = await UserService.getUserById(session.user.id)
-        
-        if (user === null) {//this mean the user is created in authen but not in the db table (!critical if happens)
+
+        if (!user) {//this mean the user is created in authen but not in the db table (!critical if happens)
             return ErrorJsonResponse(res, 404, "WARNING! Unknown user in db but found in authentication!")
         }
-        
+
         //add cookies :>
         res.cookie('access_token', session.access_token, {
             httpOnly: true,
             secure: process.env.PRODUCTION_SITE === 'true', // http or https
             path: '/',
         })
-        
+
         //could be removed since not use, but might use later
         res.cookie('refresh_token', session.refresh_token, {
             httpOnly: true,
             secure: process.env.PRODUCTION_SITE === 'true', // http or https
             path: '/',
         })
-        
+
         // Return success with tokens
         SuccessJsonResponse(res, 200, {
             data: {
                 user: user
             }
         })
-        
+
     } catch (error) {
         ErrorJsonResponse(res, 500, 'Internal server error')
     }
 }
+
+export const registerCustomerController = async (req: Request, res: Response) => {
+
+}//not yet implement
+
+export const registerShipperController = async (req: Request, res: Response) => {
+
+}//not yet implement
+
+export const registerVendorController = async (req: Request, res: Response) => {
+
+}//not yet implement
+
