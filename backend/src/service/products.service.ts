@@ -39,12 +39,12 @@ export const ProductService = {
       query.eq('category', filters?.category); // WHERE category = {category}
     }
 
-    if (filters?.price?.min) {
-      query.gte('price', filters?.price?.min); // WHERE price <= {min}
+    if (filters?.price?.min !== undefined) { //no skip 0
+      query.gte('price', filters?.price?.min); // WHERE price >= {min}
     }
 
-    if (filters?.price?.max) {
-      query.lte('price', filters?.price?.max); // WHERE price >= {max}
+    if (filters?.price?.max !== undefined) { //no skip 0
+      query.lte('price', filters?.price?.max); // WHERE price <= {max}
     }
 
     const { data, error } = await query;
