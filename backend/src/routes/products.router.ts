@@ -13,48 +13,51 @@ import { validationMiddleware } from '../middleware/validation.middleware';
 import { createProductBodySchema } from '../controllers/products/createProduct.controller';
 import { deleteProductParamsSchema } from '../controllers/products/deleteProduct.controller';
 import { getProductsByCategoryController, getProductsByCategoryParamsSchema } from '../controllers/products/getProductByCategory.controller';
-import { getProductsController } from '../controllers/products/getProducts.controller';
+import { getProductsController, getProductsQuerySchema } from '../controllers/products/getProducts.controller';
 
 const ProductRouter = Router();
 
-// ProductRouter.get('/', async (req: Request, res: Response) => {
-//     const queries = Object.keys(req.query)
-//     try {
-//         // if (queries.length === 1 && 'category' in req.query) {
-//         //     const category = String(req.query.category);
-//         //     const products = await ProductService.getProductsByCategory(category);
-//         //     return SuccessJsonResponse(res, 200, products ?? []);
-//         // }
-//         if (queries.length === 0) {
-//             const users: Product[] | null = await ProductService.getAllProducts()
-//             if (!users) {
-//                 return SuccessJsonResponse(res, 200, 'No users but still success call')
-//             }
-//             return SuccessJsonResponse(res, 200, users)
-//         }
-//         // if (queries.length === 1 && 'id' in req.query) { // this is same as ?id=number
+ProductRouter.get("/", async (req: Request, res: Response) => {
+    try {
+        // Nếu người dùng dùng ?id=, chuyển qua nhánh lấy theo id cho rõ ràng
+        if ("id" in req.query) {
+            const id = String(req.query.id);
+            const product = await ProductService.getProductById(id);
+            if (!product) return ErrorJsonResponse(res, 404, "Product not found");
+            return SuccessJsonResponse(res, 200, { data: { product } });
+        }
 
-//         //     const user: Product | null = await ProductService.getProductById(String(req.query.id))
+        // List + filter
+        const { page, size, category, min, max } = getProductsQuerySchema.parse(req.query);
 
-//         //     if (!user) { // return data is null
-//         //         return ErrorJsonResponse(res, 404, 'user not found')
-//         //     }
-//         //     return res.json(user)
-//         // }
-//         return ErrorJsonResponse(res, 500, 'Invalid query parameters')
-//     } catch (error) {
-//         return ErrorJsonResponse(res, 500, 'Failed to fetch user(s)')
-//     }
-// })
+        const products = await ProductService.getProducts(
+            { page, size },
+            { category, price: { min, max } }
+        );
 
-// Get by category
-ProductRouter.get("/category/:category", validationMiddleware(getProductsByCategoryParamsSchema, "params"), getProductsByCategoryController);
+        if (products === null) {
+            return ErrorJsonResponse(res, 500, "Failed to fetch products");
+        }
 
-// Get by id
-ProductRouter.get("/:productId", validationMiddleware(getProductByIdParamsSchema, "params"), getProductByIdController);
+        return SuccessJsonResponse(res, 200, {
+            data: { products, count: products.length, page, size },
+        });
+    } catch (err: any) {
+        if (err?.issues) {
+            return ErrorJsonResponse(res, 400, err.issues?.[0]?.message || "Invalid query parameters");
+        }
+        return ErrorJsonResponse(res, 500, "Failed to fetch product(s)");
+    }
+});
 
-// Get all
-ProductRouter.get("/", getProductsController);
+// // Get by category
+// ProductRouter.get("/category/:category", validationMiddleware(getProductsByCategoryParamsSchema, "params"), getProductsByCategoryController);
+
+// // Get by id
+// ProductRouter.get("/:productId", validationMiddleware(getProductByIdParamsSchema, "params"), getProductByIdController);
+
+// // Get all
+// ProductRouter.get("/", getProductsController);
 
 /** POST /products  (Add New Product) */
 ProductRouter.post('/', validationMiddleware(createProductBodySchema, 'body'),
