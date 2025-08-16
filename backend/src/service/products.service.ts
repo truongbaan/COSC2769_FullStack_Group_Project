@@ -9,13 +9,45 @@ import { supabase, Database } from "../db/db";
 
 export type Product = Database["public"]["Tables"]["products"]["Row"];
 
+export type ProductsFilters = {
+  category?: string;
+  price?: {
+    min?: number;
+    max?: number;
+  }
+}
+
+export type Pagination = {
+  page: number;
+  size: number;
+}
+
 export const ProductService = {
-  /** Fetch all Products*/
-  async getAllProducts(): Promise<Product[] | null> {
-    const { data, error } = await supabase
+  async getProducts(
+    { page, size }: Pagination,
+    filters?: ProductsFilters,
+  ): Promise<Product[] | null> {
+    const offset = (page - 1) * size;
+
+    const query = supabase
       .from("products")
       .select("*")
+      .range(offset, offset + size - 1)
       .order("id", { ascending: false });
+
+    if (filters?.category) {
+      query.eq('category', filters?.category); // WHERE category = {category}
+    }
+
+    if (filters?.price?.min) {
+      query.lte('price', filters?.price?.min); // WHERE price <= {min}
+    }
+
+    if (filters?.price?.max) {
+      query.gte('price', filters?.price?.max); // WHERE price >= {max}
+    }
+
+    const { data, error } = await query;
 
     //DEBUG, will be remove
     console.log("📊 Raw Supabase response:");
@@ -32,6 +64,7 @@ export const ProductService = {
 
     if (!data) {
       return null; // explicitly return null to trigger 404 in route
+      // return [];
     }
     return data;
   },

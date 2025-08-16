@@ -13,7 +13,7 @@ import { validationMiddleware } from '../middleware/validation.middleware';
 import { createProductBodySchema } from '../controllers/products/createProduct.controller';
 import { deleteProductParamsSchema } from '../controllers/products/deleteProduct.controller';
 import { getProductsByCategoryController, getProductsByCategoryParamsSchema } from '../controllers/products/getProductByCategory.controller';
-import { getAllProductsController } from '../controllers/products/getAllProducts.controller';
+import { getProductsController } from '../controllers/products/getProducts.controller';
 
 const ProductRouter = Router();
 
@@ -54,7 +54,7 @@ ProductRouter.get("/category/:category", validationMiddleware(getProductsByCateg
 ProductRouter.get("/:productId", validationMiddleware(getProductByIdParamsSchema, "params"), getProductByIdController);
 
 // Get all
-ProductRouter.get("/", getAllProductsController);
+ProductRouter.get("/", getProductsController);
 
 /** POST /products  (Add New Product) */
 ProductRouter.post('/', validationMiddleware(createProductBodySchema, 'body'),
