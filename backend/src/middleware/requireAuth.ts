@@ -23,8 +23,11 @@ export function requireAuth(role: string = '') {
             return ErrorJsonResponse(res, 401, 'Unauthorized: Invalid token')
         }
         if (role) {
-            const user = await UserService.getUserById(data.user.id)
-            if (!user || !user.role || user.role !== role) {
+            const user = await UserService.getUserById(data.user.id, false)
+            if(!user){
+                return ErrorJsonResponse(res, 404, 'Unknown user in database but in valid in authen! PLEASE delete that user from authen!')
+            }
+            if (user.role !== role) {
                 return ErrorJsonResponse(res, 401, `Unauthorized: only role ${role} can modify this table`)
             }
         }

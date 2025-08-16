@@ -41,7 +41,7 @@ export const UserService = {
 
     /** Fetch a single user by id */
     //also get data for authen
-    async getUserById(id: string ): Promise<User | null> {
+    async getUserById(id: string, full_info : boolean = true ): Promise<User | null> {
         const { data, error } = await supabase
             .from('users')
             .select('*')
@@ -57,17 +57,26 @@ export const UserService = {
         if (!data || !data.role) {
             return null  // explicitly return null to trigger 404 in route
         }
-        
+
+        if(!full_info){
+            return data
+        }
+        let role_data = null
         switch(data.role){
             case "customer":
-                const customer_data = await CustomerService.getCustomerById(data.id)
-                return { ...data, ...customer_data}
+                role_data = await CustomerService.getCustomerById(data.id)
+                break
             case "shipper":
-                const shipper_data = await ShipperService.getShipperById(data.id)
-                return { ...data, ...shipper_data}
+                role_data = await ShipperService.getShipperById(data.id)
+                break
             case "vendor":
-                const vendor_data = await VendorService.getVendorById(data.id)
-                return { ...data, ...vendor_data}
+                role_data = await VendorService.getVendorById(data.id)
+                break
+        }
+        
+        //found full info
+        if (role_data){
+            return {...data, ...role_data}
         }
 
         return null
