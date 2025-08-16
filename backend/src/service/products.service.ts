@@ -40,11 +40,11 @@ export const ProductService = {
     }
 
     if (filters?.price?.min) {
-      query.lte('price', filters?.price?.min); // WHERE price <= {min}
+      query.gte('price', filters?.price?.min); // WHERE price <= {min}
     }
 
     if (filters?.price?.max) {
-      query.gte('price', filters?.price?.max); // WHERE price >= {max}
+      query.lte('price', filters?.price?.max); // WHERE price >= {max}
     }
 
     const { data, error } = await query;
