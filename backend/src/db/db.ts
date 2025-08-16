@@ -74,11 +74,11 @@ export interface Database {
                 }
                 Insert: {
                     id: string // from users id
-                    businessname: string
+                    business_name: string
                     business_address: string
                 }
                 Update: {
-                    businessname: string
+                    business_name: string
                     business_address: string
                 }
             }
