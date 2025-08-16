@@ -2,8 +2,8 @@
 # Course: COSC2769 - Full Stack Development 
 # Semester: 2025B 
 # Assessment: Assignment 02 
-# Author: Nguyen The Anh
-# ID: s3975844 */
+# Author: Nguyen Vo Truong Toan
+# ID: s3979056 */
 
 import { supabase, Database } from "../db/db";
 
@@ -35,7 +35,7 @@ export const ProductService = {
       .range(offset, offset + size - 1)
       .order("id", { ascending: false });
 
-    if (filters?.category) {
+    if (filters?.category !== undefined && filters.category !== "") {
       query.eq('category', filters?.category); // WHERE category = {category}
     }
 
@@ -87,23 +87,23 @@ export const ProductService = {
     return data || null;
   },
 
-  //Get Product By Category
-  async getProductsByCategory(category: string): Promise<Product[] | null> {
-    const cat = (category ?? "").trim();
-    if (!cat) return null;
+  // //Get Product By Category
+  // async getProductsByCategory(category: string): Promise<Product[] | null> {
+  //   const cat = (category ?? "").trim();
+  //   if (!cat) return null;
 
-    const { data, error } = await supabase
-      .from("products")
-      .select("*")
-      .eq("category", cat)
-      .order("id", { ascending: false });
+  //   const { data, error } = await supabase
+  //     .from("products")
+  //     .select("*")
+  //     .eq("category", cat)
+  //     .order("id", { ascending: false });
 
-    if (error) {
-      console.error(`Error fetching products by category "${cat}":`, error);
-      throw error;
-    }
-    return data ?? null;
-  },
+  //   if (error) {
+  //     console.error(`Error fetching products by category "${cat}":`, error);
+  //     throw error;
+  //   }
+  //   return data ?? null;
+  // },
 
   async createProduct(product: {
     name: string;
@@ -153,18 +153,18 @@ export const ProductService = {
     return data as Product;
   },
 
-  async deleteProduct(id: string): Promise<boolean> {
-    const { error } = await supabase
-      .from('products')
-      .delete()
-      .eq('id', id);
+  // async deleteProduct(id: string): Promise<boolean> {
+  //   const { error } = await supabase
+  //     .from('products')
+  //     .delete()
+  //     .eq('id', id);
 
-    if (error) {
-      console.error(`Error deleting product ${id}:`, error);
-      return false;
-    }
+  //   if (error) {
+  //     console.error(`Error deleting product ${id}:`, error);
+  //     return false;
+  //   }
 
-    return true;
-  }
+  //   return true;
+  // }
 
 };

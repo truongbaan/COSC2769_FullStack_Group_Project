@@ -2,8 +2,8 @@
 # Course: COSC2769 - Full Stack Development 
 # Semester: 2025B 
 # Assessment: Assignment 02 
-# Author: Truong Ba An
-# ID: s3999568 */
+# Author: Nguyen Vo Truong Toan
+# ID: s3979056 */
 
 import { Router, Request, Response } from 'express';
 import { Product, ProductService } from '../service/products.service';
@@ -12,35 +12,41 @@ import { getProductByIdController, getProductByIdParamsSchema } from '../control
 import { validationMiddleware } from '../middleware/validation.middleware';
 import { createProductBodySchema } from '../controllers/products/createProduct.controller';
 import { deleteProductParamsSchema } from '../controllers/products/deleteProduct.controller';
-import { getProductsByCategoryController, getProductsByCategoryParamsSchema } from '../controllers/products/getProductByCategory.controller';
+// import { getProductsByCategoryController, getProductsByCategoryParamsSchema } from '../controllers/products/getProductByCategory.controller';
 import { getProductsController, getProductsQuerySchema } from '../controllers/products/getProducts.controller';
+import { id } from 'zod/v4/locales/index.cjs';
 
 const ProductRouter = Router();
 
-ProductRouter.get("/", async (req: Request, res: Response) => {
+ProductRouter.get("/", async (req, res) => {
     try {
-        // Nếu người dùng dùng ?id=, chuyển qua nhánh lấy theo id cho rõ ràng
-        if ("id" in req.query) {
-            const id = String(req.query.id);
-            const product = await ProductService.getProductById(id);
-            if (!product) return ErrorJsonResponse(res, 404, "Product not found");
-            return SuccessJsonResponse(res, 200, { data: { product } });
-        }
-
-        // List + filter
         const { page, size, category, min, max } = getProductsQuerySchema.parse(req.query);
 
-        const products = await ProductService.getProducts(
-            { page, size },
-            { category, price: { min, max } }
-        );
+        const price = (min !== undefined || max !== undefined) ? { min, max } : undefined;
+
+        const products = await ProductService.getProducts({ page, size }, { category, price });
+
+        return SuccessJsonResponse(res, 200, {
+            data: { products: products ?? [], count: products?.length ?? 0, page, size },
+        });
+    } catch (err: any) {
+        if (err?.issues?.length) return ErrorJsonResponse(res, 400, err.issues[0].message);
+        console.error(err);
+        return ErrorJsonResponse(res, 500, "Failed to fetch product(s)");
+    }
+});
+
+ProductRouter.get("/:id", async (req, res) => {
+    try {
+        const id = String(req.params.id);
+        const products = await ProductService.getProductById(id);
 
         if (products === null) {
             return ErrorJsonResponse(res, 500, "Failed to fetch products");
         }
 
         return SuccessJsonResponse(res, 200, {
-            data: { products, count: products.length, page, size },
+            data: { products, count: products },
         });
     } catch (err: any) {
         if (err?.issues) {
@@ -49,7 +55,6 @@ ProductRouter.get("/", async (req: Request, res: Response) => {
         return ErrorJsonResponse(res, 500, "Failed to fetch product(s)");
     }
 });
-
 // // Get by category
 // ProductRouter.get("/category/:category", validationMiddleware(getProductsByCategoryParamsSchema, "params"), getProductsByCategoryController);
 
@@ -83,22 +88,21 @@ ProductRouter.post('/', validationMiddleware(createProductBodySchema, 'body'),
     }
 );
 
-/** DELETE /products/:productId */
-ProductRouter.delete('/:productId', validationMiddleware(deleteProductParamsSchema, 'params'),
-    async (req: Request, res: Response) => {
-        try {
-            const { productId } = req.params;
-            const ok = await ProductService.deleteProduct(String(productId));
+// /** DELETE /products/:productId */
+// ProductRouter.delete('/:productId', validationMiddleware(deleteProductParamsSchema, 'params'),
+//     async (req: Request, res: Response) => {
+//         try {
+//             const { productId } = req.params;
+//             const ok = await ProductService.deleteProduct(String(productId));
 
-            if (!ok) {
-                return ErrorJsonResponse(res, 404, `product ${productId} not found or delete failed`);
-            }
-            return SuccessJsonResponse(res, 200, { deleted: true, id: productId });
-        } catch (error) {
-            return ErrorJsonResponse(res, 500, 'Failed to delete product');
-        }
-    }
-);
-
+//             if (!ok) {
+//                 return ErrorJsonResponse(res, 404, `product ${productId} not found or delete failed`);
+//             }
+//             return SuccessJsonResponse(res, 200, { deleted: true, id: productId });
+//         } catch (error) {
+//             return ErrorJsonResponse(res, 500, 'Failed to delete product');
+//         }
+//     }
+// );
 
 export default ProductRouter
