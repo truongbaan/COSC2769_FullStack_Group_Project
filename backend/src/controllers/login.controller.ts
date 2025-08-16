@@ -1,9 +1,9 @@
 import * as z from "zod";
 import { Request, Response } from "express";
-import { signInUser } from "../../db/db";
-import { ErrorJsonResponse, SuccessJsonResponse } from "../../utils/json_mes";
-import { hasUnknownFields } from "../../utils/validation";
-import { UserService } from "../../service/user.service";
+import { signInUser } from "../db/db";
+import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes";
+import { hasUnknownFields } from "../utils/validation";
+import { UserService } from "../service/user.service";
 
 const allowedFieldForRegister = ['id', 'email', 'password', 'username', 'profile_picture', 'role', 'name', 'address', 'hub_id', 'business_name', 'business_address'];
 

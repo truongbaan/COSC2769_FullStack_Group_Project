@@ -8,11 +8,9 @@
 import { Router, Request, Response } from 'express';
 import { Product, ProductService } from '../service/products.service';
 import { ErrorJsonResponse, SuccessJsonResponse } from '../utils/json_mes';
-import { getProductByIdController, getProductByIdParamsSchema } from '../controllers/products/getProductById.controller';
+import { getProductByIdController, getProductByIdParamsSchema } from '../controllers/productController';
 import { validationMiddleware } from '../middleware/validation.middleware';
-import { createProductBodySchema } from '../controllers/products/createProduct.controller';
-import { deleteProductParamsSchema } from '../controllers/products/deleteProduct.controller';
-import { getProductsController, getProductsQuerrySchema } from '../controllers/products/getProducts.controller';
+import { getProductsController, getProductsQuerrySchema } from '../controllers/productController';
 import { id } from 'zod/v4/locales/index.cjs';
 
 const ProductRouter = Router();

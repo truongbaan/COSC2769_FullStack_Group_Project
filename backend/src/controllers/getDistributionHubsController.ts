@@ -7,8 +7,8 @@
 
 import * as z from "zod";
 import { Request, Response } from "express";
-import { DistributionHubService } from "../../service/distribution_hubs.service";
-import { ErrorJsonResponse, SuccessJsonResponse } from "../../utils/json_mes";
+import { DistributionHubService } from "../service/distribution_hubs.service";
+import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes";
 
 export const getAllHubsQuerrySchema = z.object({
     page: z.coerce.number().min(1).default(1),

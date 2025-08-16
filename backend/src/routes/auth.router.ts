@@ -15,7 +15,7 @@ import { Customer, CustomerService } from '../service/customer.service';
 import { Shipper, ShipperService } from '../service/shipper.service';
 import { Vendor, VendorService } from '../service/vendor.service';
 import { AuthService } from '../service/auth.service';
-import { loginBodySchema, loginController } from '../controllers/auth/login.controller';
+import { loginBodySchema, loginController } from '../controllers/login.controller';
 import { validationMiddleware } from '../middleware/validation.middleware';
 
 const authRouter = Router();

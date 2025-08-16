@@ -2,13 +2,13 @@
 # Course: COSC2769 - Full Stack Development 
 # Semester: 2025B 
 # Assessment: Assignment 02 
-# Author: 
-# ID:  */
+# Author: Nguyen Vo Truong Toan
+# ID: s3979056 */
 
 import * as z from "zod";
 import { Request, Response } from "express";
-import { ProductService } from "../../service/products.service";
-import { ErrorJsonResponse, SuccessJsonResponse } from "../../utils/json_mes";
+import { ProductService } from "../service/products.service";
+import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes";
 
 export const getProductsQuerrySchema = z.object({
     page: z.coerce.number().min(1).default(1),
@@ -20,7 +20,6 @@ export const getProductsQuerrySchema = z.object({
 }).strict();
 
 type GetProductsQuerryType = z.output<typeof getProductsQuerrySchema>;
-
 
 // Request < params type, response body, request body, request query
 export const getProductsController = async (req: Request, res: Response) => {
@@ -48,4 +47,24 @@ export const getProductsController = async (req: Request, res: Response) => {
     }
 };
 
+export const getProductByIdParamsSchema = z.object({
+    productId: z.string(),
+}).strict();
 
+type GetProductByIdParams = z.output<typeof getProductByIdParamsSchema>;
+
+export const getProductByIdController = async (req: Request, res: Response) => {
+    const { productId } = (req as unknown as Record<string, unknown> & { validatedparams: GetProductByIdParams }).validatedparams;
+
+    const product = await ProductService.getProductById(productId);
+
+    if (!product) {
+        return ErrorJsonResponse(res, 404, 'Product is not found');
+    }
+
+    return SuccessJsonResponse(res, 200, {
+        data: {
+            product
+        }
+    });
+}

@@ -6,7 +6,7 @@
 # ID:  */
 
 import { Router, Request, Response } from 'express';
-import { getAllDistributionHubsController, getAllHubsQuerrySchema } from '../controllers/distribution_hubs/getDistributionHubs.controller';
+import { getAllDistributionHubsController, getAllHubsQuerrySchema } from '../controllers/getDistributionHubsController';
 import { validationMiddleware } from '../middleware/validation.middleware';
 
 const DistributionHubRouter = Router();
