@@ -13,6 +13,7 @@ export type ProductsFilters = {
   category?: string;
   priceMin?: number;
   priceMax?: number;
+  name?: string;
 }
 
 export type Pagination = {
@@ -45,13 +46,11 @@ export const ProductService = {
       query.lte('price', filters?.priceMax); // WHERE price <= {max}
     }
 
-    const { data, error } = await query;
+    if (filters?.name) {
+      query.eq('name', filters?.name); // WHERE name = {name}
+    }
 
-    //DEBUG, will be remove
-    console.log("📊 Raw Supabase response:");
-    console.log("  - Data:", data);
-    console.log("  - Error:", error);
-    console.log("  - Data length:", data?.length);
+    const { data, error } = await query;
 
     if (error) {
       console.error("Error fetching product:", error);

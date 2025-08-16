@@ -23,29 +23,29 @@ ProductRouter.get("/", validationMiddleware(getProductsQuerrySchema, 'query'), g
 // Get product details by id
 ProductRouter.get("/:productId", validationMiddleware(getProductByIdParamsSchema, "params"), getProductByIdController);
 
-/** POST /products  (Add New Product) */
-ProductRouter.post('/', validationMiddleware(createProductBodySchema, 'body'),
-    async (req: Request, res: Response) => {
-        try {
-            const { name, price, image, description, category } = req.body;
+// /** POST /products  (Add New Product) */
+// ProductRouter.post('/', validationMiddleware(createProductBodySchema, 'body'),
+//     async (req: Request, res: Response) => {
+//         try {
+//             const { name, price, image, description, category } = req.body;
 
-            const created = await ProductService.createProduct({
-                name,
-                price,
-                image,
-                description,
-                category,
-            });
+//             const created = await ProductService.createProduct({
+//                 name,
+//                 price,
+//                 image,
+//                 description,
+//                 category,
+//             });
 
-            if (!created) {
-                return ErrorJsonResponse(res, 400, 'Failed to create product');
-            }
-            return SuccessJsonResponse(res, 201, created);
-        } catch (error) {
-            return ErrorJsonResponse(res, 500, 'Failed to create product');
-        }
-    }
-);
+//             if (!created) {
+//                 return ErrorJsonResponse(res, 400, 'Failed to create product');
+//             }
+//             return SuccessJsonResponse(res, 201, created);
+//         } catch (error) {
+//             return ErrorJsonResponse(res, 500, 'Failed to create product');
+//         }
+//     }
+// );
 
 // /** DELETE /products/:productId */
 // ProductRouter.delete('/:productId', validationMiddleware(deleteProductParamsSchema, 'params'),

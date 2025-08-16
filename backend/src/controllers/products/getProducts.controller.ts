@@ -14,21 +14,22 @@ export const getProductsQuerrySchema = z.object({
     page: z.coerce.number().min(1).default(1),
     size: z.coerce.number().min(1).max(30).default(10),
     category: z.string().trim().max(100).optional(),
-    priceMin: z.coerce.number().min(0).optional(), // 10000
-    priceMax: z.coerce.number().min(0).max(100000000).optional(), // 0
+    priceMin: z.coerce.number().min(0).optional(),
+    priceMax: z.coerce.number().min(0).max(100000000).optional(),
+    name: z.string().optional(),
 }).strict();
 
 type GetProductsQuerryType = z.output<typeof getProductsQuerrySchema>;
 
 
-// Request < params type, response body, request body, request query 
+// Request < params type, response body, request body, request query
 export const getProductsController = async (req: Request, res: Response) => {
     try {
-        const { page, size, category, priceMin, priceMax } = (req as unknown as Record<string, unknown> & { validatedquery: GetProductsQuerryType }).validatedquery;
+        const { page, size, category, priceMin, priceMax, name } = (req as unknown as Record<string, unknown> & { validatedquery: GetProductsQuerryType }).validatedquery;
 
         const products = await ProductService.getProducts(
             { page, size },
-            { category, priceMax, priceMin }
+            { category, priceMax, priceMin, name }
         );
 
         if (products === null) {
