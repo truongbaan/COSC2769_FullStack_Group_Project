@@ -10,6 +10,7 @@ import { Request, Response } from "express";
 import { signInUser } from "../db/db";
 import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes";
 import { UserService } from "../service/user.service";
+import { AuthService } from "../service/auth.service";
  
 //xin frontend nhá =))
 const usernameRegex = /^[A-Za-z0-9]{8,15}$/;
@@ -28,7 +29,7 @@ export const registerCustomerBodySchema = z.object({
     password: passwordSchema,
     username: usernameSchema,
     profile_picture: z.string().trim(),
-    role: z.literal("customer"),
+    // role: z.literal("customer"),
     address: z.string().trim(),
     name: z.string().trim()
 }).strict();
@@ -38,7 +39,7 @@ export const registerShipperBodySchema = z.object({
     password: passwordSchema,
     username: usernameSchema,
     profile_picture: z.string().trim(),
-    role: z.literal("shipper"),
+    // role: z.literal("shipper"),
     hub_id: z.string().trim()
 }).strict();
 
@@ -47,7 +48,7 @@ export const registerVendorBodySchema = z.object({
     password: passwordSchema,
     username: usernameSchema,
     profile_picture: z.string().trim(),
-    role: z.literal("shipper"),
+    // role: z.literal("vendor"),
     business_address: z.string().trim(),
     business_name: z.string().trim()
 }).strict();
@@ -95,15 +96,87 @@ export const loginController = async (req: Request, res: Response) => {
     }
 }
 
-export const registerCustomerController = async (req: Request, res: Response) => {
+export const registerCustomerController = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        const result = await AuthService.registerCustomer(req.body);
 
-}//not yet implement
+        if (!result.success) {
+            return ErrorJsonResponse(res, 400, result.error!);
+        }
+        //add cookies :>
+        addCookie(res, result.data!);
+        
+        return SuccessJsonResponse(res, 200, {
+            data: {
+                access_token: result.data!.access_token,
+                refresh_token: result.data!.refresh_token,
+                user: result.data!.user
+            }
+        });
+        
+    } catch (error) {
+        return ErrorJsonResponse(res, 500, 'Internal server error');
+    }
+};
 
-export const registerShipperController = async (req: Request, res: Response) => {
+export const registerShipperController = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        const result = await AuthService.registerShipper(req.body);
+        
+        if (!result.success) {
+            return ErrorJsonResponse(res, 400, result.error!);
+        }
+        
+        //add cookies :>
+        addCookie(res, result.data!);
+        
+        return SuccessJsonResponse(res, 200, {
+            data: {
+                access_token: result.data!.access_token,
+                refresh_token: result.data!.refresh_token,
+                user: result.data!.user
+            }
+        });
+        
+    } catch (error) {
+        return ErrorJsonResponse(res, 500, 'Internal server error');
+    }
+};
 
-}//not yet implement
+export const registerVendorController = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        const result = await AuthService.registerVendor(req.body);
 
-export const registerVendorController = async (req: Request, res: Response) => {
+        if (!result.success) {
+            return ErrorJsonResponse(res, 400, result.error!);
+        }
+        
+        addCookie(res, result.data!);
+        
+        return SuccessJsonResponse(res, 200, {
+            data: {
+                access_token: result.data!.access_token,
+                refresh_token: result.data!.refresh_token,
+                user: result.data!.user
+            }
+        });
+        
+    } catch (error) {
+        return ErrorJsonResponse(res, 500, 'Internal server error');
+    }
+};
 
-}//not yet implement
-
+//for adding of all cookies when signUp or signIn
+function addCookie(res : Response, session : any){
+    res.cookie('access_token', session.access_token, {
+            httpOnly: true,
+            secure: process.env.PRODUCTION_SITE === 'true', // http or https
+            path: '/',
+    })
+    
+    res.cookie('refresh_token', session.refresh_token, {
+        httpOnly: true,
+        secure: process.env.PRODUCTION_SITE === 'true', // http or https
+        path: '/',
+    })
+}
