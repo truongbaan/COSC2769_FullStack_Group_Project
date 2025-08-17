@@ -9,12 +9,20 @@ const PORT = 5000
 import express from 'express';
 import apiRouter from './routes/router';
 import cookieParser from 'cookie-parser';
-
+import cors from "cors";
 
 const app = express()
 
 //for cookies :D
 app.use(cookieParser())
+
+app.use(
+  cors({
+    origin: true, // Allow all origins
+    credentials: true,
+  })
+);
+
 
 // Middleware to parse JSON bodies
 app.use(express.json());
