@@ -14,6 +14,7 @@ import ProductRouter from './products.router';
 import { requireAuth } from '../middleware/requireAuth';
 import DistributionHubRouter from './distribution_hubs.router';
 import OrderRouter from './orders.router';
+import ShoppingCartRouter from './shopping_cart_items.router';
 const apiRouter = Router();
 
 apiRouter.use('/auth', authRouter);
@@ -25,4 +26,6 @@ apiRouter.use("/products", requireAuth("customer"), ProductRouter);
 apiRouter.use("/distribution-hubs", requireAuth(), DistributionHubRouter);
 
 apiRouter.use("/orders", requireAuth("shipper"), OrderRouter);
+
+apiRouter.use("/cart", requireAuth("customer"), ShoppingCartRouter);
 export default apiRouter;
