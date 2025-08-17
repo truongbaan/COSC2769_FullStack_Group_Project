@@ -8,7 +8,15 @@
 import { type Request, type Response, type NextFunction } from 'express'
 import { ErrorJsonResponse } from "../utils/json_mes"
 import { supabase } from "../db/db"
-import { UserService } from '../service/user.service'
+import { User, UserService } from '../service/user.service'
+
+declare global {
+  namespace Express {
+    interface Request {
+      user_id: string; 
+    }
+  }
+}
 
 export function requireAuth(role: string = '') {
     return async (req: Request, res: Response, next: NextFunction) => {
@@ -22,6 +30,7 @@ export function requireAuth(role: string = '') {
         if (error || !data.user) {
             return ErrorJsonResponse(res, 401, 'Unauthorized: Invalid token')
         }
+        
         if (role) {
             const user = await UserService.getUserById(data.user.id, false)
             if(!user){
@@ -30,6 +39,7 @@ export function requireAuth(role: string = '') {
             if (user.role !== role) {
                 return ErrorJsonResponse(res, 401, `Unauthorized: only role ${role} can modify this table`)
             }
+            req.user_id = user.id//return user_id field for other controller uses
         }
         next();
     };
