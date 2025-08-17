@@ -7,11 +7,13 @@
 
 import { Router, Request, Response } from 'express';
 import { validationMiddleware } from '../middleware/validation.middleware';
-import { getOrdersController, getOrdersQuerrySchema } from '../controllers/orderController';
+import { getOrdersController, getOrdersQuerrySchema, updateOrderStatusController } from '../controllers/orderController';
 
 
 const OrderRouter = Router();
-
+//get all the orders of the shipper from the specific distribution hub
 OrderRouter.get("/", validationMiddleware(getOrdersQuerrySchema, 'query'), getOrdersController);
 
+//update the satus of the order
+OrderRouter.put("/:id/status", validationMiddleware(getOrdersQuerrySchema, 'query'), updateOrderStatusController);
 export default OrderRouter

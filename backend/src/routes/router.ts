@@ -17,9 +17,12 @@ import OrderRouter from './orders.router';
 const apiRouter = Router();
 
 apiRouter.use('/auth', authRouter);
+
 apiRouter.use('/users', requireAuth(), UserRouter);
+
 apiRouter.use("/products", requireAuth("customer"), ProductRouter);
+
 apiRouter.use("/distribution-hubs", requireAuth(), DistributionHubRouter);
 
-apiRouter.use('/orders', requireAuth("shipper"), OrderRouter);
+apiRouter.use("/orders", requireAuth("shipper"), OrderRouter);
 export default apiRouter;
