@@ -8,11 +8,14 @@
 import { Router, Request, Response } from 'express';
 import { validationMiddleware } from '../middleware/validation.middleware';
 import { get } from 'http';
-import { getCartQuerrySchema, getCartController } from '../controllers/shoppingCartController';
+import { getCartQuerrySchema, getCartController, deleteByIdParamsSchema, deleteCartItemByIdController } from '../controllers/shoppingCartController';
+import { de } from 'zod/v4/locales/index.cjs';
 
 const ShoppingCartRouter = Router();
 
 //view the shopping cart of the customer
 ShoppingCartRouter.get("/", validationMiddleware(getCartQuerrySchema, 'query'), getCartController);
 
+//delete the product in shoppping cart by id
+ShoppingCartRouter.delete("/item/:id", validationMiddleware(deleteByIdParamsSchema, 'params'), deleteCartItemByIdController);
 export default ShoppingCartRouter;

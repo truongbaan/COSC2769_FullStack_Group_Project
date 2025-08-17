@@ -38,6 +38,16 @@ export const ShoppingCartService = {
     }
     return data ?? null;
   },
+  async deleteItemById(id: string, customerId: string): Promise<boolean> {
+    //delete by product_id and customer_id (verify the customer)
+    const { data, error } = await supabase
+      .from("shopping_carts")
+      .delete()
+      .eq("product_id", id)
+      .eq("customer_id", customerId)
+      .select("id");             // trả về mảng id đã xóa
 
-  
+    if (error) throw error;
+    return (data?.length ?? 0) > 0;
+  },
 };

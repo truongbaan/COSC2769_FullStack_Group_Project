@@ -39,3 +39,25 @@ export const getCartController = async (req: Request, res: Response) => {
     return ErrorJsonResponse(res, 500, "Unexpected error while fetching cart")
   }
 }
+
+
+// Delete cart item by id
+export const deleteByIdParamsSchema = z.object({
+  id: z.string().min(1),
+}).strict();
+
+export async function deleteCartItemByIdController(req: Request, res: Response) {
+  try {
+    const { id } = deleteByIdParamsSchema.parse(req.params);
+    const userId = req.user_id; //user_id of customer
+
+    
+    const deleted = await ShoppingCartService.deleteItemById(id, userId);
+    if (!deleted) return ErrorJsonResponse(res, 404, "Cart item not found");
+
+    return SuccessJsonResponse(res, 200, { data: { deleted: true, id } });
+  } catch (err: any) {
+    const msg = err?.message?.startsWith("Unauthorized") ? err.message : "Failed to delete cart item";
+    return ErrorJsonResponse(res, msg.startsWith("Unauthorized") ? 401 : 500, msg);
+  }
+}
