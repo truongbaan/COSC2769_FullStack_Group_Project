@@ -145,7 +145,7 @@ export interface Database {
                 }
             }
 
-            shopping_cart: { // this will store for not items not bought and in cart
+            shopping_carts: { // this will store for not items not bought and in cart
                 Row: {
                     id: string
                     customer_id: string // from customer
