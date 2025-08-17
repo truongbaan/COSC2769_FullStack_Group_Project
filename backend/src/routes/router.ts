@@ -21,7 +21,7 @@ apiRouter.use('/auth', authRouter);
 
 apiRouter.use('/users', requireAuth(), UserRouter);
 
-apiRouter.use("/products", requireAuth("customer"), ProductRouter);
+apiRouter.use("/products", requireAuth("vendor"), ProductRouter);
 
 apiRouter.use("/distribution-hubs", requireAuth(), DistributionHubRouter);
 

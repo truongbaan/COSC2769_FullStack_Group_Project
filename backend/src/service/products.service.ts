@@ -5,9 +5,22 @@
 # Author: 
 # ID: */
 
+import z from "zod";
+import { createProductParamsSchema } from "../controllers/productController";
 import { supabase, Database } from "../db/db";
 
-export type Product = Database["public"]["Tables"]["products"]["Row"];
+import generateUUID from "../utils/generator";
+
+//Dùng "Row" để trả về
+export type ProductRow = Database["public"]["Tables"]["products"]["Row"];
+
+//Dùng "Insert" để tạo data
+export type ProductInsert = Database["public"]["Tables"]["products"]["Insert"];
+
+export type CreateProductInput = z.infer<typeof createProductParamsSchema>;
+
+export type ProductInsertNoId = Omit<ProductInsert, "id">;
+
 
 export type ProductsFilters = {
   category?: string;
@@ -25,7 +38,7 @@ export const ProductService = {
   async getProducts(
     { page, size }: Pagination,
     filters?: ProductsFilters,
-  ): Promise<Product[] | null> {
+  ): Promise<ProductRow[] | null> {
     const offset = (page - 1) * size;
 
     const query = supabase
@@ -66,7 +79,7 @@ export const ProductService = {
   },
 
   //Get Product By Id
-  async getProductById(id: string): Promise<Product | null> {
+  async getProductById(id: string): Promise<ProductRow | null> {
     const { data, error } = await supabase
       .from("products")
       .select("*")
@@ -83,51 +96,20 @@ export const ProductService = {
     return data || null;
   },
 
-  async createProduct(product: {
-    name: string;
-    price: number;
-    image: string;
-    description: string;
-    category?: string;
-    id?: string;              // random
-  }): Promise<Product | null> {
-    // Validate
-    if (product.name.length < 10 || product.name.length > 20) {
-      console.error("Name must be 10–20 characters.");
-      return null;
-    }
-    if (product.price <= 0) {
-      console.error("Price must be a positive number.");
-      return null;
-    }
-    if (product.description && product.description.length > 500) {
-      console.error("Description must be at most 500 characters.");
-      return null;
-    }
-
-    // Generate ID if not injected
-    const id =
-      product.id ??
-      (globalThis.crypto?.randomUUID
-        ? globalThis.crypto.randomUUID()
-        : require("crypto").randomUUID()); // fallback for Node
+  async createProduct(product: ProductInsertNoId): Promise<ProductRow | null> {
+    const toInsert: ProductInsert = { ...product, id: generateUUID() };
 
     const { data, error } = await supabase
-      .from("products")
-      .insert({
-        name: product.name,
-        price: product.price,
-        image: product.image,
-        description: product.description || null
-      })
+      .from('products')
+      .insert(toInsert)
       .select()
-      .maybeSingle();
+      .single();
 
     if (error || !data) {
-      console.error("Error creating product:", error);
+      console.error('Error creating product:', error);
       return null;
     }
 
-    return data as Product;
+    return data;
   },
 };
