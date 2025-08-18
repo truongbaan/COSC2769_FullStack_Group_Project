@@ -5,23 +5,45 @@
 # Author: 
 # ID:  */
 
-import { Router, Request, Response } from 'express';
-import { ProductRow, ProductService } from '../service/products.service';
-import { ErrorJsonResponse, SuccessJsonResponse } from '../utils/json_mes';
-import { createProductController, createProductParamsSchema, getProductByIdController, getProductByIdParamsSchema } from '../controllers/productController';
-import { validationMiddleware } from '../middleware/validation.middleware';
-import { getProductsController, getProductsQuerrySchema } from '../controllers/productController';
-import { id } from 'zod/v4/locales/index.cjs';
+import { Router, Request, Response } from "express";
+import { ProductRow, ProductService } from "../service/products.service";
+import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes";
+import {
+  createProductController,
+  createProductParamsSchema,
+  getProductByIdController,
+  getProductByIdParamsSchema,
+} from "../controllers/productController";
+import { validationMiddleware } from "../middleware/validation.middleware";
+import {
+  getProductsController,
+  getProductsQuerrySchema,
+} from "../controllers/productController";
+import { requireAuth } from "../middleware/requireAuth";
+import { id } from "zod/v4/locales/index.cjs";
 
 const ProductRouter = Router();
 
 // Get products with pagination and fitlers
-ProductRouter.get("/", validationMiddleware(getProductsQuerrySchema, 'query'), getProductsController);
+ProductRouter.get(
+  "/",
+  validationMiddleware(getProductsQuerrySchema, "query"),
+  getProductsController
+);
 
-ProductRouter.post("/create", validationMiddleware(createProductParamsSchema, 'body'), createProductController);
+ProductRouter.post(
+  "/create",
+  requireAuth("vendor"),
+  validationMiddleware(createProductParamsSchema, "body"),
+  createProductController
+);
 
 // Get product details by id
-ProductRouter.get("/:productId", validationMiddleware(getProductByIdParamsSchema, "params"), getProductByIdController);
+ProductRouter.get(
+  "/:productId",
+  validationMiddleware(getProductByIdParamsSchema, "params"),
+  getProductByIdController
+);
 
 // /** POST /products  (Add New Product) */
 // ProductRouter.post('/', validationMiddleware(createProductBodySchema, 'body'),
@@ -64,4 +86,4 @@ ProductRouter.get("/:productId", validationMiddleware(getProductByIdParamsSchema
 //     }
 // );
 
-export default ProductRouter
+export default ProductRouter;
