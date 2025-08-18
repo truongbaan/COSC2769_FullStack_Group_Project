@@ -1,4 +1,10 @@
-// src/controllers/shoppingCart.controller.ts
+/* RMIT University Vietnam 
+# Course: COSC2769 - Full Stack Development 
+# Semester: 2025B 
+# Assessment: Assignment 02 
+# Author: Nguyen The Anh
+# ID: s3975844*/
+
 import { z } from "zod"
 import { type Request, type Response } from "express"
 import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes"

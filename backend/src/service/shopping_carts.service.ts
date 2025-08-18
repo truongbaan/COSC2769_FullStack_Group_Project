@@ -1,3 +1,9 @@
+/* RMIT University Vietnam 
+# Course: COSC2769 - Full Stack Development 
+# Semester: 2025B 
+# Assessment: Assignment 02 
+# Author: Nguyen The Anh
+# ID: s3975844*/
 import { supabase, Database } from "../db/db";
 
 export type Pagination = { page: number; size: number };
