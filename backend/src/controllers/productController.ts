@@ -7,8 +7,10 @@
 
 import * as z from "zod";
 import { Request, Response } from "express";
-import { ProductService } from "../service/products.service";
+import { ProductInsert, ProductInsertNoId, ProductService } from "../service/products.service";
 import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes";
+import generateUUID from "../utils/generator";
+
 export const getProductsQuerrySchema = z.object({
     page: z.coerce.number().min(1).default(1),
     size: z.coerce.number().min(1).max(30).default(10),
@@ -17,6 +19,7 @@ export const getProductsQuerrySchema = z.object({
     priceMax: z.coerce.number().min(0).max(100000000).optional(),
     name: z.string().optional(),
 }).strict();
+
 
 type GetProductsQuerryType = z.output<typeof getProductsQuerrySchema>;
 
@@ -67,3 +70,35 @@ export const getProductByIdController = async (req: Request, res: Response) => {
         }
     });
 }
+
+export const createProductParamsSchema = z.object({
+    name: z.string().trim(),
+    price: z.coerce.number().min(0),
+    description: z.string().trim(),
+    image: z.string().trim(),
+    category: z.string().trim().min(1),
+    instock: z.coerce.boolean(),
+}).strict();
+
+declare global {
+    namespace Express {
+        interface Request {
+            validatedbody?: {
+                name: string; price: number; description: string;
+                image: string; category: string; instock: boolean;
+            };
+        }
+    }
+}
+
+export const createProductController = async (req: Request, res: Response) => {
+    const vendorId = req.user_id;
+    if (!vendorId) return res.status(401).json({ message: "Unauthorized" });
+
+    const body = req.validatedbody!; // do middleware set
+    const payload: ProductInsertNoId = { vendor_id: vendorId, ...body };
+
+    const created = await ProductService.createProduct(payload);
+    if (!created) return res.status(500).json({ message: "Failed to create product" });
+    return res.status(201).json({ data: { product: created } });
+};

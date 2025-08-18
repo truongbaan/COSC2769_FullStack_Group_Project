@@ -5,9 +5,22 @@
 # Author: 
 # ID: */
 
+import z from "zod";
+import { createProductParamsSchema } from "../controllers/productController";
 import { supabase, Database } from "../db/db";
 
-export type Product = Database["public"]["Tables"]["products"]["Row"];
+import generateUUID from "../utils/generator";
+
+//Dùng "Row" để trả về
+export type ProductRow = Database["public"]["Tables"]["products"]["Row"];
+
+//Dùng "Insert" để tạo data
+export type ProductInsert = Database["public"]["Tables"]["products"]["Insert"];
+
+export type CreateProductInput = z.infer<typeof createProductParamsSchema>;
+
+export type ProductInsertNoId = Omit<ProductInsert, "id">;
+
 
 export type ProductsFilters = {
   category?: string;
@@ -25,7 +38,7 @@ export const ProductService = {
   async getProducts(
     { page, size }: Pagination,
     filters?: ProductsFilters,
-  ): Promise<Product[] | null> {
+  ): Promise<ProductRow[] | null> {
     const offset = (page - 1) * size;
 
     const query = supabase
@@ -66,7 +79,7 @@ export const ProductService = {
   },
 
   //Get Product By Id
-  async getProductById(id: string): Promise<Product | null> {
+  async getProductById(id: string): Promise<ProductRow | null> {
     const { data, error } = await supabase
       .from("products")
       .select("*")
@@ -81,5 +94,22 @@ export const ProductService = {
     }
 
     return data || null;
+  },
+
+  async createProduct(product: ProductInsertNoId): Promise<ProductRow | null> {
+    const toInsert: ProductInsert = { ...product, id: generateUUID() };
+
+    const { data, error } = await supabase
+      .from('products')
+      .insert(toInsert)
+      .select()
+      .single();
+
+    if (error || !data) {
+      console.error('Error creating product:', error);
+      return null;
+    }
+
+    return data;
   },
 };
