@@ -45,18 +45,18 @@ export interface Database {
                 // .update() in table 'users'
                 Update: {
                     password: string
-                    profile_picture: string                    
+                    profile_picture: string
                 }
             }
 
             distribution_hubs: {
                 Row: {
-                    id: string 
+                    id: string
                     name: string
                     address: string
                 }
                 Insert: {
-                    id: string 
+                    id: string
                     name: string
                     address: string
                 }
@@ -74,11 +74,11 @@ export interface Database {
                 }
                 Insert: {
                     id: string // from users id
-                    businessname: string
+                    business_name: string
                     business_address: string
                 }
                 Update: {
-                    businessname: string
+                    business_name: string
                     business_address: string
                 }
             }
@@ -116,7 +116,7 @@ export interface Database {
 
             products: {
                 Row: {
-                    id: string 
+                    id: string
                     vendor_id: string // from vendor->id
                     name: string
                     price: number
@@ -126,7 +126,7 @@ export interface Database {
                     instock: boolean
                 }
                 Insert: {
-                    id: string 
+                    id: string
                     vendor_id: string // from vendor->id
                     name: string
                     price: number
@@ -145,7 +145,7 @@ export interface Database {
                 }
             }
 
-            shopping_cart: { // this will store for not items not bought and in cart
+            shopping_carts: { // this will store for not items not bought and in cart
                 Row: {
                     id: string
                     customer_id: string // from customer
@@ -165,14 +165,14 @@ export interface Database {
 
             orders: {
                 Row: {
-                    id: string 
+                    id: string
                     customer_id: string
                     hub_id: string
                     status: string
                     total_price: number
                 }
                 Insert: {
-                    id: string 
+                    id: string
                     customer_id: string
                     hub_id: string
                     status: string

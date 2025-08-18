@@ -8,21 +8,39 @@
 import { type Request, type Response, type NextFunction } from 'express'
 import { ErrorJsonResponse } from "../utils/json_mes"
 import { supabase } from "../db/db"
+import { User, UserService } from '../service/user.service'
 
-export async function requireAuth(req: Request, res: Response, next: NextFunction) {
-    const token = req.cookies.access_token
-    console.log('Access token:', token)
-    if (!token) {
-        return ErrorJsonResponse(res, 401, 'No token provided')
+declare global {
+  namespace Express {
+    interface Request {
+      user_id: string; 
     }
-    
-    // Verify token with Supabase
-    const { data, error } = await supabase.auth.getUser(token)
-    if (error || !data.user) {
-        return ErrorJsonResponse(res, 401, 'Unauthorized: Invalid token')
-    }
-    
-    // Attach user info to request if needed
-    ; (req as any).user = data.user
-    next()
+  }
+}
+
+export function requireAuth(role: string = '') {
+    return async (req: Request, res: Response, next: NextFunction) => {
+        const token = req.cookies.access_token
+        if (!token) {
+            return ErrorJsonResponse(res, 401, 'No token provided')
+        }
+
+        // Verify token with Supabase
+        const { data, error } = await supabase.auth.getUser(token)
+        if (error || !data.user) {
+            return ErrorJsonResponse(res, 401, 'Unauthorized: Invalid token')
+        }
+        
+        if (role) {
+            const user = await UserService.getUserById(data.user.id, false)
+            if(!user){
+                return ErrorJsonResponse(res, 404, 'Unknown user in database but in valid in authen! PLEASE delete that user from authen!')
+            }
+            if (user.role !== role) {
+                return ErrorJsonResponse(res, 401, `Unauthorized: only role ${role} can modify this table`)
+            }
+            req.user_id = user.id//return user_id field for other controller uses
+        }
+        next();
+    };
 }

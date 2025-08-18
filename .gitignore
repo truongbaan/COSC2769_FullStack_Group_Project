@@ -6,6 +6,7 @@
 
 # build
 frontend/build/
+**/dist/
 
 # log
 *.log

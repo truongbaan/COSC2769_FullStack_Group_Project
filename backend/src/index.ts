@@ -5,12 +5,13 @@
 # Author: Truong Ba An
 # ID: s3999568 */
 
-const PORT = 5000;
-import express from "express";
-import apiRouter from "./routes/router";
-import cookieParser from "cookie-parser";
+const PORT = 5000
+import express from 'express';
+import apiRouter from './routes/router';
+import cookieParser from 'cookie-parser';
 import cors from "cors";
-const app = express();
+
+const app = express()
 
 //for cookies :D
 app.use(cookieParser());
@@ -21,6 +22,14 @@ app.use(
     credentials: true,
   })
 );
+
+app.use(
+  cors({
+    origin: true, // Allow all origins
+    credentials: true,
+  })
+);
+
 
 // Middleware to parse JSON bodies
 app.use(express.json());
