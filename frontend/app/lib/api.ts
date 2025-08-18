@@ -35,10 +35,10 @@ export function mockGetCart(userId: string) {
 export function mockSyncCart(userId: string, cartData: any) {
   // Validate cart data
   const validatedData = cartSyncSchema.parse(cartData);
-  
+
   // Save cart to mock storage
   mockCartStorage.set(userId, validatedData.items);
-  
+
   return {
     success: true,
     message: "Cart synced successfully",
@@ -73,7 +73,7 @@ async function request<T>(
 }
 
 // API endpoints (local mock uses /api-test; /api reserved for real backend)
-const API_BASE = "/api-test"; // you can swap to an env-based URL later
+const API_BASE = "http://localhost:5000/api"; // you can swap to an env-based URL later
 
 // Products
 export async function fetchProducts(): Promise<ProductDto[]> {
@@ -133,34 +133,65 @@ export async function loginApi(
     body: JSON.stringify(credentials),
   });
 }
-
+// Fix customer registration
 export async function registerCustomerApi(
   data: z.infer<typeof customerRegistrationSchema>
 ): Promise<{ success: boolean }> {
+  // Add missing profile_picture field that backend expects
+  const transformedData = {
+    email: data.email,
+    username: data.username,
+    password: data.password,
+    name: data.name,
+    address: data.address,
+    profile_picture: null, // Backend expects this field
+  };
+
   return request(
     `${API_BASE}/auth/register/customer`,
     z.object({ success: z.boolean() }),
-    { method: "POST", body: JSON.stringify(data) }
+    { method: "POST", body: JSON.stringify(transformedData) }
   );
 }
 
+// Fix vendor registration
 export async function registerVendorApi(
   data: z.infer<typeof vendorRegistrationSchema>
 ): Promise<{ success: boolean }> {
+  // Transform field names to match backend expectations
+  const transformedData = {
+    email: data.email,
+    username: data.username,
+    password: data.password,
+    business_name: data.businessName, // camelCase → snake_case
+    business_address: data.businessAddress, // camelCase → snake_case
+    profile_picture: null, // Backend expects this field
+  };
+
   return request(
     `${API_BASE}/auth/register/vendor`,
     z.object({ success: z.boolean() }),
-    { method: "POST", body: JSON.stringify(data) }
+    { method: "POST", body: JSON.stringify(transformedData) }
   );
 }
 
+// Fix shipper registration
 export async function registerShipperApi(
   data: z.infer<typeof shipperRegistrationSchema>
 ): Promise<{ success: boolean }> {
+  // Transform field names to match backend expectations
+  const transformedData = {
+    email: data.email,
+    username: data.username,
+    password: data.password,
+    hub_id: data.hub, // hub → hub_id
+    profile_picture: null, // Backend expects this field
+  };
+
   return request(
     `${API_BASE}/auth/register/shipper`,
     z.object({ success: z.boolean() }),
-    { method: "POST", body: JSON.stringify(data) }
+    { method: "POST", body: JSON.stringify(transformedData) }
   );
 }
 
@@ -184,7 +215,7 @@ export async function deleteVendorProductApi(
   vendorId: string
 ): Promise<{ success: boolean; message?: string; productId?: string }> {
   const url = `${API_BASE}/vendor/products?productId=${encodeURIComponent(productId)}&vendorId=${encodeURIComponent(vendorId)}`;
-  
+
   const response = await fetch(url, {
     method: "DELETE",
     headers: {
@@ -201,7 +232,7 @@ export async function deleteVendorProductApi(
   const schema = z.object({
     success: z.boolean(),
     message: z.string().optional(),
-    productId: z.string().optional()
+    productId: z.string().optional(),
   });
 
   const parsed = schema.safeParse(data);
@@ -222,14 +253,14 @@ export async function editVendorProductApi(
     description: string;
     image?: string;
   }
-): Promise<{ 
-  success: boolean; 
-  message?: string; 
+): Promise<{
+  success: boolean;
+  message?: string;
   productId?: string;
   updatedProduct?: any;
 }> {
   const url = `${API_BASE}/vendor/products?productId=${encodeURIComponent(productId)}&vendorId=${encodeURIComponent(vendorId)}`;
-  
+
   const response = await fetch(url, {
     method: "PUT",
     headers: {
@@ -248,7 +279,7 @@ export async function editVendorProductApi(
     success: z.boolean(),
     message: z.string().optional(),
     productId: z.string().optional(),
-    updatedProduct: z.any().optional()
+    updatedProduct: z.any().optional(),
   });
 
   const parsed = schema.safeParse(data);
@@ -263,18 +294,18 @@ export async function editVendorProductApi(
 export async function placeOrderApi(payload: {
   items: Array<{ productId: string; quantity: number; price: number }>;
   total: number;
-}): Promise<{ 
-  success: boolean; 
-  orderId?: string; 
-  message?: string; 
-  total?: number; 
+}): Promise<{
+  success: boolean;
+  orderId?: string;
+  message?: string;
+  total?: number;
   itemCount?: number;
   error?: string;
   details?: any;
 }> {
   return request(
     `${API_BASE}/orders/checkout`,
-    z.object({ 
+    z.object({
       success: z.boolean(),
       orderId: z.string().optional(),
       message: z.string().optional(),
@@ -288,33 +319,35 @@ export async function placeOrderApi(payload: {
 }
 
 // Profile image upload
-export async function uploadProfileImageApi(file: File): Promise<{ 
-  success: boolean; 
-  imageUrl?: string; 
+export async function uploadProfileImageApi(file: File): Promise<{
+  success: boolean;
+  imageUrl?: string;
 }> {
   const formData = new FormData();
-  formData.append('profileImage', file);
-  
+  formData.append("profileImage", file);
+
   const res = await fetch(`${API_BASE}/profile/upload-image`, {
     method: "POST",
     body: formData,
   });
-  
+
   if (!res.ok) {
     const text = await res.text().catch(() => "");
     throw new Error(`API ${res.status}: ${text || res.statusText}`);
   }
-  
+
   const data = await res.json();
-  const parsed = z.object({ 
-    success: z.boolean(), 
-    imageUrl: z.string().optional() 
-  }).safeParse(data);
-  
+  const parsed = z
+    .object({
+      success: z.boolean(),
+      imageUrl: z.string().optional(),
+    })
+    .safeParse(data);
+
   if (!parsed.success) {
     throw new Error(parsed.error.message);
   }
-  
+
   return parsed.data;
 }
 
@@ -340,12 +373,15 @@ export async function fetchCartApi(userId: string): Promise<{
   lastUpdated?: string;
   error?: string;
 }> {
-  const res = await fetch(`${API_BASE}/cart?userId=${encodeURIComponent(userId)}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+  const res = await fetch(
+    `${API_BASE}/cart?userId=${encodeURIComponent(userId)}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");
@@ -362,35 +398,41 @@ export async function fetchCartApi(userId: string): Promise<{
   return parsed.data;
 }
 
-export async function syncCartApi(userId: string, items: Array<{
-  product: {
-    id: string;
-    name: string;
-    price: number;
-    description: string;
-    imageUrl: string;
-    vendorId: string;
-    vendorName: string;
-    category: string;
-    inStock: boolean;
-    rating: number;
-    reviewCount: number;
-  };
-  quantity: number;
-}>): Promise<{
+export async function syncCartApi(
+  userId: string,
+  items: Array<{
+    product: {
+      id: string;
+      name: string;
+      price: number;
+      description: string;
+      imageUrl: string;
+      vendorId: string;
+      vendorName: string;
+      category: string;
+      inStock: boolean;
+      rating: number;
+      reviewCount: number;
+    };
+    quantity: number;
+  }>
+): Promise<{
   success: boolean;
   message?: string;
   itemCount?: number;
   lastUpdated?: string;
   error?: string;
 }> {
-  const res = await fetch(`${API_BASE}/cart?userId=${encodeURIComponent(userId)}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ items }),
-  });
+  const res = await fetch(
+    `${API_BASE}/cart?userId=${encodeURIComponent(userId)}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ items }),
+    }
+  );
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");
