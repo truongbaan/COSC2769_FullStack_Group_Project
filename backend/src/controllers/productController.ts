@@ -9,7 +9,6 @@ import * as z from "zod";
 import { Request, Response } from "express";
 import { ProductService } from "../service/products.service";
 import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes";
-
 export const getProductsQuerrySchema = z.object({
     page: z.coerce.number().min(1).default(1),
     size: z.coerce.number().min(1).max(30).default(10),
