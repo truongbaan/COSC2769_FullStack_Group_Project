@@ -8,6 +8,7 @@
 import { supabase, Database } from "../db/db"
 
 export type Shipper = Database['public']['Tables']['shippers']['Row']
+type ShipperUpdate = Database['public']['Tables']['shippers']['Update']
 
 export const ShipperService = {
     /** Fetch all Shippers*/
@@ -75,17 +76,21 @@ export const ShipperService = {
         return data;
     },
 
-    async deleteShipper(id : string): Promise<boolean>{
-        const { error } = await supabase
-            .from('shippers')
-            .delete()
-            .eq('id', id)
+    // async deleteShipper(id : string): Promise<boolean>{
+    //     const { error } = await supabase
+    //         .from('shippers')
+    //         .delete()
+    //         .eq('id', id)
         
-        if (error) {
-            console.error(`Error deleting shipper ${id}:`, error)
-            return false
-        }
+    //     if (error) {
+    //         console.error(`Error deleting shipper ${id}:`, error)
+    //         return false
+    //     }
         
+    //     return true
+    // },
+
+    async updateShipper({hub_id} : ShipperUpdate) : Promise<boolean>{
         return true
     }
 }

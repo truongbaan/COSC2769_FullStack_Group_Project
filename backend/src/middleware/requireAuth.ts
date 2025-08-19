@@ -39,8 +39,8 @@ export function requireAuth(role: string = '') {
             if (user.role !== role) {
                 return ErrorJsonResponse(res, 401, `Unauthorized: only role ${role} can modify this table`)
             }
-            req.user_id = user.id//return user_id field for other controller uses
         }
+        req.user_id = data.user.id//return user_id field for other controller uses
         next();
     };
 }
