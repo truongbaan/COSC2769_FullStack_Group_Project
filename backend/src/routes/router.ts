@@ -9,7 +9,8 @@
 
 import { Router } from 'express';
 import authRouter from './auth.router';
-import UserRouter from './user.router'
+import UserRouter from './user.router';
+import CustomerRouter from './customer.router'
 import ProductRouter from './products.router';
 import { requireAuth } from '../middleware/requireAuth';
 import DistributionHubRouter from './distribution_hubs.router';
@@ -20,6 +21,8 @@ const apiRouter = Router();
 apiRouter.use('/auth', authRouter);
 
 apiRouter.use('/users', requireAuth(), UserRouter);
+
+apiRouter.use('/customers', CustomerRouter);
 
 apiRouter.use("/products", requireAuth("vendor"), ProductRouter);
 

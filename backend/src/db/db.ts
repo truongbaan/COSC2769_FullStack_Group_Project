@@ -297,11 +297,13 @@ export async function changePassword(newPassword: string): Promise<boolean> {
     return true;
 }
 
-export async function uploadImage(file: File, userId: string): Promise<string | null> {
+type Storage = 'profileimages' | 'productsimages'
+
+export async function uploadImage(file: File, userId: string, storage : Storage): Promise<string | null> {
     const filePath = `${userId}/${Date.now()}-${file.name}`
 
     const { data, error } = await supabase.storage
-        .from('images') // bucket name
+        .from(storage) // bucket name
         .upload(filePath, file)
 
     if (error) {
@@ -312,17 +314,17 @@ export async function uploadImage(file: File, userId: string): Promise<string | 
     return filePath // store this in users.profile_picture or products.image
 }
 
-export function getPublicImageUrl(filePath: string): string {
+export function getPublicImageUrl(filePath: string, storage : Storage): string {//could return broken url due to unknown, FE careful!
     const { data } = supabase.storage
-        .from('images')
+        .from(storage)
         .getPublicUrl(filePath)
 
     return data.publicUrl
 }
 
-export async function deleteImage(filePath: string): Promise<boolean> {
+export async function deleteImage(filePath: string, storage : Storage): Promise<boolean> {
     const { error } = await supabase.storage
-        .from('images')
+        .from(storage)
         .remove([filePath])
 
     if (error) {
