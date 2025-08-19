@@ -8,6 +8,7 @@
 import { supabase, Database } from "../db/db"
 
 export type Vendor = Database['public']['Tables']['vendors']['Row']
+type VendorUpdate = Database['public']['Tables']['vendors']['Update']
 
 export const VendorService = {
     /** Fetch all Vendors*/
@@ -78,17 +79,21 @@ export const VendorService = {
         return data;
     },
 
-    async deleteVendor(id : string): Promise<boolean>{
-        const { error } = await supabase
-            .from('vendors')
-            .delete()
-            .eq('id', id)
+    // async deleteVendor(id : string): Promise<boolean>{
+    //     const { error } = await supabase
+    //         .from('vendors')
+    //         .delete()
+    //         .eq('id', id)
 
-        if (error) {
-            console.error(`Error deleting vendor ${id}:`, error)
-            return false
-        }
+    //     if (error) {
+    //         console.error(`Error deleting vendor ${id}:`, error)
+    //         return false
+    //     }
         
+    //     return true
+    // },
+
+    async updateVendor( { business_address, business_name} : VendorUpdate) : Promise<boolean>{
         return true
     }
 

@@ -5,18 +5,19 @@
 # Author: Truong Ba An
 # ID: s3999568 */
 
-import { supabase, Database, uploadImage, deleteImage, changePassword } from "../db/db"
+import { supabase, Database, deleteImage, changePassword } from "../db/db"
 import { CustomerService } from "./customer.service"
 import { ShipperService } from "./shipper.service"
 import { VendorService } from "./vendor.service"
 import { Pagination } from "../types/general.type"
 import { UploadService } from "./upload.service"
-import { error } from "console"
 import {comparePassword, hashPassword} from "../utils/password"
+
 const PROFILE_STORAGE = 'profileimages'
 export type UsersFilters = {
     role: 'customer' | 'shipper' | 'vendor' | 'all'
 }
+
 export type User = Database['public']['Tables']['users']['Row']
 type UsersUpdate = {
     id: string
@@ -24,12 +25,7 @@ type UsersUpdate = {
     newPassword?: string
     profile_picture?: string
 }
-type UserResult = {
-    success : boolean, 
-    error? : string
-}
 
-type UserUpdate = Database['public']['Tables']['users']['Update']
 export const UserService = {
 
     async getUsers({ page, size }: Pagination, filters: UsersFilters): Promise<User[] | null> {
@@ -214,7 +210,7 @@ export const UserService = {
 
     if (result.success && result.url) {
         const success = await this.updateUser({
-            id,                         // FIX: provide user id
+            id,
             profile_picture: result.url // new picture URL
         });
 
