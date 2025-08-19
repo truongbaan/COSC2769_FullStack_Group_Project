@@ -11,6 +11,8 @@ import { User, UserService } from './user.service';
 import { Customer, CustomerService } from './customer.service';
 import { Shipper, ShipperService } from './shipper.service';
 import { Vendor, VendorService } from './vendor.service';
+import { hashPassword } from '../utils/password';
+
 //return result
 interface AuthResult {
     success: boolean;
@@ -69,6 +71,10 @@ export const AuthService = {
                     error: 'Error creating user, or user already exists.'
                 };
             }
+
+            //hash pass before saving
+            userData.password = hashPassword(userData.password)
+
             //user form
             const user: User = {
                 id: session.user.id,
