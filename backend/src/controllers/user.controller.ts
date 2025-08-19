@@ -28,7 +28,7 @@ export const getUsersController = async (req: Request, res: Response) => {
         if (users === null) {
             return ErrorJsonResponse(res, 500, "Failed to fetch users");
         }
-        
+
         return SuccessJsonResponse(res, 200, {
             data: { users, count: users.length },
         });
@@ -49,7 +49,7 @@ type GetUserByIdParamsType = z.output<typeof getUserByIdParamsSchema>
 
 export const getUserByIdController = async (req: Request, res: Response) => {
     try {
-        const { id} = (req as unknown as Record<string, unknown> & {
+        const { id } = (req as unknown as Record<string, unknown> & {
             validatedparams: GetUserByIdParamsType
         }).validatedparams
 
@@ -77,7 +77,7 @@ type DeleteUserByIdParamsType = z.output<typeof getUserByIdParamsSchema>
 //use req.param
 export const deleteUserController = async (req: Request, res: Response) => {
     try {
-        const {id} = (req as unknown as Record<string, unknown> & {
+        const { id } = (req as unknown as Record<string, unknown> & {
             validatedparams: DeleteUserByIdParamsType
         }).validatedparams;
 
@@ -91,5 +91,61 @@ export const deleteUserController = async (req: Request, res: Response) => {
             return ErrorJsonResponse(res, 400, err.issues[0].message)
         }
         return ErrorJsonResponse(res, 500, "Unexpected error while deleting user")
+    }
+}
+
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,20}$/;
+const passwordSchema = z.string().regex(passwordRegex, "Password 8-20, includes upper, lower, digit, special !@#$%^&*").trim();
+
+export const updateUserByIdParamsSchema = z.object({
+    id: z.string(),
+    password: passwordSchema.optional(),
+    newPassword: passwordSchema.optional(),
+    profile_picture: z.string().optional(),
+}).strict()
+
+export const updateUserByIdController = async (req: Request, res: Response) => {
+    try {
+        const { id, password, newPassword, profile_picture } = req.body;
+        // Ensure user can only update their own account
+        if (req.user_id !== id) {
+            return ErrorJsonResponse(res, 403, "You are not allowed to update this user");
+        }
+
+        // Password change validation
+        if ((password && !newPassword) || (!password && newPassword)) {
+            return ErrorJsonResponse(res, 400, "Can not change password without providing both old and new password");
+        }
+
+        // Call service layer
+        const result = await UserService.updateUser({id,password,newPassword,profile_picture});
+
+        if (!result) {
+            return ErrorJsonResponse(res, 400, "Failed to update user");
+        }
+
+        return SuccessJsonResponse(res, 200, `Successfully update user ${req.user_id}`);
+    } catch (err: any) {
+        console.error(err);
+        return ErrorJsonResponse(res, 500, "Internal server error");
+    }
+}
+
+export const uploadProfilePictureController = async (req:Request, res: Response) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: "No file uploaded" });
+        }
+
+        const result = await UserService.uploadImage(req.user_id, req.file);
+
+        if (!result.success) {
+            return res.status(500).json({ error: result.error });
+        }
+
+        return res.status(200).json({ url: result.url });
+    } catch (err) {
+        console.error("Unexpected error in uploadImageController:", err);
+        return res.status(500).json({ error: "Unexpected error uploading image" });
     }
 }
