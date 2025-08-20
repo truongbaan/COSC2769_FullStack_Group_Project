@@ -2,6 +2,8 @@ import { z } from "zod";
 import {
   ProductSchema,
   ProductsSchema,
+  ProductsApiResponseSchema,
+  ProductApiResponseSchema,
   OrderSchema,
   OrdersSchema,
   LoginSchema,
@@ -55,6 +57,7 @@ async function request<T>(
 ): Promise<T> {
   const res = await fetch(input, {
     ...init,
+    credentials: "include", // Include cookies for authentication
     headers: {
       "Content-Type": "application/json",
       ...(init?.headers || {}),
@@ -77,11 +80,19 @@ const API_BASE = "http://localhost:5000/api"; // you can swap to an env-based UR
 
 // Products
 export async function fetchProducts(): Promise<ProductDto[]> {
-  return request(`${API_BASE}/products`, ProductsSchema);
+  const response = await request(
+    `${API_BASE}/products`,
+    ProductsApiResponseSchema
+  );
+  return response.message.data.products;
 }
 
 export async function fetchProduct(productId: string): Promise<ProductDto> {
-  return request(`${API_BASE}/products/${productId}`, ProductSchema);
+  const response = await request(
+    `${API_BASE}/products/${productId}`,
+    ProductApiResponseSchema
+  );
+  return response.message.data.product;
 }
 
 export async function searchProductsApi(params: {
@@ -95,10 +106,11 @@ export async function searchProductsApi(params: {
   if (params.min !== undefined) qs.set("min", String(params.min));
   if (params.max !== undefined) qs.set("max", String(params.max));
   if (params.category) qs.set("category", params.category);
-  return request(
+  const response = await request(
     `${API_BASE}/products/search?${qs.toString()}`,
-    ProductsSchema
+    ProductsApiResponseSchema
   );
+  return response.message.data.products;
 }
 
 // Orders (Shipper)
@@ -218,6 +230,7 @@ export async function deleteVendorProductApi(
 
   const response = await fetch(url, {
     method: "DELETE",
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },
@@ -263,6 +276,7 @@ export async function editVendorProductApi(
 
   const response = await fetch(url, {
     method: "PUT",
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },
@@ -328,6 +342,7 @@ export async function uploadProfileImageApi(file: File): Promise<{
 
   const res = await fetch(`${API_BASE}/profile/upload-image`, {
     method: "POST",
+    credentials: "include",
     body: formData,
   });
 
@@ -377,6 +392,7 @@ export async function fetchCartApi(userId: string): Promise<{
     `${API_BASE}/cart?userId=${encodeURIComponent(userId)}`,
     {
       method: "GET",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
@@ -427,6 +443,7 @@ export async function syncCartApi(
     `${API_BASE}/cart?userId=${encodeURIComponent(userId)}`,
     {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
