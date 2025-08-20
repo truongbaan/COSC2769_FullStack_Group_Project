@@ -6,6 +6,9 @@
 # ID: s3999568 */
 
 import { supabase } from "../db/db";
+
+const allowedMimes = ['image/png', 'image/jpeg'];
+
 interface UploadResult {
     success: boolean;
     url?: string;
@@ -13,10 +16,15 @@ interface UploadResult {
 }
 
 export const UploadService = {
-    async uploadImage(file: Express.Multer.File, bucket : string): Promise<UploadResult> {
+    async uploadImage(file: Express.Multer.File, bucket: string): Promise<UploadResult> {
         try {
+            if (!allowedMimes.includes(file.mimetype)) {
+                // Return an error if the file type is not allowed
+                return {success: false, error: 'Invalid file type. Only PNG, JPEG are allowed.' };
+            }
+
             const filename = `${Date.now()}-${file.originalname}`;
-            
+
             // Upload to Supabase Storage
             const { error } = await supabase.storage
                 .from(bucket) // bucket name
@@ -24,12 +32,12 @@ export const UploadService = {
                     contentType: file.mimetype,
                     upsert: true,
                 });
-                
+
             if (error) {
                 console.error("Error uploading image:", error);
                 return { success: false, error: error.message };
             }
-            
+
             return { success: true, url: filename };
         } catch (err: any) {
             return { success: false, error: "Unexpected error uploading image" };

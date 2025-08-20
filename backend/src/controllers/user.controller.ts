@@ -134,18 +134,18 @@ export const updateUserByIdController = async (req: Request, res: Response) => {
 export const uploadProfilePictureController = async (req:Request, res: Response) => {
     try {
         if (!req.file) {
-            return res.status(400).json({ error: "No file uploaded" });
+            return ErrorJsonResponse(res, 400, "No file uploaded");
         }
 
         const result = await UserService.uploadImage(req.user_id, req.file);
 
         if (!result.success) {
-            return res.status(500).json({ error: result.error });
+            return ErrorJsonResponse(res, 500, `${result.error}`);
         }
 
-        return res.status(200).json({ url: result.url });
+        return SuccessJsonResponse(res, 200, `${result.url}`)
     } catch (err) {
         console.error("Unexpected error in uploadImageController:", err);
-        return res.status(500).json({ error: "Unexpected error uploading image" });
+        return ErrorJsonResponse(res, 500, "Unexpected error uploading image");
     }
 }
