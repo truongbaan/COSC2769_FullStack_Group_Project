@@ -17,5 +17,5 @@ const ShoppingCartRouter = Router();
 ShoppingCartRouter.get("/", validationMiddleware(getCartQuerrySchema, 'query'), getCartController);
 
 //delete the product in shoppping cart by id
-ShoppingCartRouter.delete("/item/:id", validationMiddleware(deleteByIdParamsSchema, 'params'), deleteCartItemByIdController);
+ShoppingCartRouter.delete("/deleteItem/:id", validationMiddleware(deleteByIdParamsSchema, 'params'), deleteCartItemByIdController);
 export default ShoppingCartRouter;
