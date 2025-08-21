@@ -296,26 +296,3 @@ export async function changePassword(newPassword: string): Promise<boolean> {
 
     return true;
 }
-
-type Storage = 'profileimages' | 'productsimages'
-
-export function getPublicImageUrl(filePath: string, storage : Storage): string {//could return broken url due to unknown, FE careful!
-    const { data } = supabase.storage
-        .from(storage)
-        .getPublicUrl(filePath)
-
-    return data.publicUrl
-}
-
-export async function deleteImage(filePath: string, storage : Storage): Promise<boolean> {
-    const { error } = await supabase.storage
-        .from(storage)
-        .remove([filePath])
-
-    if (error) {
-        console.error('Error deleting image:', error.message)
-        return false
-    }
-
-    return true
-}

@@ -5,12 +5,12 @@
 # Author: Truong Ba An
 # ID: s3999568 */
 
-import { supabase, Database, deleteImage, changePassword } from "../db/db"
+import { supabase, Database, changePassword } from "../db/db"
 import { CustomerService } from "./customer.service"
 import { ShipperService } from "./shipper.service"
 import { VendorService } from "./vendor.service"
 import { Pagination } from "../types/general.type"
-import { UploadService } from "./upload.service"
+import { ImageService } from "./image.service"
 import {comparePassword, hashPassword} from "../utils/password"
 
 const PROFILE_STORAGE = 'profileimages'
@@ -172,7 +172,7 @@ export const UserService = {
             
             if (profile_picture) {
                 if(user.profile_picture){
-                    const del = await deleteImage(user.profile_picture, PROFILE_STORAGE)
+                    const del = await ImageService.deleteImage(user.profile_picture, PROFILE_STORAGE)
                     if(!del){
                         console.log("Fail to delete image")
                         return false; //fail to delete images
@@ -206,7 +206,7 @@ export const UserService = {
     },
 
     async uploadImage(id: string, file: Express.Multer.File) {
-    const result = await UploadService.uploadImage(file, PROFILE_STORAGE);
+    const result = await ImageService.uploadImage(file, PROFILE_STORAGE);
 
     if (result.success && result.url) {
         const success = await this.updateUser({
