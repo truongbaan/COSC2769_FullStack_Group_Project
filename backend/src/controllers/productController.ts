@@ -92,13 +92,22 @@ declare global {
 }
 
 export const createProductController = async (req: Request, res: Response) => {
-    const vendorId = req.user_id;
-    if (!vendorId) return res.status(401).json({ message: "Unauthorized" });
+    try {
+        const vendorId = req.user_id;
 
-    const body = req.validatedbody!; // do middleware set
-    const payload: ProductInsertNoId = { vendor_id: vendorId, ...body };
+        const body = req.validatedbody!; // do middleware set
+        const payload: ProductInsertNoId = { vendor_id: vendorId, ...body };
 
-    const created = await ProductService.createProduct(payload);
-    if (!created) return res.status(500).json({ message: "Failed to create product" });
-    return res.status(201).json({ data: { product: created } });
+        const created = await ProductService.createProduct(payload);
+        if (!created) return res.status(500).json({ message: "Failed to create product" });
+
+        return res.status(201).json({ data: { product: created } });
+
+    } catch (err: any) {
+        console.error("createProductController error:", err);
+        return res.status(500).json({
+            message: "Internal Server Error",
+            detail: err.message ?? "Unexpected error while creating products",
+        });
+    }
 };

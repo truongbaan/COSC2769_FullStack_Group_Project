@@ -33,7 +33,6 @@ apiRouter.use('shippers', requireAuth(), ShipperRouter)
 
 apiRouter.use("/products", requireAuth("vendor"), ProductRouter);
 
-
 apiRouter.use("/distribution-hubs", requireAuth(), DistributionHubRouter);
 
 apiRouter.use("/orders", requireAuth("shipper"), OrderRouter);

@@ -45,6 +45,7 @@ ProductRouter.get(
   getProductByIdController
 );
 
+
 // /** POST /products  (Add New Product) */
 // ProductRouter.post('/', validationMiddleware(createProductBodySchema, 'body'),
 //     async (req: Request, res: Response) => {

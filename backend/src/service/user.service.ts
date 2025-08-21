@@ -11,7 +11,7 @@ import { ShipperService } from "./shipper.service"
 import { VendorService } from "./vendor.service"
 import { Pagination } from "../types/general.type"
 import { ImageService } from "./image.service"
-import {comparePassword, hashPassword} from "../utils/password"
+import { comparePassword, hashPassword } from "../utils/password"
 
 const PROFILE_STORAGE = 'profileimages'
 export type UsersFilters = {
@@ -152,28 +152,28 @@ export const UserService = {
             const updateData: any = {};
             // Handle password change
             if (password && newPassword) {
-                if (!comparePassword(password,user.password)) {
+                if (!comparePassword(password, user.password)) {
                     console.error("Old password is incorrect");
                     return false;
                 }
                 //change password in authen
                 const changePassAuthen = await changePassword(newPassword)
-                if(!changePassAuthen){
+                if (!changePassAuthen) {
                     return false
                 }
                 //hashing before saving
                 updateData.password = hashPassword(newPassword);
-                
+
             } else if ((password && !newPassword) || (!password && newPassword)) {
                 console.error("Both password and newPassword must be provided");
                 return false;
             }
             //profile pic update
-            
+
             if (profile_picture) {
-                if(user.profile_picture){
+                if (user.profile_picture) {
                     const del = await ImageService.deleteImage(user.profile_picture, PROFILE_STORAGE)
-                    if(!del){
+                    if (!del) {
                         console.log("Fail to delete image")
                         return false; //fail to delete images
                     }
@@ -206,22 +206,22 @@ export const UserService = {
     },
 
     async uploadImage(id: string, file: Express.Multer.File) {
-    const result = await ImageService.uploadImage(file, PROFILE_STORAGE);
+        const result = await ImageService.uploadImage(file, PROFILE_STORAGE);
 
-    if (result.success && result.url) {
-        const success = await this.updateUser({
-            id,
-            profile_picture: result.url // new picture URL
-        });
+        if (result.success && result.url) {
+            const success = await this.updateUser({
+                id,
+                profile_picture: result.url // new picture URL
+            });
 
-        if (!success) {
-            return {
-                success: false,
-                error: "Can not update user table column profile picture"
-            };
+            if (!success) {
+                return {
+                    success: false,
+                    error: "Can not update user table column profile picture"
+                };
+            }
         }
-    }
 
-    return result;
-}
+        return result;
+    }
 }
