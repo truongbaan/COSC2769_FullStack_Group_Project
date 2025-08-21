@@ -16,7 +16,7 @@ type FullCustomer = {
     address: string,
     email: string,
     username: string,
-    password: string
+    profile_picture: string,
 }
 
 export const CustomerService = {
