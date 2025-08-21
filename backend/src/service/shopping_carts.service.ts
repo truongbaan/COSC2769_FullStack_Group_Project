@@ -11,7 +11,6 @@ import generateUUID from "../utils/generator";
 export type Pagination = { page: number; size: number };
 
 type CartRow = Database["public"]["Tables"]["shopping_carts"]["Row"];
-type ProductRow = Database["public"]["Tables"]["products"]["Row"];
 type PublicCartItem = Omit<CartRow, "customer_id">;
 
 class HttpError extends Error { 
