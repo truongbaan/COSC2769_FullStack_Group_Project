@@ -72,7 +72,7 @@ export const deleteUserByIdParamsSchema = z.object({
     id: z.string(),
 }).strict()
 
-type DeleteUserByIdParamsType = z.output<typeof getUserByIdParamsSchema>
+type DeleteUserByIdParamsType = z.output<typeof deleteUserByIdParamsSchema>
 
 //use req.param
 export const deleteUserController = async (req: Request, res: Response) => {
@@ -98,7 +98,6 @@ const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!
 const passwordSchema = z.string().regex(passwordRegex, "Password 8-20, includes upper, lower, digit, special !@#$%^&*").trim();
 
 export const updateUserByIdParamsSchema = z.object({
-    id: z.string(),
     password: passwordSchema.optional(),
     newPassword: passwordSchema.optional(),
     profile_picture: z.string().optional(),
@@ -106,12 +105,10 @@ export const updateUserByIdParamsSchema = z.object({
 
 export const updateUserByIdController = async (req: Request, res: Response) => {
     try {
-        const { id, password, newPassword, profile_picture } = req.body;
+        const { password, newPassword, profile_picture } = req.body;
         // Ensure user can only update their own account
-        if (req.user_id !== id) {
-            return ErrorJsonResponse(res, 403, "You are not allowed to update this user");
-        }
-
+        const id = req.user_id
+        
         // Password change validation
         if ((password && !newPassword) || (!password && newPassword)) {
             return ErrorJsonResponse(res, 400, "Can not change password without providing both old and new password");
@@ -134,18 +131,18 @@ export const updateUserByIdController = async (req: Request, res: Response) => {
 export const uploadProfilePictureController = async (req:Request, res: Response) => {
     try {
         if (!req.file) {
-            return res.status(400).json({ error: "No file uploaded" });
+            return ErrorJsonResponse(res, 400, "No file uploaded");
         }
 
         const result = await UserService.uploadImage(req.user_id, req.file);
 
         if (!result.success) {
-            return res.status(500).json({ error: result.error });
+            return ErrorJsonResponse(res, 500, `${result.error}`);
         }
 
-        return res.status(200).json({ url: result.url });
+        return SuccessJsonResponse(res, 200, `${result.url}`)
     } catch (err) {
         console.error("Unexpected error in uploadImageController:", err);
-        return res.status(500).json({ error: "Unexpected error uploading image" });
+        return ErrorJsonResponse(res, 500, "Unexpected error uploading image");
     }
 }
