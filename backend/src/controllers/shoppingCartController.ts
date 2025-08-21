@@ -18,9 +18,6 @@ type GetCartQuerryType = z.output<typeof getCartQuerrySchema>
 
 export const getCartController = async (req: Request, res: Response) => {
   try {
-    if (!req.user_id) {
-      return ErrorJsonResponse(res, 401, "Please login")
-    }
 
     const { page, size } =
       (req as unknown as { validatedquery: GetCartQuerryType }).validatedquery

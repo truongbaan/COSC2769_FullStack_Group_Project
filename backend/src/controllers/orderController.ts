@@ -19,13 +19,6 @@ type GetOrdersQuerryType = z.output<typeof getOrdersQuerrySchema>;
 
 export const getOrdersController = async (req: Request, res: Response) => {
   try {
-    //check req
-    console.log("check user id: ", req.user_id)
-
-    //check the login of user_id
-    if (!req.user_id) {
-      return ErrorJsonResponse(res, 401, "Please login")
-    }
 
     const { page, size } =
       (req as unknown as { validatedquery: GetOrdersQuerryType }).validatedquery;
@@ -66,17 +59,13 @@ const updateStatusBody = z.object({
 
 export const updateOrderStatusController = async (req: Request, res: Response) => {
   try {
-    if (!req.user_id) {
-      return ErrorJsonResponse(res, 401, "Please login")
-    }
 
     // Validate input
     const { id } = updateStatusParams.parse(req.params)
     const { status } = updateStatusBody.parse(req.body)
 
-    
 
-    // 3) Update status: 'active' → 'delivered' | 'canceled'
+    // Update status: 'active' → 'delivered' | 'canceled'
     const updated = await OrderService.updateStatus(id, status, req.user_id)// only allow update if order in this hub
 
     return SuccessJsonResponse(res, 200, {
