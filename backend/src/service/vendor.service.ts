@@ -8,7 +8,7 @@
 import { supabase, Database } from "../db/db"
 
 export type Vendor = Database['public']['Tables']['vendors']['Row']
-type VendorUpdate = Database['public']['Tables']['vendors']['Update']
+type VendorUpdate = Database['public']['Tables']['vendors']['Update'] & {id: string}
 
 export const VendorService = {
     /** Fetch all Vendors*/
@@ -93,8 +93,19 @@ export const VendorService = {
     //     return true
     // },
 
-    async updateVendor( { business_address, business_name} : VendorUpdate) : Promise<boolean>{
-        return true
+    async updateVendor( {id, business_address, business_name} : VendorUpdate) : Promise<boolean>{
+        const { error } = await supabase
+            .from('vendors')
+            .update({
+                business_address,
+                business_name
+            })
+            .eq('id', id);
+        if (error) {
+            console.error(`Error updating vendor ${id}:`, error);
+            return false;
+        }
+        return true;
     }
 
 }

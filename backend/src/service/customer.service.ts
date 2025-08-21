@@ -9,7 +9,7 @@ import { supabase, Database } from "../db/db"
 import { Pagination } from "../types/general.type"
 
 export type Customer = Database['public']['Tables']['customers']['Row']
-type CustomerUpdate = Database['public']['Tables']['customers']['Update']
+type CustomerUpdate = Database['public']['Tables']['customers']['Update'] & {id : string}
 type FullCustomer = {
     id : string,
     name: string,
@@ -154,7 +154,18 @@ export const CustomerService = {
     //     return true
     // },
 
-    async updateCustomer({ address, name }: CustomerUpdate): Promise<boolean> {
-        return true
+    async updateCustomer({id, address, name }: CustomerUpdate): Promise<boolean> {
+        const { error } = await supabase
+            .from('customers')
+            .update({
+                address,
+                name
+            })
+            .eq('id', id);
+        if (error) {
+            console.error(`Error updating customer ${id}:`, error);
+            return false;
+        }
+        return true;
     }
 }

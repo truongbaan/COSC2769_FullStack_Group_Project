@@ -72,7 +72,7 @@ export const deleteUserByIdParamsSchema = z.object({
     id: z.string(),
 }).strict()
 
-type DeleteUserByIdParamsType = z.output<typeof getUserByIdParamsSchema>
+type DeleteUserByIdParamsType = z.output<typeof deleteUserByIdParamsSchema>
 
 //use req.param
 export const deleteUserController = async (req: Request, res: Response) => {
@@ -98,7 +98,6 @@ const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!
 const passwordSchema = z.string().regex(passwordRegex, "Password 8-20, includes upper, lower, digit, special !@#$%^&*").trim();
 
 export const updateUserByIdParamsSchema = z.object({
-    id: z.string(),
     password: passwordSchema.optional(),
     newPassword: passwordSchema.optional(),
     profile_picture: z.string().optional(),
@@ -106,12 +105,10 @@ export const updateUserByIdParamsSchema = z.object({
 
 export const updateUserByIdController = async (req: Request, res: Response) => {
     try {
-        const { id, password, newPassword, profile_picture } = req.body;
+        const { password, newPassword, profile_picture } = req.body;
         // Ensure user can only update their own account
-        if (req.user_id !== id) {
-            return ErrorJsonResponse(res, 403, "You are not allowed to update this user");
-        }
-
+        const id = req.user_id
+        
         // Password change validation
         if ((password && !newPassword) || (!password && newPassword)) {
             return ErrorJsonResponse(res, 400, "Can not change password without providing both old and new password");

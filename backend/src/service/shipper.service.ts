@@ -8,7 +8,7 @@
 import { supabase, Database } from "../db/db"
 
 export type Shipper = Database['public']['Tables']['shippers']['Row']
-type ShipperUpdate = Database['public']['Tables']['shippers']['Update']
+type ShipperUpdate = Database['public']['Tables']['shippers']['Update'] & {id: string}
 
 export const ShipperService = {
     /** Fetch all Shippers*/
@@ -90,7 +90,15 @@ export const ShipperService = {
     //     return true
     // },
 
-    async updateShipper({hub_id} : ShipperUpdate) : Promise<boolean>{
-        return true
+    async updateShipper({id, hub_id} : ShipperUpdate) : Promise<boolean>{
+        const { error } = await supabase
+            .from('shippers')
+            .update(hub_id)
+            .eq('id', id);
+        if (error) {
+            console.error(`Error updating shipper ${id}:`, error);
+            return false;
+        }
+        return true;
     }
 }
