@@ -66,39 +66,6 @@ export const CustomerService = {
         });
     },
 
-    /** Fetch all Customers*/
-    // async getAllCustomers(): Promise<Customer[] | null> {
-    //     const { data, error } = await supabase
-    //         .from('customers')
-    //         .select(`
-    //             *,
-    //             users (
-    //                 email,
-    //                 username,
-    //                 profile_picture
-    //             )
-    //         `)
-    //         .order('id', { ascending: false })
-
-    //     //DEBUG, will be remove
-    //     console.log('📊 Raw Supabase response:')
-    //     console.log('  - Data:', data)
-    //     console.log('  - Error:', error)
-    //     console.log('  - Data length:', data?.length)
-    //     //
-
-    //     if (error) {
-    //         console.error('Error fetching Customer:', error)
-    //         throw error
-    //     }
-    //     console.log(data)
-
-    //     if (!data) {
-    //         return null  // explicitly return null to trigger 404 in route
-    //     }
-    //     return data
-    // },
-
     /** Fetch a single Customer by id */
     async getCustomerById(id: string): Promise<Customer | null> {
         const { data, error } = await supabase
@@ -139,20 +106,6 @@ export const CustomerService = {
 
         return data;
     },
-
-    // async deleteCustomer(id : string): Promise<boolean>{
-    //     const { error } = await supabase
-    //         .from('customers')
-    //         .delete()
-    //         .eq('id', id)
-
-    //     if (error) {
-    //         console.error(`Error deleting customer ${id}:`, error)
-    //         return false
-    //     }
-
-    //     return true
-    // },
 
     async updateCustomer({id, address, name }: CustomerUpdate): Promise<boolean> {
         const { error } = await supabase
