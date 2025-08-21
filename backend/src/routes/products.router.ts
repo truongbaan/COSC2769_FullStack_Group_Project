@@ -21,6 +21,7 @@ import {
 } from "../controllers/productController";
 import { requireAuth } from "../middleware/requireAuth";
 import { id } from "zod/v4/locales/index.cjs";
+import { addToCartBodySchema, addToCartController } from "../controllers/shoppingCartController";
 
 const ProductRouter = Router();
 
@@ -45,46 +46,11 @@ ProductRouter.get(
   getProductByIdController
 );
 
-
-// /** POST /products  (Add New Product) */
-// ProductRouter.post('/', validationMiddleware(createProductBodySchema, 'body'),
-//     async (req: Request, res: Response) => {
-//         try {
-//             const { name, price, image, description, category } = req.body;
-
-//             const created = await ProductService.createProduct({
-//                 name,
-//                 price,
-//                 image,
-//                 description,
-//                 category,
-//             });
-
-//             if (!created) {
-//                 return ErrorJsonResponse(res, 400, 'Failed to create product');
-//             }
-//             return SuccessJsonResponse(res, 201, created);
-//         } catch (error) {
-//             return ErrorJsonResponse(res, 500, 'Failed to create product');
-//         }
-//     }
-// );
-
-// /** DELETE /products/:productId */
-// ProductRouter.delete('/:productId', validationMiddleware(deleteProductParamsSchema, 'params'),
-//     async (req: Request, res: Response) => {
-//         try {
-//             const { productId } = req.params;
-//             const ok = await ProductService.deleteProduct(String(productId));
-
-//             if (!ok) {
-//                 return ErrorJsonResponse(res, 404, `product ${productId} not found or delete failed`);
-//             }
-//             return SuccessJsonResponse(res, 200, { deleted: true, id: productId });
-//         } catch (error) {
-//             return ErrorJsonResponse(res, 500, 'Failed to delete product');
-//         }
-//     }
-// );
+//add product to shopping cart
+ProductRouter.post(
+  "/:productId/addToCart",
+  validationMiddleware(addToCartBodySchema, "body"),
+  addToCartController
+)
 
 export default ProductRouter;

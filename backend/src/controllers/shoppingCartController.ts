@@ -63,3 +63,23 @@ export async function deleteCartItemByIdController(req: Request, res: Response) 
     return ErrorJsonResponse(res, msg.startsWith("Unauthorized") ? 401 : 500, msg);
   }
 }
+
+export const addToCartBodySchema = z.object({
+  product_id: z.string(), 
+  quantity: z.coerce.number().int().min(1).default(1),
+})
+
+export async function addToCartController(req: Request, res: Response) {
+  try {
+    const customerId = req.user_id; // user_id of customer
+    
+
+    const { product_id, quantity } = (req as any).validatedbody
+
+    const item = await ShoppingCartService.addToCart(customerId, { product_id, quantity })
+    return SuccessJsonResponse(res, 200, { item })
+  } catch (e: any) {
+    console.error("ADD_CART_ERROR:", e)
+    return ErrorJsonResponse(res, e.status ?? 500, e.message ?? "ADD_CART_FAILED")
+  }
+}
