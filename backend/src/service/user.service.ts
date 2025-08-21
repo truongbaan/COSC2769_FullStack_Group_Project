@@ -58,10 +58,10 @@ export const UserService = {
 
     /** Fetch a single user by id */
     //also get data for authen
-    async getUserById(id: string, full_info: boolean = true): Promise<User | null> {
+    async getUserById(id: string, full_info: boolean = true): Promise<Omit<User, 'password'> | null> {
         const { data, error } = await supabase
             .from('users')
-            .select('*')
+            .select('id, username, email, profile_picture, role')
             .eq('id', id)
             .maybeSingle()
 

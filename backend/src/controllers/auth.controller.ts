@@ -108,8 +108,6 @@ export const registerCustomerController = async (req: Request, res: Response): P
         
         return SuccessJsonResponse(res, 200, {
             data: {
-                access_token: result.data!.access_token,
-                refresh_token: result.data!.refresh_token,
                 user: result.data!.user
             }
         });

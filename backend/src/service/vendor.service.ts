@@ -63,32 +63,6 @@ export const VendorService = {
         });
     },
 
-    /** Fetch all Vendors*/
-    async getAllVendors(): Promise<Vendor[] | null> {
-        const { data, error } = await supabase
-            .from('vendors')
-            .select('*')
-            .order('id', { ascending: false })
-
-        //DEBUG, will be remove
-        console.log('📊 Raw Supabase response:')
-        console.log('  - Data:', data)
-        console.log('  - Error:', error)
-        console.log('  - Data length:', data?.length)
-        //
-
-        if (error) {
-            console.error('Error fetching Vendor:', error)
-            throw error
-        }
-        console.log(data)
-
-        if (!data) {
-            return null  // explicitly return null to trigger 404 in route
-        }
-        return data
-    },
-
     /** Fetch a single Vendor by id */
     //also use in authen
     async getVendorById(id: string): Promise<Vendor | null> {
@@ -130,20 +104,6 @@ export const VendorService = {
 
         return data;
     },
-
-    // async deleteVendor(id : string): Promise<boolean>{
-    //     const { error } = await supabase
-    //         .from('vendors')
-    //         .delete()
-    //         .eq('id', id)
-
-    //     if (error) {
-    //         console.error(`Error deleting vendor ${id}:`, error)
-    //         return false
-    //     }
-
-    //     return true
-    // },
 
     async updateVendor({ id, business_address, business_name }: VendorUpdate): Promise<boolean> {
         const { error } = await supabase
