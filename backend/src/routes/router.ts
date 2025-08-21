@@ -16,13 +16,19 @@ import { requireAuth } from '../middleware/requireAuth';
 import DistributionHubRouter from './distribution_hubs.router';
 import OrderRouter from './orders.router';
 import ShoppingCartRouter from './shopping_cart_items.router';
+import VendorRouter from './vendor.router';
+import ShipperRouter from './shipper.router';
 const apiRouter = Router();
 
 apiRouter.use('/auth', authRouter);
 
 apiRouter.use('/users', requireAuth(), UserRouter);
 
-apiRouter.use('/customers', CustomerRouter);
+apiRouter.use('/customers', requireAuth(), CustomerRouter);
+
+apiRouter.use('/vendors', requireAuth(), VendorRouter)
+
+apiRouter.use('shippers', requireAuth(), ShipperRouter)
 
 apiRouter.use("/products", requireAuth("vendor"), ProductRouter);
 
