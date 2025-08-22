@@ -5,7 +5,7 @@
 # Author: Truong Ba An
 # ID: s3999568 */
 
-import { deleteAuthenUser } from '../db/db'
+import { Database, deleteAuthenUser } from '../db/db'
 import { signUpUser } from '../db/db';
 import { User, UserService } from './user.service';
 import { Customer, CustomerService } from './customer.service';
@@ -23,7 +23,7 @@ interface AuthResult {
     };
     error?: string;
 }
-type UserRole = 'customer' | 'shipper' | 'vendor';
+type UserRole = Database['public']['Tables']['users']['Row']['role'];
 //remove id field and role field from the required form
 type NewUser = Omit<User, 'id' | 'role'>;
 type NewCustomer = Omit<Customer, 'id'>;
