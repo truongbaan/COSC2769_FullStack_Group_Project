@@ -50,7 +50,7 @@ export function requireAuth(role: string | string[] = '') {
             }
         }
 
-        req.user_role = data.user.role
+        req.user_role = user.role
         req.user_id = data.user.id//return user_id field for other controller uses
         next();
     };
