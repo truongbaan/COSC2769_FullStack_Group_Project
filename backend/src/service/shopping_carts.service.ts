@@ -4,7 +4,6 @@
 # Assessment: Assignment 02 
 # Author: Nguyen The Anh
 # ID: s3975844*/
-import { id } from "zod/v4/locales/index.cjs";
 import { supabase, Database } from "../db/db";
 import generateUUID from "../utils/generator";
 
@@ -12,6 +11,9 @@ export type Pagination = { page: number; size: number };
 
 type CartRow = Database["public"]["Tables"]["shopping_carts"]["Row"];
 type PublicCartItem = Omit<CartRow, "customer_id">;
+
+type cartCustomer = { id: string; product_id: string; quantity: number }
+type ProductRow = { id: string; price: number }
 
 class HttpError extends Error { 
   constructor(public status: number, msg: string){ super(msg) } 
@@ -62,6 +64,7 @@ export const ShoppingCartService = {
     if (error) throw error;
     return (data?.length ?? 0) > 0;
   },
+
   async addToCart(
     customerId: string,
     { product_id, quantity }: { product_id: string; quantity: number }
@@ -78,14 +81,14 @@ export const ShoppingCartService = {
     if (!product.instock) throw new HttpError(409, "PRODUCT_OUT_OF_STOCK")
 
     // 2. Kiểm tra giỏ hàng hiện có
-    const { data: existing, error: findErr } = await supabase
+    const { data: existing, error: shoppingError } = await supabase
       .from("shopping_carts")
       .select("*")
       .eq("customer_id", customerId)
       .eq("product_id", product_id)
       .maybeSingle()
 
-    if (findErr) throw findErr
+    if (shoppingError) throw shoppingError
 
     if (existing) {
       //update quantity
@@ -113,5 +116,80 @@ export const ShoppingCartService = {
       if (error) throw error
       return data
     }
+  },
+
+  async checkout(customerId: string) {
+    //select cart from customer (all items in cart)
+    const { data: cart, error: checkoutErr } = await supabase
+      .from("shopping_carts")
+      .select("id, product_id, quantity")
+      .eq("customer_id", customerId)
+
+    if (checkoutErr) throw checkoutErr
+    if (!cart || cart.length === 0) throw new Error("Shopping cart is empty")
+
+    // select the price of products in the cart
+    const productIds = [...new Set(cart.map(c => c.product_id))]
+    const { data: products, error: productError } = await supabase
+      .from("products")
+      .select("id, price")
+      .in("id", productIds)
+
+    if (productError) throw productError
+    const prodMap = new Map((products as ProductRow[]).map(p => [p.id, Number(p.price)]))
+    const missing = productIds.filter(id => !prodMap.has(id))
+    if (missing.length) throw new Error(`Products not found: ${missing.join(",")}`)
+
+    // calculate total price
+    const total = (cart as cartCustomer[]).reduce(
+      (sum, it) => sum + (prodMap.get(it.product_id) || 0) * it.quantity,
+      0
+    )
+
+    // randomly select a distribution hub
+    const { data: hubs, error: hubError } = await supabase
+      .from("distribution_hubs")
+      .select("id")
+    if (hubError) throw hubError
+    if (!hubs || hubs.length === 0) throw new Error("No distribution hub available")
+    const hubId = (hubs[Math.floor(Math.random() * hubs.length)] as { id: string }).id
+
+    //create a new order
+    const orderId = generateUUID()
+    const { error: orderError } = await supabase.from("orders").insert({
+      id: orderId,
+      customer_id: customerId,
+      hub_id: hubId,
+      status: "active",
+      total_price: total,
+    })
+    if (orderError) throw orderError
+
+    // create order items
+    const items = (cart as cartCustomer[]).map(it => ({
+      id: generateUUID(),
+      order_id: orderId,
+      product_id: it.product_id,
+      quantity: it.quantity,
+      price_at_order_time: prodMap.get(it.product_id) || 0,
+    }))
+
+    const { error: orderItemError } = await supabase.from("order_items").insert(items)
+    if (orderItemError) {
+      await supabase.from("orders").delete().eq("id", orderId)
+      throw orderItemError
+    }
+
+    // delete the cart items after checkout
+    const { error: shoppingCartError } = await supabase
+      .from("shopping_carts")
+      .delete()
+      .eq("customer_id", customerId)
+
+    if (shoppingCartError) {
+      console.warn("Failed to clear cart after checkout:", shoppingCartError)
+    }
+
+    return { orderId, hubId, total }
   },
 };

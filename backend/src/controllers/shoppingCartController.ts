@@ -83,3 +83,25 @@ export async function addToCartController(req: Request, res: Response) {
     return ErrorJsonResponse(res, e.status ?? 500, e.message ?? "ADD_CART_FAILED")
   }
 }
+
+
+export async function checkoutController(req: Request, res: Response) {
+  try {
+    const customerId = req.user_id; // user_id of customer
+
+    const result = await ShoppingCartService.checkout(customerId as string)
+
+    return SuccessJsonResponse(res, 201, {
+      message: "Checkout success",
+      order: {
+        id: result.orderId,
+        hub_id: result.hubId,
+        status: "active",
+        total_price: result.total,
+      },
+    })
+  } catch (err) {
+    console.error(err)
+    return ErrorJsonResponse(res, 500, (err as Error).message)
+  }
+}
