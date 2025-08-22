@@ -35,7 +35,7 @@ export type Pagination = {
 }
 
 export const ProductService = {
-  async getProducts(
+  async getCustomerProducts(
     { page, size }: Pagination,
     filters?: ProductsFilters,
   ): Promise<ProductRow[] | null> {
@@ -112,4 +112,33 @@ export const ProductService = {
 
     return data;
   },
+
+  async getVendorProducts(
+    { page, size }: Pagination,
+    vendorId: string,
+  ): Promise<ProductRow[] | null> {
+    const offset = (page - 1) * size;
+
+    const query = supabase
+      .from("products")
+      .select("*")
+      .eq("vendor_id", vendorId)
+      .range(offset, offset + size - 1)
+      .order("id", { ascending: false });
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error("Error fetching product:", error);
+      throw error;
+    }
+    console.log(data);
+
+    if (!data) {
+      return null; // explicitly return null to trigger 404 in route
+      // return [];
+    }
+    return data;
+  },
+
 };

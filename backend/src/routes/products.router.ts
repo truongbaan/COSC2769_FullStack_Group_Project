@@ -28,6 +28,7 @@ const ProductRouter = Router();
 // Get products with pagination and fitlers
 ProductRouter.get(
   "/",
+  requireAuth(["vendor", "customer"]),
   validationMiddleware(getProductsQuerrySchema, "query"),
   getProductsController
 );
@@ -42,6 +43,7 @@ ProductRouter.post(
 // Get product details by id
 ProductRouter.get(
   "/:productId",
+  requireAuth("customer"),
   validationMiddleware(getProductByIdParamsSchema, "params"),
   getProductByIdController
 );
@@ -49,6 +51,7 @@ ProductRouter.get(
 //add product to shopping cart
 ProductRouter.post(
   "/:productId/addToCart",
+  requireAuth("customer"),
   validationMiddleware(addToCartBodySchema, "body"),
   addToCartController
 )
