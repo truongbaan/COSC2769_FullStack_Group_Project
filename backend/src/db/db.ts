@@ -31,7 +31,7 @@ export interface Database {
                     password: string
                     username: string
                     profile_picture: string
-                    role: string
+                    role: 'vendor' | 'shipper' | 'customer'
                 }
                 // .insert() for table 'users'
                 Insert: {
@@ -40,7 +40,7 @@ export interface Database {
                     password: string
                     username: string
                     profile_picture: string
-                    role: string
+                    role: 'vendor' | 'shipper' | 'customer'
                 }
                 // .update() in table 'users'
                 Update: {
