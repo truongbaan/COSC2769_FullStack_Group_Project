@@ -21,7 +21,6 @@ export type CreateProductInput = z.infer<typeof createProductParamsSchema>;
 
 export type ProductInsertNoId = Omit<ProductInsert, "id">;
 
-
 export type ProductsFilters = {
   category?: string;
   priceMin?: number;
@@ -161,4 +160,17 @@ export const ProductService = {
     }
     return data;
   },
+
+  // async deleteProductByVendor(vendorId: string, productId: string) {
+  //   const { data, error } = await supabase
+  //     .from("products")
+  //     .delete()
+  //     .eq("id", productId)      // 🔁 dùng đúng tên cột id
+  //     .eq("vendor_id", vendorId)
+  //     .select("*")              // cần để nhận về bản ghi đã xoá
+  //     .maybeSingle();
+
+  //   if (error) throw error;
+  //   return data; // null -> không tìm thấy/không thuộc vendor
+  // },
 };

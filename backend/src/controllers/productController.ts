@@ -170,3 +170,29 @@ export const updateProductStatusController = async (req: Request, res: Response)
         });
     }
 };
+
+// export const deleteProductController = async (req: Request, res: Response) => {
+//   try {
+//     const vendorId = req.user_id as string;
+//     const { productId } = req.params as { productId: string };
+
+//     const deleted = await ProductService.deleteProductByVendor(vendorId, productId);
+
+//     if (!deleted) {
+//       return res
+//         .status(404)
+//         .json({ message: "Product not found or not owned by vendor" });
+//     }
+
+//     // 204 No Content là chuẩn cho delete thành công
+//     return res.status(204).send();
+//     // Hoặc nếu muốn trả data:
+//     // return res.status(200).json({ message: "Deleted", product: deleted });
+//   } catch (err: any) {
+//     console.error("deleteProductController error:", err);
+//     return res.status(500).json({
+//       message: "Internal Server Error",
+//       detail: err.message ?? "Unexpected error while deleting product",
+//     });
+//   }
+// };
