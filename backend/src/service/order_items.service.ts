@@ -2,19 +2,24 @@ import { supabase, type Database } from "../db/db"
 
 type OrderItemsRow = Database["public"]["Tables"]["order_items"]["Row"]
 type ProductRow = Database["public"]["Tables"]["products"]["Row"]
-
+type customerRow = Database["public"]["Tables"]["customers"]["Row"]
 
 export type OrderItemWithProduct = {
-  order_id: string
+//  order_id: string
   product_name: string
   quantity: number
   price_at_order_time: number
   total: number
 }
 
+export type orderInformation = {
+  name: string
+  address: string
+}
+
 export const OrderItemService = {
   async getByOrderId(orderId: string): Promise<OrderItemWithProduct[]> {
-    
+
     // take the item by id
     const { data: items, error: errItems } = await supabase
       .from("order_items")
@@ -37,13 +42,34 @@ export const OrderItemService = {
       (prods ?? []).map((p: Pick<ProductRow, "id" | "name">) => [p.id, p.name ?? ""])
     )
 
+
     // merge data and calculate total
     return items.map((i: Pick<OrderItemsRow,"order_id"|"product_id"|"quantity"|"price_at_order_time">) => ({
-      order_id: i.order_id,
+//      order_id: i.order_id,
       product_name: nameById.get(i.product_id) ?? "(unknown product)",
       quantity: Number(i.quantity ?? 0),
       price_at_order_time: Number(i.price_at_order_time ?? 0),
       total: Number(i.quantity ?? 0) * Number(i.price_at_order_time ?? 0),
     }))
+  },
+  async getCustomerNameAndAddressByOrderId(orderId: string): Promise<orderInformation[]> {
+    const {data: customerOrder, error: customerOrderErr} = await supabase
+    .from("orders")
+    .select()
+    .eq("id", orderId)
+    .maybeSingle()
+
+    if (customerOrderErr) throw customerOrderErr
+    if (!customerOrder) return []
+
+    const customerId = customerOrder.customer_id
+    const {data: customer, error: customerErr} = await supabase
+    .from("customers")
+    .select("name, address")
+    .eq("id", customerId)
+    .maybeSingle()
+    if (customerErr) throw customerErr
+    if (!customer) return []
+    return [{name: customer.name, address: customer.address}]
   }
 }

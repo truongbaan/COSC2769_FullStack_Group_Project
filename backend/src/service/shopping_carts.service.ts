@@ -10,6 +10,7 @@ import generateUUID from "../utils/generator";
 export type Pagination = { page: number; size: number };
 
 type CartRow = Database["public"]["Tables"]["shopping_carts"]["Row"];
+type ProductsRow = Database["public"]["Tables"]["products"]["Row"];
 type PublicCartItem = Omit<CartRow, "customer_id">;
 
 type cartCustomer = { id: string; product_id: string; quantity: number }
@@ -50,7 +51,31 @@ export const ShoppingCartService = {
       console.error("Cart read error:", error);
       throw new Error("DB_READ_FAILED");
     }
-    return (data ?? []).map(({ customer_id, ...rest }) => rest);
+
+    const items = data ?? [];
+
+    if (items.length === 0) return [];
+
+    const productIds = [...new Set(items.map((i) => i.product_id))];
+
+    const { data: products, error: errProduct } = await supabase
+      .from("products")
+      .select("id, name")
+      .in("id", productIds);
+    
+    if (errProduct) {
+      console.error("Product read error:", errProduct);
+      throw new Error("DB_READ_FAILED");
+    }
+
+    const productMap = new Map((products ?? []).map((p) => [p.id as string, p.name as string]));
+    
+    return items.map((i) => ({
+      id: i.id,
+      product_id: i.product_id,
+      name: productMap.get(i.product_id) ?? "(unknown product)",
+      quantity: i.quantity,
+    }));
   },
   async deleteItemById(id: string, customerId: string): Promise<boolean> {
     //delete by product_id and customer_id (verify the customer)
