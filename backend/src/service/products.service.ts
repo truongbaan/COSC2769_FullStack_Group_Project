@@ -11,10 +11,10 @@ import { supabase, Database } from "../db/db";
 
 import generateUUID from "../utils/generator";
 
-//Dùng "Row" để trả về
+//Use "Row" to return data
 export type ProductRow = Database["public"]["Tables"]["products"]["Row"];
 
-//Dùng "Insert" để tạo data
+//Use "Insert" to create data
 export type ProductInsert = Database["public"]["Tables"]["products"]["Insert"];
 
 export type CreateProductInput = z.infer<typeof createProductParamsSchema>;
@@ -113,10 +113,7 @@ export const ProductService = {
     return data;
   },
 
-  async getVendorProducts(
-    { page, size }: Pagination,
-    vendorId: string,
-  ): Promise<ProductRow[] | null> {
+  async getVendorProducts({ page, size }: Pagination, vendorId: string,): Promise<ProductRow[] | null> {
     const offset = (page - 1) * size;
 
     const query = supabase
@@ -141,4 +138,27 @@ export const ProductService = {
     return data;
   },
 
+  async updateProductStatus(vendorId: string, productId: string, instock: boolean) {
+    const query = supabase
+      .from("products")
+      .update({ instock })
+      .eq("vendor_id", vendorId)
+      .eq("id", productId)
+      .select("*")
+      .maybeSingle();
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error("Error fetching product:", error);
+      throw error;
+    }
+    console.log(data);
+
+    if (!data) {
+      return null; // explicitly return null to trigger 404 in route
+      // return [];
+    }
+    return data;
+  },
 };

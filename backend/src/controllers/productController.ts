@@ -136,3 +136,37 @@ export const createProductController = async (req: Request, res: Response) => {
         });
     }
 };
+
+export const updateProductStatusBodySchema = z.object({
+    instock: z.coerce.boolean(),
+}).strict();
+
+export const updateProductStatusController = async (req: Request, res: Response) => {
+    try {
+        const vendorId = req.user_id;
+        const { productId } = req.params;
+        const { instock } = req.body;
+
+        const updated = await ProductService.updateProductStatus(
+            vendorId as string,
+            productId as string,
+            instock as boolean);
+
+        if (!updated) {
+            return res.status(404).json({ message: "Product not found or not owned by vendor" });
+        }
+
+        return SuccessJsonResponse(res, 200, {
+            message: "Update Status Success",
+            product: updated,
+
+        });
+
+    } catch (err: any) {
+        console.error("updateProductStatusController error:", err);
+        return res.status(500).json({
+            message: "Internal Server Error",
+            detail: err.message ?? "Unexpected error while updating product status",
+        });
+    }
+};

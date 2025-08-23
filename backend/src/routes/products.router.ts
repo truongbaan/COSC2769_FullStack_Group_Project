@@ -13,6 +13,8 @@ import {
   createProductParamsSchema,
   getProductByIdController,
   getProductByIdParamsSchema,
+  updateProductStatusBodySchema,
+  updateProductStatusController,
 } from "../controllers/productController";
 import { validationMiddleware } from "../middleware/validation.middleware";
 import {
@@ -38,6 +40,13 @@ ProductRouter.post(
   requireAuth("vendor"),
   validationMiddleware(createProductParamsSchema, "body"),
   createProductController
+);
+
+ProductRouter.patch(
+  "/:productId/updateStatus",
+  requireAuth("vendor"),
+  validationMiddleware(updateProductStatusBodySchema, "body"),
+  updateProductStatusController
 );
 
 // Get product details by id
