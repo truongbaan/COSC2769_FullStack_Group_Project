@@ -18,5 +18,6 @@ OrderRouter.get("/", validationMiddleware(getOrdersQuerrySchema, 'query'), getOr
 //update the satus of the order
 OrderRouter.put("/:id/status", validationMiddleware(getOrdersQuerrySchema, 'query'), updateOrderStatusController);
 
+//get all the items of a specific order
 OrderRouter.get("/:id/items", validationMiddleware(getOrderItemsParamsSchema, "params"), getOrderItemsController);
 export default OrderRouter
