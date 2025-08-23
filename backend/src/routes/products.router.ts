@@ -2,28 +2,27 @@
 # Course: COSC2769 - Full Stack Development 
 # Semester: 2025B 
 # Assessment: Assignment 02 
-# Author: 
-# ID:  */
+# Author: Nguyen Vo Truong Toan
+# ID:  s3979056
+*/
 
-import { Router, Request, Response } from "express";
-import { ProductRow, ProductService } from "../service/products.service";
-import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes";
+import { Router } from "express";
+import { requireAuth } from "../middleware/requireAuth";
+import { validationMiddleware } from "../middleware/validation.middleware";
+import { addToCartBodySchema, addToCartController } from "../controllers/shoppingCartController";
+
 import {
-  createProductController,
+  getProductsController,
+  getProductsQuerrySchema,
+} from "../controllers/productController";
+
+import {createProductController,
   createProductParamsSchema,
   getProductByIdController,
   getProductByIdParamsSchema,
   updateProductStatusBodySchema,
   updateProductStatusController,
 } from "../controllers/productController";
-import { validationMiddleware } from "../middleware/validation.middleware";
-import {
-  getProductsController,
-  getProductsQuerrySchema,
-} from "../controllers/productController";
-import { requireAuth } from "../middleware/requireAuth";
-import { id } from "zod/v4/locales/index.cjs";
-import { addToCartBodySchema, addToCartController } from "../controllers/shoppingCartController";
 
 const ProductRouter = Router();
 

@@ -7,9 +7,9 @@
 
 import { Router} from 'express';
 import {} from '../service/customer.service'
-import { getCustomersController } from '../controllers/customer.controller';
-import { validationMiddleware } from '../middleware/validation.middleware';
 import { getUsersRoleQuerySchema } from '../types/general.type';
+import { validationMiddleware } from '../middleware/validation.middleware';
+import { getCustomersController } from '../controllers/customer.controller';
 
 const CustomerRouter = Router();
 //for query get multiple users

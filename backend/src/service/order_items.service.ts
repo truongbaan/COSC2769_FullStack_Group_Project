@@ -1,8 +1,15 @@
+/* RMIT University Vietnam 
+# Course: COSC2769 - Full Stack Development 
+# Semester: 2025B 
+# Assessment: Assignment 02 
+# Author: Nguyen The Anh
+# ID: s3975844 */
+
 import { supabase, type Database } from "../db/db"
 
-type OrderItemsRow = Database["public"]["Tables"]["order_items"]["Row"]
 type ProductRow = Database["public"]["Tables"]["products"]["Row"]
 type customerRow = Database["public"]["Tables"]["customers"]["Row"]
+type OrderItemsRow = Database["public"]["Tables"]["order_items"]["Row"]
 
 export type OrderItemWithProduct = {
 //  order_id: string

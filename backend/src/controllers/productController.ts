@@ -7,9 +7,8 @@
 
 import * as z from "zod";
 import { Request, Response } from "express";
-import { ProductInsert, ProductInsertNoId, ProductService } from "../service/products.service";
+import {ProductInsertNoId, ProductService } from "../service/products.service";
 import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes";
-import generateUUID from "../utils/generator";
 
 export const getProductsQuerrySchema = z.object({
     page: z.coerce.number().min(1).default(1),

@@ -9,12 +9,13 @@ import generateUUID from "../utils/generator";
 
 export type Pagination = { page: number; size: number };
 
-type CartRow = Database["public"]["Tables"]["shopping_carts"]["Row"];
-type ProductsRow = Database["public"]["Tables"]["products"]["Row"];
+type ProductRow = { id: string; price: number }
+type cartCustomer = { id: string; product_id: string; quantity: number }
+
 type PublicCartItem = Omit<CartRow, "customer_id">;
 
-type cartCustomer = { id: string; product_id: string; quantity: number }
-type ProductRow = { id: string; price: number }
+type CartRow = Database["public"]["Tables"]["shopping_carts"]["Row"];
+
 
 class HttpError extends Error { 
   constructor(public status: number, msg: string){ super(msg) } 
