@@ -19,8 +19,6 @@ type FullCustomer = {
     profile_picture: string,
 }
 
-type CustomerNameAndAddress = Pick<Customer, "name" | "address">;
-
 export const CustomerService = {
     async getCustomers({ page, size }: Pagination): Promise<FullCustomer[] | null> {
         const listAll = page === -1 || size === -1;

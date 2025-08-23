@@ -4,8 +4,8 @@
 # Assessment: Assignment 02 
 # Author: Truong Ba An
 # ID: s3999568 */
-import { Request, Response } from "express"
 import { z } from "zod"
+import { Request, Response } from "express"
 import { UserService } from "../service/user.service"
 import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes"
 

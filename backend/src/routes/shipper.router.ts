@@ -3,11 +3,12 @@
 # Semester: 2025B 
 # Assessment: Assignment 02 
 # Author: Truong Ba An
-# ID: s3999568 */
+# ID: s3999568 
+*/
 
-import { Router, Request, Response } from 'express';
-import { getShippersController } from '../controllers/shipper.controller';
+import { Router} from 'express';
 import { getUsersRoleQuerySchema } from '../types/general.type';
+import { getShippersController } from '../controllers/shipper.controller';
 import { validationMiddleware } from '../middleware/validation.middleware';
 
 const ShipperRouter = Router();

@@ -5,10 +5,10 @@
 # Author: Nguyen The Anh
 # ID: s3975844 */
 
-import { Router, Request, Response } from 'express';
+import { Router } from 'express';
 import { validationMiddleware } from '../middleware/validation.middleware';
-import { getOrdersController, getOrdersQuerrySchema, updateOrderStatusController } from '../controllers/orderController';
 import { getOrderItemsController, getOrderItemsParamsSchema } from '../controllers/orderItemController';
+import { getOrdersController, getOrdersQuerrySchema, updateOrderStatusController } from '../controllers/orderController';
 
 
 const OrderRouter = Router();

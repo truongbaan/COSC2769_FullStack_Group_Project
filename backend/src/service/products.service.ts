@@ -2,12 +2,12 @@
 # Course: COSC2769 - Full Stack Development 
 # Semester: 2025B 
 # Assessment: Assignment 02 
-# Author: 
-# ID: */
+# Author: Nguyen Vo Truong Toan
+# ID: s3979056 */
 
 import z from "zod";
-import { createProductParamsSchema } from "../controllers/productController";
 import { supabase, Database } from "../db/db";
+import { createProductParamsSchema } from "../controllers/productController";
 
 import generateUUID from "../utils/generator";
 
@@ -17,9 +17,10 @@ export type ProductRow = Database["public"]["Tables"]["products"]["Row"];
 //Use "Insert" to create data
 export type ProductInsert = Database["public"]["Tables"]["products"]["Insert"];
 
+export type ProductInsertNoId = Omit<ProductInsert, "id">;
+
 export type CreateProductInput = z.infer<typeof createProductParamsSchema>;
 
-export type ProductInsertNoId = Omit<ProductInsert, "id">;
 
 export type ProductsFilters = {
   category?: string;

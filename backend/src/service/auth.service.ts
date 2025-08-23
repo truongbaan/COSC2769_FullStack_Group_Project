@@ -5,13 +5,13 @@
 # Author: Truong Ba An
 # ID: s3999568 */
 
-import { deleteAuthenUser } from '../db/db'
 import { signUpUser } from '../db/db';
-import { User, UserService } from './user.service';
-import { Customer, CustomerService } from './customer.service';
-import { Shipper, ShipperService } from './shipper.service';
-import { Vendor, VendorService } from './vendor.service';
+import { deleteAuthenUser } from '../db/db'
 import { hashPassword } from '../utils/password';
+import { User, UserService } from './user.service';
+import { Vendor, VendorService } from './vendor.service';
+import { Shipper, ShipperService } from './shipper.service';
+import { Customer, CustomerService } from './customer.service';
 
 //return result
 interface AuthResult {

@@ -6,8 +6,8 @@
 # ID: s3979056 */
 
 import * as z from "zod";
-import { NextFunction, Request, Response } from "express";
 import { ErrorJsonResponse } from "../utils/json_mes";
+import { NextFunction, Request, Response } from "express";
 
 export const validationMiddleware = (schema: z.Schema, validationPart: 'body' | 'params' | 'query') => (req: Request, res: Response, next: NextFunction) => {
     try {

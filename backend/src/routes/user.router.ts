@@ -6,9 +6,17 @@
 # ID: s3999568 */
 
 import { Router} from 'express';
-import { getUsersQuerySchema, getUsersController, getUserByIdController, deleteUserController, deleteUserByIdParamsSchema, updateUserByIdParamsSchema, updateUserByIdController, uploadProfilePictureController } from '../controllers/user.controller';
-import { validationMiddleware } from '../middleware/validation.middleware';
 import multer from "multer";
+import { validationMiddleware } from '../middleware/validation.middleware';
+import { getUsersQuerySchema, 
+         getUsersController, 
+         getUserByIdController, 
+         deleteUserController, 
+         deleteUserByIdParamsSchema, 
+         updateUserByIdParamsSchema, 
+         updateUserByIdController, 
+         uploadProfilePictureController } 
+         from '../controllers/user.controller';
 
 const upload = multer(); // memory storage
 const UserRouter = Router();

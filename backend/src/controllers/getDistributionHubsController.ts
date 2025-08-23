@@ -2,13 +2,13 @@
 # Course: COSC2769 - Full Stack Development 
 # Semester: 2025B 
 # Assessment: Assignment 02 
-# Author: 
-# ID:  */
+# Author: Nguyen Vo Truong Toan
+# ID: s3979056 */
 
 import * as z from "zod";
 import { Request, Response } from "express";
-import { DistributionHubService } from "../service/distribution_hubs.service";
 import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes";
+import { DistributionHubService } from "../service/distribution_hubs.service";
 
 export const getAllHubsQuerrySchema = z.object({
     page: z.coerce.number().min(1).default(1),

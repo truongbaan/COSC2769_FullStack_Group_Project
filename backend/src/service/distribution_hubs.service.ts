@@ -2,12 +2,13 @@
 # Course: COSC2769 - Full Stack Development 
 # Semester: 2025B 
 # Assessment: Assignment 02 
-# Author: 
-# ID:  */
+# Author: Nguyen Vo Truong Toan
+# ID: s3979056 */
 
 import { supabase, Database } from "../db/db";
 
 export type DistributionHub = Database["public"]["Tables"]["distribution_hubs"]["Row"];
+
 export type Pagination = { page: number; size: number };
 
 export const DistributionHubService = {
