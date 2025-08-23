@@ -29,7 +29,7 @@ apiRouter.use('/customers', requireAuth(), CustomerRouter);
 
 apiRouter.use('/vendors', requireAuth(), VendorRouter)
 
-apiRouter.use('shippers', requireAuth(), ShipperRouter)
+apiRouter.use('/shippers', requireAuth(), ShipperRouter)
 
 apiRouter.use("/products", requireAuth("vendor"), ProductRouter);
 
