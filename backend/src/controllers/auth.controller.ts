@@ -7,17 +7,11 @@
 
 import * as z from "zod";
 import { Request, Response } from "express";
-import { signInUser } from "../db/db";
+import { signInUser, signOutUser } from "../db/db";
 import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes";
 import { UserService } from "../service/user.service";
 import { AuthService } from "../service/auth.service";
- 
-//xin frontend nhá =))
-const usernameRegex = /^[A-Za-z0-9]{8,15}$/;
-const passwordRegex =/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,20}$/;
-const usernameSchema = z.string().regex(usernameRegex, "Username must be 8-15 letters/digits").trim();
-const passwordSchema = z.string().regex(passwordRegex,"Password 8-20, includes upper, lower, digit, special !@#$%^&*").trim();
-
+import { passwordSchema, usernameSchema } from "../types/general.type";
 
 export const loginBodySchema = z.object({
     email: z.email("Invalid email format").trim(),
@@ -177,4 +171,25 @@ function addCookie(res : Response, session : any){
         secure: process.env.PRODUCTION_SITE === 'true', // http or https
         path: '/',
     })
+}
+
+export const logoutController = async (req: Request, res: Response) => {
+    try {
+        const token = req.cookies.access_token
+        if (!token) {
+            return ErrorJsonResponse(res, 401, 'Not logged in')
+        }
+        
+        const result = await signOutUser()
+        if (!result){
+            return ErrorJsonResponse(res, 500, 'Fail to sign out user')
+        }
+        // Clear cookies
+        res.clearCookie('access_token', { path: '/' })
+        res.clearCookie('refresh_token', { path: '/' })
+        
+        SuccessJsonResponse(res, 200, 'Logged out successfully' )
+    } catch (error) {
+        ErrorJsonResponse(res, 500, 'Internal server error')
+    }
 }
