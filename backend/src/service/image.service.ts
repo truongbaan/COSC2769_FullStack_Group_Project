@@ -52,9 +52,24 @@ export const ImageService = {
         }
     },
 
-    getPublicImageUrl(filePath: string, bucket: Storage): ImageResult {
+    async getPublicImageUrl(filePath: string, bucket: Storage): Promise<ImageResult> {
         if (!allowedBuckets.includes(bucket)) {
             return { success: false, error: 'Invalid bucket name.' };
+        }
+        // Check if file exists
+        const { data: fileList, error: listError } = await supabase
+            .storage
+            .from(bucket)
+            .list(undefined, { search: filePath });
+
+        if (listError) {
+            return { success: false, error: listError.message };
+        }
+
+        // If file not found
+        const found = fileList.find(f => f.name === filePath.split('/').pop());
+        if (!found) {
+            return { success: false, error: 'File not found in bucket.' };
         }
         const { data } = supabase.storage
             .from(bucket)

@@ -12,6 +12,7 @@ import { Customer, CustomerService } from './customer.service';
 import { Shipper, ShipperService } from './shipper.service';
 import { Vendor, VendorService } from './vendor.service';
 import { hashPassword } from '../utils/password';
+import { UserRole } from '../types/general.type';
 
 //return result
 interface AuthResult {
@@ -23,7 +24,7 @@ interface AuthResult {
     };
     error?: string;
 }
-type UserRole = Database['public']['Tables']['users']['Row']['role'];
+
 //remove id field and role field from the required form
 type NewUser = Omit<User, 'id' | 'role'>;
 type NewCustomer = Omit<Customer, 'id'>;
@@ -89,7 +90,7 @@ export const AuthService = {
                 await deleteAuthenUser(session.user.id);
                 return {
                     success: false,
-                    error: 'Error creating user in database'
+                    error: 'Error creating user in database. Username may already exist'
                 };
             }
 

@@ -5,7 +5,7 @@
 # Author: Truong Ba An
 # ID: s3999568 */
 
-import { Router, Request, Response } from 'express';
+import { Router} from 'express';
 import { getShippersController } from '../controllers/shipper.controller';
 import { getUsersRoleQuerySchema } from '../types/general.type';
 import { validationMiddleware } from '../middleware/validation.middleware';

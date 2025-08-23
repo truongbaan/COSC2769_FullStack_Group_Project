@@ -5,7 +5,7 @@
 # Author: Truong Ba An
 # ID: s3999568 */
 
-import { supabase, Database, changePassword } from "../db/db"
+import { supabase, Database, changePassword, deleteAuthenUser } from "../db/db"
 import { CustomerService } from "./customer.service"
 import { ShipperService } from "./shipper.service"
 import { VendorService } from "./vendor.service"
@@ -28,12 +28,12 @@ type UsersUpdate = {
 
 export const UserService = {
 
-    async getUsers({ page, size }: Pagination, filters: UsersFilters): Promise<User[] | null> {
+    async getUsers({ page, size }: Pagination, filters: UsersFilters): Promise<Omit<User, 'password'>[] | null> {
         const listAll = page === -1 || size === -1;
 
         let query = supabase
             .from("users")
-            .select("*")
+            .select("id, username, email, profile_picture, role")
             .order("id", { ascending: false });
 
         if (filters.role !== 'all') {
@@ -53,7 +53,32 @@ export const UserService = {
         }
 
         if (!data) return null;
-        return data;
+
+        const usersWithImages = await Promise.all(
+            data.map(async (user) => {
+                if (user.profile_picture) {
+                    const result = await ImageService.getPublicImageUrl(
+                        user.profile_picture,
+                        "profileimages"
+                    );
+
+                    if (result.success && result.url) {
+                        return {
+                            ...user,
+                            profile_picture: result.url,
+                        };
+                    }
+                }
+
+                // If no picture OR invalid, explicitly clear it
+                return {
+                    ...user,
+                    profile_picture: '',
+                };
+            })
+        );
+
+        return usersWithImages;
     },
 
     /** Fetch a single user by id */
@@ -91,6 +116,13 @@ export const UserService = {
                 break
         }
 
+        const imageResult = await ImageService.getPublicImageUrl(data.profile_picture, 'profileimages')
+        if (imageResult.success){
+            data.profile_picture = imageResult.url
+        } else{
+            data.profile_picture = ''
+        }
+        
         //found full info
         if (role_data) {
             return { ...data, ...role_data }
@@ -100,7 +132,8 @@ export const UserService = {
     },
 
     async createUser(user: User): Promise<User | null> {
-        const { data, error } = await supabase
+        // First try to insert
+        const { data: createdUser, error: createError } = await supabase
             .from('users')
             .insert({
                 id: user.id,
@@ -113,15 +146,53 @@ export const UserService = {
             .select()
             .maybeSingle();
 
-        if (error || !data) {
-            console.error('Error creating customer:', error);
-            return null;
-        }
+        if (createError || !createdUser) {
+            // Could be because leftover row exists in DB even if Auth is deleted
+            console.error("Error creating customer:", createError);
 
-        return data;
+            // Try cleanup
+            const { error: cleanupError } = await supabase
+                .from('users')
+                .delete()
+                .eq('email', user.email);
+
+            if (cleanupError) {
+                console.error(`Error deleting stale user ${user.email}:`, cleanupError);
+                return null;
+            }
+
+            // Retry insert after cleanup
+            const { data: retriedUser, error: retryError } = await supabase
+                .from('users')
+                .insert({
+                    id: user.id,
+                    email: user.email,
+                    password: user.password,
+                    username: user.username,
+                    profile_picture: user.profile_picture,
+                    role: user.role
+                })
+                .select()
+                .maybeSingle();
+
+            if (retryError || !retriedUser) {
+                console.error("Error creating customer after cleanup:", retryError);
+                return null;
+            }
+            return retriedUser;
+        }
+        return createdUser;
     },
 
     async deleteUser(id: string): Promise<boolean> {
+        //remove authen first
+        const result = await deleteAuthenUser(id)
+        if (!result) {
+            console.error(`Error deleting user ${id} in authentication`)
+            return false
+        }
+
+        //remove in db later
         const { error } = await supabase
             .from('users')
             .delete()
