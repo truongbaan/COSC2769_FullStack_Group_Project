@@ -15,6 +15,7 @@ declare global {
         interface Request {
             user_id: string;
             user_role?: string; // for verifying role of router with multiple role allowed
+            // user_role?: "vendor" | "customer" | "shipper";
         }
     }
 }
@@ -50,8 +51,11 @@ export function requireAuth(role: string | string[] = '') {
             }
         }
 
-        req.user_role = user.role
+
+        // req.user_role = user.role as "vendor" | "customer" | "shipper";
+        req.user_role = user.role;
         req.user_id = data.user.id//return user_id field for other controller uses
+        console.log(req.user_role);
         next();
     };
 }

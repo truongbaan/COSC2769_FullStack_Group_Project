@@ -31,11 +31,12 @@ apiRouter.use('/vendors', requireAuth(), VendorRouter)
 
 apiRouter.use('shippers', requireAuth(), ShipperRouter)
 
-apiRouter.use("/products", requireAuth("customer"), ProductRouter);
+apiRouter.use("/products", requireAuth(["vendor", "customer"]), ProductRouter);
 
 apiRouter.use("/distribution-hubs", requireAuth(), DistributionHubRouter);
 
 apiRouter.use("/orders", requireAuth("shipper"), OrderRouter);
 
 apiRouter.use("/cart", requireAuth("customer"), ShoppingCartRouter);
+
 export default apiRouter;
