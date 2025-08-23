@@ -6,7 +6,7 @@
 # ID: s3999568 */
 
 import { Router} from 'express';
-import { getUsersQuerySchema, getUsersController, getUserByIdController, deleteUserController, deleteUserByIdParamsSchema, updateUserByIdParamsSchema, updateUserByIdController, uploadProfilePictureController } from '../controllers/user.controller';
+import { getUsersQuerySchema, getUsersController, getUserByIdController, getUserByIdParamsSchema, deleteUserController, updateUserByIdParamsSchema, updateUserByIdController, uploadProfilePictureController } from '../controllers/user.controller';
 import { validationMiddleware } from '../middleware/validation.middleware';
 import multer from "multer";
 
@@ -15,9 +15,9 @@ const UserRouter = Router();
 //for query get multiple users
 UserRouter.get('/', validationMiddleware(getUsersQuerySchema, 'query'), getUsersController); //return list of User[]
 //for single user
-UserRouter.get('/:id', validationMiddleware(getUsersQuerySchema, 'params'), getUserByIdController);//return User
+UserRouter.get('/:id', validationMiddleware(getUserByIdParamsSchema, 'params'), getUserByIdController);//return User
 //delete user
-UserRouter.delete('/:id', validationMiddleware(deleteUserByIdParamsSchema, 'params'), deleteUserController);
+UserRouter.delete('/me', deleteUserController);
 //update password
 UserRouter.patch('/update', validationMiddleware(updateUserByIdParamsSchema, 'body'), updateUserByIdController);
 //upload image 
