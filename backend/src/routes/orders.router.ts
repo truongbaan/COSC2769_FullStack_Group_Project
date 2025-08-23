@@ -8,6 +8,7 @@
 import { Router, Request, Response } from 'express';
 import { validationMiddleware } from '../middleware/validation.middleware';
 import { getOrdersController, getOrdersQuerrySchema, updateOrderStatusController } from '../controllers/orderController';
+import { getOrderItemsController, getOrderItemsParamsSchema } from '../controllers/orderItemController';
 
 
 const OrderRouter = Router();
@@ -16,4 +17,6 @@ OrderRouter.get("/", validationMiddleware(getOrdersQuerrySchema, 'query'), getOr
 
 //update the satus of the order
 OrderRouter.put("/:id/status", validationMiddleware(getOrdersQuerrySchema, 'query'), updateOrderStatusController);
+
+OrderRouter.get("/:id/items", validationMiddleware(getOrderItemsParamsSchema, "params"), getOrderItemsController);
 export default OrderRouter
