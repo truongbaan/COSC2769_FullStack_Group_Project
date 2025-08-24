@@ -5,11 +5,15 @@
 # Author: Nguyen The Anh
 # ID: s3975844*/
 
-import { Router, Request, Response } from 'express';
+import { Router} from 'express';
 import { validationMiddleware } from '../middleware/validation.middleware';
-import { get } from 'http';
-import { getCartQuerrySchema, getCartController, deleteByIdParamsSchema, deleteCartItemByIdController, checkoutController} from '../controllers/shoppingCartController';
-import { de } from 'zod/v4/locales/index.cjs';
+import { getCartQuerrySchema, 
+         getCartController, 
+         deleteByIdParamsSchema, 
+         deleteCartItemByIdController, 
+         checkoutController} 
+         from '../controllers/shoppingCartController';
+
 
 const ShoppingCartRouter = Router();
 

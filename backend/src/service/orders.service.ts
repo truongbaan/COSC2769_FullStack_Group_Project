@@ -6,8 +6,8 @@
 # ID: s3975844*/
 import { supabase, Database } from "../db/db";
 
-export type Order = Database["public"]["Tables"]["orders"]["Row"]; //take the orders table from database
 export type OrderStatus = "active" | "delivered" | "canceled"; //Statuses of an order
+export type Order = Database["public"]["Tables"]["orders"]["Row"]; //take the orders table from database
 
 export type Pagination = {
   page: number;

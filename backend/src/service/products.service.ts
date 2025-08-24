@@ -2,25 +2,24 @@
 # Course: COSC2769 - Full Stack Development 
 # Semester: 2025B 
 # Assessment: Assignment 02 
-# Author: 
-# ID: */
+# Author: Nguyen Vo Truong Toan
+# ID: s3979056 */
 
 import z from "zod";
-import { createProductParamsSchema } from "../controllers/productController";
 import { supabase, Database } from "../db/db";
+import { createProductParamsSchema } from "../controllers/productController";
 
 import generateUUID from "../utils/generator";
 
-//Dùng "Row" để trả về
+//Use "Row" to return data
 export type ProductRow = Database["public"]["Tables"]["products"]["Row"];
 
-//Dùng "Insert" để tạo data
+//Use "Insert" to create data
 export type ProductInsert = Database["public"]["Tables"]["products"]["Insert"];
-
-export type CreateProductInput = z.infer<typeof createProductParamsSchema>;
 
 export type ProductInsertNoId = Omit<ProductInsert, "id">;
 
+export type CreateProductInput = z.infer<typeof createProductParamsSchema>;
 
 export type ProductsFilters = {
   category?: string;
@@ -35,7 +34,7 @@ export type Pagination = {
 }
 
 export const ProductService = {
-  async getProducts(
+  async getCustomerProducts(
     { page, size }: Pagination,
     filters?: ProductsFilters,
   ): Promise<ProductRow[] | null> {
@@ -110,6 +109,55 @@ export const ProductService = {
       return null;
     }
 
+    return data;
+  },
+
+  async getVendorProducts({ page, size }: Pagination, vendorId: string,): Promise<ProductRow[] | null> {
+    const offset = (page - 1) * size;
+
+    const query = supabase
+      .from("products")
+      .select("*")
+      .eq("vendor_id", vendorId)
+      .range(offset, offset + size - 1)
+      .order("id", { ascending: false });
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error("Error fetching product:", error);
+      throw error;
+    }
+    console.log(data);
+
+    if (!data) {
+      return null; // explicitly return null to trigger 404 in route
+      // return [];
+    }
+    return data;
+  },
+
+  async updateProductStatus(vendorId: string, productId: string, instock: boolean) {
+    const query = supabase
+      .from("products")
+      .update({ instock })
+      .eq("vendor_id", vendorId)
+      .eq("id", productId)
+      .select("*")
+      .maybeSingle();
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error("Error fetching product:", error);
+      throw error;
+    }
+    console.log(data);
+
+    if (!data) {
+      return null; // explicitly return null to trigger 404 in route
+      // return [];
+    }
     return data;
   },
 };

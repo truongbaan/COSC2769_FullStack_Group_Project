@@ -147,5 +147,5 @@ export const CustomerService = {
             return false;
         }
         return true;
-    }
+    }, 
 }

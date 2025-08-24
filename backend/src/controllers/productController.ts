@@ -7,9 +7,8 @@
 
 import * as z from "zod";
 import { Request, Response } from "express";
-import { ProductInsert, ProductInsertNoId, ProductService } from "../service/products.service";
 import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes";
-import generateUUID from "../utils/generator";
+import {ProductInsertNoId, ProductService } from "../service/products.service";
 
 export const getProductsQuerrySchema = z.object({
     page: z.coerce.number().min(1).default(1),
@@ -26,20 +25,45 @@ type GetProductsQuerryType = z.output<typeof getProductsQuerrySchema>;
 // Request < params type, response body, request body, request query
 export const getProductsController = async (req: Request, res: Response) => {
     try {
-        const { page, size, category, priceMin, priceMax, name } = (req as unknown as Record<string, unknown> & { validatedquery: GetProductsQuerryType }).validatedquery;
 
-        const products = await ProductService.getProducts(
-            { page, size },
-            { category, priceMax, priceMin, name }
-        );
+        const userRole = req.user_role;
+        if (userRole === "customer") {
+            const { page, size, category, priceMin, priceMax, name } = (req as unknown as Record<string, unknown> & { validatedquery: GetProductsQuerryType }).validatedquery;
 
-        if (products === null) {
-            return ErrorJsonResponse(res, 500, "Failed to fetch products");
+            const products = await ProductService.getCustomerProducts(
+                { page, size },
+                { category, priceMax, priceMin, name }
+            );
+
+            if (products === null) {
+                return ErrorJsonResponse(res, 500, "Failed to fetch products");
+            }
+
+            return SuccessJsonResponse(res, 200, {
+                data: { products, count: products.length },
+            });
+        }
+        else if (userRole === "vendor") {
+            const { page, size } = (req as unknown as Record<string, unknown> & { validatedquery: GetProductsQuerryType }).validatedquery;
+
+            const vendorId = req.user_id;
+
+            const products = await ProductService.getVendorProducts(
+                { page, size }, vendorId,
+            )
+
+            if (products === null) {
+                return ErrorJsonResponse(res, 500, "Failed to fetch products");
+            }
+
+            return SuccessJsonResponse(res, 200, {
+                data: { products, count: products.length },
+            });
         }
 
-        return SuccessJsonResponse(res, 200, {
-            data: { products, count: products.length },
-        });
+        return res.status(403).json({ message: "Forbidden: missing or invalid role" });
+
+
     } catch (err: any) {
         if (err?.issues) {
             return ErrorJsonResponse(res, 400, err.issues[0].message);
@@ -47,7 +71,7 @@ export const getProductsController = async (req: Request, res: Response) => {
         console.log('ERRRRR: ', err);
         return ErrorJsonResponse(res, 500, "Unexpected error while fetching products");
     }
-};
+}
 
 export const getProductByIdParamsSchema = z.object({
     productId: z.string(),
@@ -108,6 +132,40 @@ export const createProductController = async (req: Request, res: Response) => {
         return res.status(500).json({
             message: "Internal Server Error",
             detail: err.message ?? "Unexpected error while creating products",
+        });
+    }
+};
+
+export const updateProductStatusBodySchema = z.object({
+    instock: z.coerce.boolean(),
+}).strict();
+
+export const updateProductStatusController = async (req: Request, res: Response) => {
+    try {
+        const vendorId = req.user_id;
+        const { productId } = req.params;
+        const { instock } = req.body;
+
+        const updated = await ProductService.updateProductStatus(
+            vendorId as string,
+            productId as string,
+            instock as boolean);
+
+        if (!updated) {
+            return res.status(404).json({ message: "Product not found or not owned by vendor" });
+        }
+
+        return SuccessJsonResponse(res, 200, {
+            message: "Update Status Success",
+            product: updated,
+
+        });
+
+    } catch (err: any) {
+        console.error("updateProductStatusController error:", err);
+        return res.status(500).json({
+            message: "Internal Server Error",
+            detail: err.message ?? "Unexpected error while updating product status",
         });
     }
 };

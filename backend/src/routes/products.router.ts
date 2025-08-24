@@ -2,32 +2,34 @@
 # Course: COSC2769 - Full Stack Development 
 # Semester: 2025B 
 # Assessment: Assignment 02 
-# Author: 
-# ID:  */
+# Author: Nguyen Vo Truong Toan
+# ID:  s3979056
+*/
 
-import { Router, Request, Response } from "express";
-import { ProductRow, ProductService } from "../service/products.service";
-import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes";
-import {
-  createProductController,
-  createProductParamsSchema,
-  getProductByIdController,
-  getProductByIdParamsSchema,
-} from "../controllers/productController";
+import { Router } from "express";
+import { requireAuth } from "../middleware/requireAuth";
 import { validationMiddleware } from "../middleware/validation.middleware";
+import { addToCartBodySchema, addToCartController } from "../controllers/shoppingCartController";
+
 import {
   getProductsController,
   getProductsQuerrySchema,
 } from "../controllers/productController";
-import { requireAuth } from "../middleware/requireAuth";
-import { id } from "zod/v4/locales/index.cjs";
-import { addToCartBodySchema, addToCartController } from "../controllers/shoppingCartController";
+
+import {createProductController,
+  createProductParamsSchema,
+  getProductByIdController,
+  getProductByIdParamsSchema,
+  updateProductStatusBodySchema,
+  updateProductStatusController,
+} from "../controllers/productController";
 
 const ProductRouter = Router();
 
 // Get products with pagination and fitlers
 ProductRouter.get(
   "/",
+  requireAuth(["vendor", "customer"]),
   validationMiddleware(getProductsQuerrySchema, "query"),
   getProductsController
 );
@@ -39,9 +41,17 @@ ProductRouter.post(
   createProductController
 );
 
+ProductRouter.patch(
+  "/:productId/updateStatus",
+  requireAuth("vendor"),
+  validationMiddleware(updateProductStatusBodySchema, "body"),
+  updateProductStatusController
+);
+
 // Get product details by id
 ProductRouter.get(
   "/:productId",
+  requireAuth("customer"),
   validationMiddleware(getProductByIdParamsSchema, "params"),
   getProductByIdController
 );
@@ -49,6 +59,7 @@ ProductRouter.get(
 //add product to shopping cart
 ProductRouter.post(
   "/:productId/addToCart",
+  requireAuth("customer"),
   validationMiddleware(addToCartBodySchema, "body"),
   addToCartController
 )
