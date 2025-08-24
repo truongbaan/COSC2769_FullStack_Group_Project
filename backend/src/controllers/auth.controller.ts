@@ -124,8 +124,6 @@ export const registerShipperController = async (req: Request, res: Response): Pr
         
         return SuccessJsonResponse(res, 200, {
             data: {
-                access_token: result.data!.access_token,
-                refresh_token: result.data!.refresh_token,
                 user: result.data!.user
             }
         });
@@ -147,8 +145,6 @@ export const registerVendorController = async (req: Request, res: Response): Pro
         
         return SuccessJsonResponse(res, 200, {
             data: {
-                access_token: result.data!.access_token,
-                refresh_token: result.data!.refresh_token,
                 user: result.data!.user
             }
         });
