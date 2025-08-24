@@ -7,7 +7,7 @@
 
 import * as z from "zod";
 import { Request, Response } from "express";
-import {ProductInsertNoId, ProductService } from "../service/products.service";
+import { ProductInsertNoId, ProductService } from "../service/products.service";
 import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes";
 
 export const getProductsQuerrySchema = z.object({
@@ -25,7 +25,6 @@ type GetProductsQuerryType = z.output<typeof getProductsQuerrySchema>;
 // Request < params type, response body, request body, request query
 export const getProductsController = async (req: Request, res: Response) => {
     try {
-
         const userRole = req.user_role;
         if (userRole === "customer") {
             const { page, size, category, priceMin, priceMax, name } = (req as unknown as Record<string, unknown> & { validatedquery: GetProductsQuerryType }).validatedquery;
@@ -96,9 +95,9 @@ export const getProductByIdController = async (req: Request, res: Response) => {
 }
 
 export const createProductParamsSchema = z.object({
-    name: z.string().trim(),
+    name: z.string().trim().min(1, "Name is required"),
     price: z.coerce.number().min(0),
-    description: z.string().trim(),
+    description: z.string().trim().min(1, "Description is required"),
     image: z.string().trim(),
     category: z.string().trim().min(1),
     instock: z.coerce.boolean(),
@@ -123,16 +122,18 @@ export const createProductController = async (req: Request, res: Response) => {
         const payload: ProductInsertNoId = { vendor_id: vendorId, ...body };
 
         const created = await ProductService.createProduct(payload);
-        if (!created) return res.status(500).json({ message: "Failed to create product" });
+        if (!created)
+            res.status(500).json({ message: "Failed to create product" });
 
-        return res.status(201).json({ data: { product: created } });
+        return SuccessJsonResponse(res, 201, {
+            data: { product: created },
+        });
 
     } catch (err: any) {
         console.error("createProductController error:", err);
-        return res.status(500).json({
-            message: "Internal Server Error",
-            detail: err.message ?? "Unexpected error while creating products",
-        });
+        return ErrorJsonResponse(
+            res, 500, err?.message ?? "Unexpected error while creating product"
+        );
     }
 };
 
