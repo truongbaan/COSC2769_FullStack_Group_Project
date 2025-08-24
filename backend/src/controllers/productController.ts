@@ -10,7 +10,7 @@ import { Request, Response } from "express";
 import { ProductInsertNoId, ProductService } from "../service/products.service";
 import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes";
 
-export const getProductsQuerrySchema = z.object({
+export const getProductsQuerySchema = z.object({
     page: z.coerce.number().min(1).default(1),
     size: z.coerce.number().min(1).max(30).default(10),
     category: z.string().trim().max(100).optional(),
@@ -20,14 +20,14 @@ export const getProductsQuerrySchema = z.object({
 }).strict();
 
 
-type GetProductsQuerryType = z.output<typeof getProductsQuerrySchema>;
+type GetProductsQueryType = z.output<typeof getProductsQuerySchema>;
 
 // Request < params type, response body, request body, request query
 export const getProductsController = async (req: Request, res: Response) => {
     try {
         const userRole = req.user_role;
         if (userRole === "customer") {
-            const { page, size, category, priceMin, priceMax, name } = (req as unknown as Record<string, unknown> & { validatedquery: GetProductsQuerryType }).validatedquery;
+            const { page, size, category, priceMin, priceMax, name } = (req as unknown as Record<string, unknown> & { validatedquery: GetProductsQueryType }).validatedquery;
 
             const products = await ProductService.getCustomerProducts(
                 { page, size },
@@ -43,7 +43,7 @@ export const getProductsController = async (req: Request, res: Response) => {
             });
         }
         else if (userRole === "vendor") {
-            const { page, size } = (req as unknown as Record<string, unknown> & { validatedquery: GetProductsQuerryType }).validatedquery;
+            const { page, size } = (req as unknown as Record<string, unknown> & { validatedquery: GetProductsQueryType }).validatedquery;
 
             const vendorId = req.user_id;
 
