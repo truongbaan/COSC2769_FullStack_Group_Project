@@ -108,24 +108,10 @@ export const createProductParamsSchema = z.object({
     instock: z.coerce.boolean(),
 }).strict();
 
-// declare global {
-//     namespace Express {
-//         interface Request {
-//             validatedbody?: {
-//                 name: string; price: number; description: string;
-//                 image: string; category: string; instock: boolean;
-//             };
-//         }
-//     }
-// }
-
 export const createProductController = async (req: Request, res: Response) => {
     try {
         const vendorId = req.user_id;
-
-        //const body = req.validatedbody!; // do middleware set
         const body = createProductParamsSchema.parse(req.body);
-
         const payload: ProductInsertNoId = { vendor_id: vendorId, ...body };
 
         const created = await ProductService.createProduct(payload);
@@ -151,8 +137,6 @@ export const updateProductStatusBodySchema = z.object({
 export const updateProductStatusController = async (req: Request, res: Response) => {
     try {
         const vendorId = req.user_id;
-        // const { productId } = req.params;
-        // const { instock } = req.body;
         const { productId } = getProductByIdParamsSchema.parse(req.params);
         const { instock } = updateProductStatusBodySchema.parse(req.body);
 

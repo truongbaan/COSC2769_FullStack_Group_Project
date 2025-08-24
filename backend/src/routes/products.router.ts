@@ -44,6 +44,13 @@ ProductRouter.get(
   getProductByIdController
 );
 
+ProductRouter.post(
+  "/create",
+  requireAuth("vendor"),
+  validationMiddleware(createProductParamsSchema, "body"),
+  createProductController
+);
+
 // Customer add product to shopping cart
 ProductRouter.post(
   "/:productId/addToCart",
