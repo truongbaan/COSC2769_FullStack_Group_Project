@@ -24,14 +24,13 @@ export const getProductsQuerySchema = z.object({
 // );
 
 
-//type GetProductsQueryType = z.output<typeof getProductsQuerySchema>;
+type GetProductsQueryType = z.output<typeof getProductsQuerySchema>;
 
 // Request < params type, response body, request body, request query
 export const getProductsController = async (req: Request, res: Response) => {
     try {
         const userRole = req.user_role;
-        // const { page, size, category, priceMin, priceMax, name } = (req as unknown as Record<string, unknown> & { validatedquery: GetProductsQueryType }).validatedquery;
-        const { page, size, category, priceMin, priceMax, name } = getProductsQuerySchema.parse(req.query);
+        const { page, size, category, priceMin, priceMax, name } = (req as unknown as Record<string, unknown> & { validatedquery: GetProductsQueryType }).validatedquery;
 
         if (userRole === "customer") {
             const products = await ProductService.getCustomerProducts(
@@ -79,12 +78,10 @@ export const getProductByIdParamsSchema = z.object({
     productId: z.string(),
 }).strict();
 
-//type GetProductByIdParams = z.output<typeof getProductByIdParamsSchema>;
+type GetProductByIdParams = z.output<typeof getProductByIdParamsSchema>;
 
 export const getProductByIdController = async (req: Request, res: Response) => {
-    //const { productId } = (req as unknown as Record<string, unknown> & { validatedparams: GetProductByIdParams }).validatedparams;
-    const { productId } = getProductByIdParamsSchema.parse(req.params);
-
+    const { productId } = (req as unknown as Record<string, unknown> & { validatedparams: GetProductByIdParams }).validatedparams;
 
     const product = await ProductService.getProductById(productId);
 

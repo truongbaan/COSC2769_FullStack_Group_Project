@@ -45,7 +45,7 @@ ProductRouter.get(
 );
 
 ProductRouter.post(
-  "/create",
+  "/",
   requireAuth("vendor"),
   validationMiddleware(createProductParamsSchema, "body"),
   createProductController
@@ -60,7 +60,7 @@ ProductRouter.post(
 )
 
 ProductRouter.patch(
-  "/:productId/updateStatus",
+  "/:productId/status",
   requireAuth("vendor"),
   validationMiddleware(getProductByIdParamsSchema, "params"),
   validationMiddleware(updateProductStatusBodySchema, "body"),
