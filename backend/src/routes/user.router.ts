@@ -19,7 +19,7 @@ UserRouter.get('/:id', validationMiddleware(getUserByIdParamsSchema, 'params'), 
 //delete user
 UserRouter.delete('/me', deleteUserController);
 //update password
-UserRouter.patch('/update', validationMiddleware(updateUserByIdParamsSchema, 'body'), updateUserByIdController);
+UserRouter.patch('/update-password', validationMiddleware(updateUserByIdParamsSchema, 'body'), updateUserByIdController);
 //upload image 
-UserRouter.post("/image", upload.single("file"), uploadProfilePictureController);
+UserRouter.post("/upload-image", upload.single("file"), uploadProfilePictureController);
 export default UserRouter

@@ -76,7 +76,7 @@ export const deleteUserController = async (req: Request, res: Response) => {
         if (!deleted) {
             return ErrorJsonResponse(res, 500, "Failed to delete user")
         }
-        return SuccessJsonResponse(res, 200, { message: "User deleted successfully" })
+        return SuccessJsonResponse(res, 200, { message: "User account deleted successfully." })
     } catch (err: any) {
         if (err?.issues) {
             return ErrorJsonResponse(res, 400, err.issues[0].message)
