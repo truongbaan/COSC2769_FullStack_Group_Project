@@ -95,10 +95,9 @@ export const AuthService = {
             }
 
             // Create role-specific using the mapping
-            let roleRecord: any;
-            try {
-                roleRecord = await ROLE_CREATORS[role](session.user.id, roleSpecificData as any);
-            } catch (error) {
+            const roleRecord = await ROLE_CREATORS[role](session.user.id, roleSpecificData as any);
+
+            if (!roleRecord) {
                 await deleteAuthenUser(session.user.id);
                 await UserService.deleteUser(session.user.id);
                 return {
@@ -106,7 +105,6 @@ export const AuthService = {
                     error: `Failed to create ${role} record`
                 };
             }
-
             const userData_complete = { ...createdUser, ...roleRecord };
 
             return {

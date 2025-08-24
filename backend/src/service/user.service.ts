@@ -187,7 +187,7 @@ export const UserService = {
     async deleteUser(id: string): Promise<boolean> {
         //remove authen first
         const result = await deleteAuthenUser(id)
-        if (!result) {
+        if (!result.success) {
             console.error(`Error deleting user ${id} in authentication`)
             return false
         }
