@@ -20,9 +20,8 @@ type GetOrdersQuerryType = z.output<typeof getOrdersQuerrySchema>;
 export const getOrdersController = async (req: Request, res: Response) => {
   try {
 
-    const { page, size } =
-      (req as unknown as { validatedquery: GetOrdersQuerryType }).validatedquery;
-    
+    const { page, size } = (req as unknown as { validatedquery: GetOrdersQuerryType }).validatedquery;
+
     // take the order from the specifice hub with the status "active"
     const orders = await OrderService.getOrders({ page, size }, req.user_id);
 
@@ -57,13 +56,15 @@ const updateStatusBody = z.object({
   status: z.enum(["delivered", "canceled"]), //only 2 statuses can be updated to
 }).strict()
 
+type OrderStatusParamsType = z.output<typeof updateStatusParams>;
+type OrderStatusBodyType = z.output<typeof updateStatusBody>;
+
+
 export const updateOrderStatusController = async (req: Request, res: Response) => {
   try {
 
-    // Validate input
-    const { id } = updateStatusParams.parse(req.params)
-    const { status } = updateStatusBody.parse(req.body)
-
+    const { id } = (req as unknown as Record<string, unknown> & { validatedparams: OrderStatusParamsType }).validatedparams;
+    const { status } = (req as unknown as Record<string, unknown> & { validatedbody: OrderStatusBodyType }).validatedbody;
 
     // Update status: 'active' → 'delivered' | 'canceled'
     const updated = await OrderService.updateStatus(id, status, req.user_id)// only allow update if order in this hub
@@ -84,13 +85,6 @@ export const updateOrderStatusController = async (req: Request, res: Response) =
         return ErrorJsonResponse(res, 404, "Order not found")
       case "ALREADY_FINALIZED":
         return ErrorJsonResponse(res, 409, "Order already finalized (delivered/canceled)")
-      case "FORBIDDEN_HUB":
-        return ErrorJsonResponse(res, 403, "Order not in your hub")
-      case "CONFLICT":
-        return ErrorJsonResponse(res, 409, "Conflict: order status changed by another action")
-      case "DB_READ_FAILED":
-      case "DB_WRITE_FAILED":
-        return ErrorJsonResponse(res, 500, "Database error")
       default:
         console.error("Unexpected error in updateOrderStatusController:", err)
         return ErrorJsonResponse(res, 400, "Invalid request")

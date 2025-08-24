@@ -12,12 +12,14 @@ import { validationMiddleware } from "../middleware/validation.middleware";
 import { addToCartBodySchema, addToCartController } from "../controllers/shoppingCartController";
 
 import {
+  createProductBodySchema,
   getProductsController,
-  getProductsQuerrySchema,
+  getProductsQuerySchema,
 } from "../controllers/productController";
 
-import {createProductController,
-  createProductParamsSchema,
+import {
+  createProductController,
+  // deleteProductController,
   getProductByIdController,
   getProductByIdParamsSchema,
   updateProductStatusBodySchema,
@@ -26,26 +28,12 @@ import {createProductController,
 
 const ProductRouter = Router();
 
-// Get products with pagination and fitlers
+// Customer/ Vendor get products with pagination and fitlers
 ProductRouter.get(
   "/",
   requireAuth(["vendor", "customer"]),
-  validationMiddleware(getProductsQuerrySchema, "query"),
+  validationMiddleware(getProductsQuerySchema, "query"),
   getProductsController
-);
-
-ProductRouter.post(
-  "/create",
-  requireAuth("vendor"),
-  validationMiddleware(createProductParamsSchema, "body"),
-  createProductController
-);
-
-ProductRouter.patch(
-  "/:productId/updateStatus",
-  requireAuth("vendor"),
-  validationMiddleware(updateProductStatusBodySchema, "body"),
-  updateProductStatusController
 );
 
 // Get product details by id
@@ -56,12 +44,35 @@ ProductRouter.get(
   getProductByIdController
 );
 
-//add product to shopping cart
+ProductRouter.post(
+  "/",
+  requireAuth("vendor"),
+  validationMiddleware(createProductBodySchema, "body"),
+  createProductController
+);
+
+// Customer add product to shopping cart
 ProductRouter.post(
   "/:productId/addToCart",
   requireAuth("customer"),
   validationMiddleware(addToCartBodySchema, "body"),
   addToCartController
 )
+
+ProductRouter.patch(
+  "/:productId/instock",
+  requireAuth("vendor"),
+  validationMiddleware(getProductByIdParamsSchema, "params"),
+  validationMiddleware(updateProductStatusBodySchema, "body"),
+  updateProductStatusController
+);
+
+// // Vendor delete a product 
+// ProductRouter.delete(
+//   "/:productId",
+//   requireAuth("vendor"),
+//   validationMiddleware(getProductByIdParamsSchema, "params"),
+//   deleteProductController
+// );
 
 export default ProductRouter;

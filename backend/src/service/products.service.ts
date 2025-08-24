@@ -7,7 +7,7 @@
 
 import z from "zod";
 import { supabase, Database } from "../db/db";
-import { createProductParamsSchema } from "../controllers/productController";
+import { createProductBodySchema } from "../controllers/productController";
 
 import generateUUID from "../utils/generator";
 
@@ -19,7 +19,8 @@ export type ProductInsert = Database["public"]["Tables"]["products"]["Insert"];
 
 export type ProductInsertNoId = Omit<ProductInsert, "id">;
 
-export type CreateProductInput = z.infer<typeof createProductParamsSchema>;
+export type CreateProductInput = z.infer<typeof createProductBodySchema>;
+
 
 export type ProductsFilters = {
   category?: string;
