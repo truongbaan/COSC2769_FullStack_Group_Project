@@ -17,18 +17,23 @@ export const getProductsQuerySchema = z.object({
     priceMin: z.coerce.number().min(0).optional(),
     priceMax: z.coerce.number().min(0).max(100000000).optional(),
     name: z.string().optional(),
-}).strict();
+}).strict()
+// .refine(
+//     q => q.priceMin == null || q.priceMax == null || q.priceMax >= q.priceMin,
+//     { path: ["priceMax"], message: "priceMax must be >= priceMin" }
+// );
 
 
-type GetProductsQueryType = z.output<typeof getProductsQuerySchema>;
+//type GetProductsQueryType = z.output<typeof getProductsQuerySchema>;
 
 // Request < params type, response body, request body, request query
 export const getProductsController = async (req: Request, res: Response) => {
     try {
         const userRole = req.user_role;
-        if (userRole === "customer") {
-            const { page, size, category, priceMin, priceMax, name } = (req as unknown as Record<string, unknown> & { validatedquery: GetProductsQueryType }).validatedquery;
+        // const { page, size, category, priceMin, priceMax, name } = (req as unknown as Record<string, unknown> & { validatedquery: GetProductsQueryType }).validatedquery;
+        const { page, size, category, priceMin, priceMax, name } = getProductsQuerySchema.parse(req.query);
 
+        if (userRole === "customer") {
             const products = await ProductService.getCustomerProducts(
                 { page, size },
                 { category, priceMax, priceMin, name }
@@ -43,8 +48,6 @@ export const getProductsController = async (req: Request, res: Response) => {
             });
         }
         else if (userRole === "vendor") {
-            const { page, size } = (req as unknown as Record<string, unknown> & { validatedquery: GetProductsQueryType }).validatedquery;
-
             const vendorId = req.user_id;
 
             const products = await ProductService.getVendorProducts(
@@ -67,7 +70,7 @@ export const getProductsController = async (req: Request, res: Response) => {
         if (err?.issues) {
             return ErrorJsonResponse(res, 400, err.issues[0].message);
         }
-        console.log('ERRRRR: ', err);
+        console.log('getProductsController error: ', err);
         return ErrorJsonResponse(res, 500, "Unexpected error while fetching products");
     }
 }
@@ -76,10 +79,12 @@ export const getProductByIdParamsSchema = z.object({
     productId: z.string(),
 }).strict();
 
-type GetProductByIdParams = z.output<typeof getProductByIdParamsSchema>;
+//type GetProductByIdParams = z.output<typeof getProductByIdParamsSchema>;
 
 export const getProductByIdController = async (req: Request, res: Response) => {
-    const { productId } = (req as unknown as Record<string, unknown> & { validatedparams: GetProductByIdParams }).validatedparams;
+    //const { productId } = (req as unknown as Record<string, unknown> & { validatedparams: GetProductByIdParams }).validatedparams;
+    const { productId } = getProductByIdParamsSchema.parse(req.params);
+
 
     const product = await ProductService.getProductById(productId);
 
@@ -103,22 +108,24 @@ export const createProductParamsSchema = z.object({
     instock: z.coerce.boolean(),
 }).strict();
 
-declare global {
-    namespace Express {
-        interface Request {
-            validatedbody?: {
-                name: string; price: number; description: string;
-                image: string; category: string; instock: boolean;
-            };
-        }
-    }
-}
+// declare global {
+//     namespace Express {
+//         interface Request {
+//             validatedbody?: {
+//                 name: string; price: number; description: string;
+//                 image: string; category: string; instock: boolean;
+//             };
+//         }
+//     }
+// }
 
 export const createProductController = async (req: Request, res: Response) => {
     try {
         const vendorId = req.user_id;
 
-        const body = req.validatedbody!; // do middleware set
+        //const body = req.validatedbody!; // do middleware set
+        const body = createProductParamsSchema.parse(req.body);
+
         const payload: ProductInsertNoId = { vendor_id: vendorId, ...body };
 
         const created = await ProductService.createProduct(payload);
@@ -144,8 +151,10 @@ export const updateProductStatusBodySchema = z.object({
 export const updateProductStatusController = async (req: Request, res: Response) => {
     try {
         const vendorId = req.user_id;
-        const { productId } = req.params;
-        const { instock } = req.body;
+        // const { productId } = req.params;
+        // const { instock } = req.body;
+        const { productId } = getProductByIdParamsSchema.parse(req.params);
+        const { instock } = updateProductStatusBodySchema.parse(req.body);
 
         const updated = await ProductService.updateProductStatus(
             vendorId as string,
