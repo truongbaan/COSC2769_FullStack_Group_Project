@@ -5,15 +5,16 @@
 # Author: Nguyen The Anh
 # ID: s3975844*/
 
-import { Router} from 'express';
+import { Router } from 'express';
 import { validationMiddleware } from '../middleware/validation.middleware';
-import { getCartQuerrySchema, 
-         getCartController, 
-         deleteByIdParamsSchema, 
-         deleteCartItemByIdController, 
-         checkoutController} 
-         from '../controllers/shoppingCartController';
-
+import {
+    getCartQuerrySchema,
+    getCartController,
+    removeByIdParamsSchema,
+    removeCartItemByIdController,
+    checkoutController
+}
+    from '../controllers/shoppingCartController';
 
 const ShoppingCartRouter = Router();
 
@@ -21,7 +22,7 @@ const ShoppingCartRouter = Router();
 ShoppingCartRouter.get("/", validationMiddleware(getCartQuerrySchema, 'query'), getCartController);
 
 //delete the product in shoppping cart by id
-ShoppingCartRouter.delete("/deleteItem/:id", validationMiddleware(deleteByIdParamsSchema, 'params'), deleteCartItemByIdController);
+ShoppingCartRouter.delete("/removeItem/:id", validationMiddleware(removeByIdParamsSchema, 'params'), removeCartItemByIdController);
 
 //checkout the shopping cart (all items in the cart will be ordered)
 ShoppingCartRouter.post("/checkout", checkoutController)

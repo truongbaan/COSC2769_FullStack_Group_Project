@@ -7,7 +7,7 @@
 
 import z from "zod";
 import { supabase, Database } from "../db/db";
-import { createProductParamsSchema } from "../controllers/productController";
+import { createProductBodySchema } from "../controllers/productController";
 
 import generateUUID from "../utils/generator";
 
@@ -19,7 +19,7 @@ export type ProductInsert = Database["public"]["Tables"]["products"]["Insert"];
 
 export type ProductInsertNoId = Omit<ProductInsert, "id">;
 
-export type CreateProductInput = z.infer<typeof createProductParamsSchema>;
+export type CreateProductInput = z.infer<typeof createProductBodySchema>;
 
 
 export type ProductsFilters = {
@@ -161,17 +161,4 @@ export const ProductService = {
     }
     return data;
   },
-
-  // async deleteProductByVendor(vendorId: string, productId: string) {
-  //   const { data, error } = await supabase
-  //     .from("products")
-  //     .delete()
-  //     .eq("id", productId)      // 🔁 dùng đúng tên cột id
-  //     .eq("vendor_id", vendorId)
-  //     .select("*")              // cần để nhận về bản ghi đã xoá
-  //     .maybeSingle();
-
-  //   if (error) throw error;
-  //   return data; // null -> không tìm thấy/không thuộc vendor
-  // },
 };

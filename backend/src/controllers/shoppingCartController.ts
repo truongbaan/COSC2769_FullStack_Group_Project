@@ -4,6 +4,7 @@
 # Assessment: Assignment 02 
 # Author: Nguyen The Anh
 # ID: s3975844*/
+
 import { z } from "zod"
 import { type Request, type Response } from "express"
 import { ShoppingCartService } from "../service/shopping_carts.service"
@@ -42,22 +43,23 @@ export const getCartController = async (req: Request, res: Response) => {
   }
 }
 
+type RemoveProductByIdParams = z.output<typeof removeByIdParamsSchema>
 
 // Delete cart item by id
-export const deleteByIdParamsSchema = z.object({
+export const removeByIdParamsSchema = z.object({
   id: z.string().min(1),
 }).strict();
 
-export async function deleteCartItemByIdController(req: Request, res: Response) {
+export async function removeCartItemByIdController(req: Request, res: Response) {
   try {
-    const { id } = deleteByIdParamsSchema.parse(req.params);
     const userId = req.user_id; //user_id of customer
 
-    
-    const deleted = await ShoppingCartService.deleteItemById(id, userId);
-    if (!deleted) return ErrorJsonResponse(res, 404, "Cart item not found");
+    const { id } = (req as unknown as Record<string, unknown> & { validatedparams: RemoveProductByIdParams }).validatedparams;
 
-    return SuccessJsonResponse(res, 200, { data: { deleted: true, id } });
+    const removed = await ShoppingCartService.removeItemById(id, userId);
+    if (!removed) return ErrorJsonResponse(res, 404, "Cart item not found");
+
+    return SuccessJsonResponse(res, 200, { data: { removed: true, id } });
   } catch (err: any) {
     const msg = err?.message?.startsWith("Unauthorized") ? err.message : "Failed to delete cart item";
     return ErrorJsonResponse(res, msg.startsWith("Unauthorized") ? 401 : 500, msg);
@@ -65,16 +67,18 @@ export async function deleteCartItemByIdController(req: Request, res: Response) 
 }
 
 export const addToCartBodySchema = z.object({
-  product_id: z.string(), 
+  product_id: z.string(),
   quantity: z.coerce.number().int().min(1).default(1),
 })
+
+type AddToCartBodyType = z.output<typeof addToCartBodySchema>;
 
 export async function addToCartController(req: Request, res: Response) {
   try {
     const customerId = req.user_id; // user_id of customer
-    
 
-    const { product_id, quantity } = (req as any).validatedbody
+    const { product_id, quantity } = (req as unknown as Record<string, unknown> & { validatedbody: AddToCartBodyType }).validatedbody;
+
 
     const item = await ShoppingCartService.addToCart(customerId, { product_id, quantity })
     return SuccessJsonResponse(res, 200, { item })
@@ -83,7 +87,6 @@ export async function addToCartController(req: Request, res: Response) {
     return ErrorJsonResponse(res, e.status ?? 500, e.message ?? "ADD_CART_FAILED")
   }
 }
-
 
 export async function checkoutController(req: Request, res: Response) {
   try {

@@ -18,11 +18,10 @@ export const getProductsQuerySchema = z.object({
     priceMax: z.coerce.number().min(0).max(100000000).optional(),
     name: z.string().optional(),
 }).strict()
-// .refine(
-//     q => q.priceMin == null || q.priceMax == null || q.priceMax >= q.priceMin,
-//     { path: ["priceMax"], message: "priceMax must be >= priceMin" }
-// );
-
+    .refine(
+        q => q.priceMin == null || q.priceMax == null || q.priceMax >= q.priceMin,
+        { path: ["priceMax"], message: "priceMax must be >= priceMin" }
+    );
 
 type GetProductsQueryType = z.output<typeof getProductsQuerySchema>;
 
@@ -78,10 +77,10 @@ export const getProductByIdParamsSchema = z.object({
     productId: z.string(),
 }).strict();
 
-type GetProductByIdParams = z.output<typeof getProductByIdParamsSchema>;
+type GetProductByIdParamsType = z.output<typeof getProductByIdParamsSchema>;
 
 export const getProductByIdController = async (req: Request, res: Response) => {
-    const { productId } = (req as unknown as Record<string, unknown> & { validatedparams: GetProductByIdParams }).validatedparams;
+    const { productId } = (req as unknown as Record<string, unknown> & { validatedparams: GetProductByIdParamsType }).validatedparams;
 
     const product = await ProductService.getProductById(productId);
 
@@ -142,7 +141,7 @@ export const updateProductStatusController = async (req: Request, res: Response)
         const vendorId = req.user_id;
 
         //Destruct object to take values
-        const { productId } = (req as unknown as Record<string, unknown> & { validatedparams: GetProductByIdParams }).validatedparams;
+        const { productId } = (req as unknown as Record<string, unknown> & { validatedparams: GetProductByIdParamsType }).validatedparams;
         const { instock } = (req as unknown as Record<string, unknown> & { validatedbody: UpdateProductBodyType }).validatedbody;
 
         const updated = await ProductService.updateProductStatus(
@@ -169,29 +168,3 @@ export const updateProductStatusController = async (req: Request, res: Response)
         });
     }
 };
-
-// export const deleteProductController = async (req: Request, res: Response) => {
-//   try {
-//     const vendorId = req.user_id as string;
-//     const { productId } = req.params as { productId: string };
-
-//     const deleted = await ProductService.deleteProductByVendor(vendorId, productId);
-
-//     if (!deleted) {
-//       return res
-//         .status(404)
-//         .json({ message: "Product not found or not owned by vendor" });
-//     }
-
-//     // 204 No Content là chuẩn cho delete thành công
-//     return res.status(204).send();
-//     // Hoặc nếu muốn trả data:
-//     // return res.status(200).json({ message: "Deleted", product: deleted });
-//   } catch (err: any) {
-//     console.error("deleteProductController error:", err);
-//     return res.status(500).json({
-//       message: "Internal Server Error",
-//       detail: err.message ?? "Unexpected error while deleting product",
-//     });
-//   }
-// };
