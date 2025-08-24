@@ -96,7 +96,9 @@ export const getProductByIdController = async (req: Request, res: Response) => {
     });
 }
 
-export const createProductParamsSchema = z.object({
+type CreateProductBodyType = z.output<typeof createProductBodySchema>;
+
+export const createProductBodySchema = z.object({
     name: z.string().trim().min(1, "Name is required"),
     price: z.coerce.number().min(0),
     description: z.string().trim().min(1, "Description is required"),
@@ -108,7 +110,9 @@ export const createProductParamsSchema = z.object({
 export const createProductController = async (req: Request, res: Response) => {
     try {
         const vendorId = req.user_id;
-        const body = createProductParamsSchema.parse(req.body);
+        //const body = createProductBodySchema.parse(req.body);
+        const body = (req as unknown as Record<string, unknown> & { validatedbody: CreateProductBodyType }).validatedbody;
+
         const payload: ProductInsertNoId = { vendor_id: vendorId, ...body };
 
         const created = await ProductService.createProduct(payload);
@@ -127,6 +131,8 @@ export const createProductController = async (req: Request, res: Response) => {
     }
 };
 
+type UpdateProductBodyType = z.output<typeof updateProductStatusBodySchema>;
+
 export const updateProductStatusBodySchema = z.object({
     instock: z.coerce.boolean(),
 }).strict();
@@ -134,13 +140,16 @@ export const updateProductStatusBodySchema = z.object({
 export const updateProductStatusController = async (req: Request, res: Response) => {
     try {
         const vendorId = req.user_id;
-        const { productId } = getProductByIdParamsSchema.parse(req.params);
-        const { instock } = updateProductStatusBodySchema.parse(req.body);
+
+        //Destruct object to take values
+        const { productId } = (req as unknown as Record<string, unknown> & { validatedparams: GetProductByIdParams }).validatedparams;
+        const { instock } = (req as unknown as Record<string, unknown> & { validatedbody: UpdateProductBodyType }).validatedbody;
 
         const updated = await ProductService.updateProductStatus(
-            vendorId as string,
-            productId as string,
-            instock as boolean);
+            vendorId,
+            productId,
+            instock
+        );
 
         if (!updated) {
             return res.status(404).json({ message: "Product not found or not owned by vendor" });

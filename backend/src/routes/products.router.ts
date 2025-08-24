@@ -12,13 +12,13 @@ import { validationMiddleware } from "../middleware/validation.middleware";
 import { addToCartBodySchema, addToCartController } from "../controllers/shoppingCartController";
 
 import {
+  createProductBodySchema,
   getProductsController,
   getProductsQuerySchema,
 } from "../controllers/productController";
 
 import {
   createProductController,
-  createProductParamsSchema,
   // deleteProductController,
   getProductByIdController,
   getProductByIdParamsSchema,
@@ -47,7 +47,7 @@ ProductRouter.get(
 ProductRouter.post(
   "/",
   requireAuth("vendor"),
-  validationMiddleware(createProductParamsSchema, "body"),
+  validationMiddleware(createProductBodySchema, "body"),
   createProductController
 );
 
@@ -60,7 +60,7 @@ ProductRouter.post(
 )
 
 ProductRouter.patch(
-  "/:productId/status",
+  "/:productId/instock",
   requireAuth("vendor"),
   validationMiddleware(getProductByIdParamsSchema, "params"),
   validationMiddleware(updateProductStatusBodySchema, "body"),
