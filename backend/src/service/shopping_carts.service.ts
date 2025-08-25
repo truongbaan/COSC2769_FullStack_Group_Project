@@ -6,41 +6,38 @@
 # ID: s3975844*/
 import { supabase, Database } from "../db/db";
 import generateUUID from "../utils/generator";
+import { ImageService } from "./image.service";
 
 export type Pagination = { page: number; size: number };
 
-type ProductRow = { id: string; price: number }
+type productRow = { id: string; price: number }
 type cartCustomer = { id: string; product_id: string; quantity: number }
 
-type PublicCartItem = Omit<CartRow, "customer_id">;
-
+type ProductRow = Database["public"]["Tables"]["products"]["Row"];
 type CartRow = Database["public"]["Tables"]["shopping_carts"]["Row"];
 
+const IMAGE_BUCKET = "productimages";
 
 class HttpError extends Error { 
   constructor(public status: number, msg: string){ super(msg) } 
 }
 
 export type CartItemDetail = {
-  id: string;
+  id: string;             // id của cart item
   product_id: string;
-  quantity: number;
   name: string;
+  quantity: number;
   price: number;
   subtotal: number;
-  image_url?: string | null;
+  image: string | null;
 };
 
 export const ShoppingCartService = {
-  async getCart(
-    { page, size }: Pagination,
-    customerId: string
-  ): Promise<PublicCartItem[] | null> {
+  async getCart({ page, size }: { page: number; size: number },customerId: string): Promise<CartItemDetail[] | null> {
     const offset = (page - 1) * size;
 
-    if (!customerId) return []; // no user -> null
-
-    //take the data from shopping_carts by customer_id
+    if (!customerId) return []; 
+    // take item related to customerid
     const { data, error } = await supabase
       .from("shopping_carts")
       .select("*")
@@ -53,31 +50,56 @@ export const ShoppingCartService = {
       throw new Error("DB_READ_FAILED");
     }
 
-    const items = data ?? [];
-
+    const items: CartRow[] = data ?? [];
     if (items.length === 0) return [];
 
+    //take the product information ("id, name, price, image")
     const productIds = [...new Set(items.map((i) => i.product_id))];
-
     const { data: products, error: errProduct } = await supabase
       .from("products")
-      .select("id, name")
+      .select("id, name, price, image")
       .in("id", productIds);
-    
+
     if (errProduct) {
       console.error("Product read error:", errProduct);
       throw new Error("DB_READ_FAILED");
     }
 
-    const productMap = new Map((products ?? []).map((p) => [p.id as string, p.name as string]));
-    
-    return items.map((i) => ({
-      id: i.id,
-      product_id: i.product_id,
-      name: productMap.get(i.product_id) ?? "(unknown product)",
-      quantity: i.quantity,
-    }));
+    const productMap = new Map<string, Pick<ProductRow, "name" | "price" | "image">>();
+    (products ?? []).forEach((p) => {
+      productMap.set(p.id as string, {
+        name: p.name as string,
+        price: Number(p.price ?? 0),
+        image: (p.image as string) ?? null,
+      });
+    });
+
+    //create a cartItemDetail to set all the products
+    const details: CartItemDetail[] = items.map((i) => {
+      const p = productMap.get(i.product_id) ?? { name: "(unknown product)", price: 0, image: null as string | null };
+
+      let image: string | null = null;
+      if (p.image) {
+        const r = ImageService.getPublicImageUrl(p.image, IMAGE_BUCKET as any);
+        image = r.success ? (r.url ?? null) : null;
+      }
+
+      const price = Number(p.price ?? 0);
+      const quantity = Number(i.quantity ?? 0);
+      return {
+        id: i.id,
+        product_id: i.product_id,
+        name: p.name,
+        quantity,
+        price,
+        subtotal: price * quantity,
+        image,
+      };
+    });
+
+    return details;
   },
+
   async removeItemById(id: string, customerId: string): Promise<boolean> {
     //delete by product_id and customer_id (verify the customer)
     const { data, error } = await supabase
@@ -162,7 +184,7 @@ export const ShoppingCartService = {
       .in("id", productIds)
 
     if (productError) throw productError
-    const prodMap = new Map((products as ProductRow[]).map(p => [p.id, Number(p.price)]))
+    const prodMap = new Map((products as productRow[]).map(p => [p.id, Number(p.price)]))
     const missing = productIds.filter(id => !prodMap.has(id))
     if (missing.length) throw new Error(`Products not found: ${missing.join(",")}`)
 
