@@ -8,7 +8,7 @@
 import { Router } from 'express';
 import { validationMiddleware } from '../middleware/validation.middleware';
 import { getOrderItemsController, getOrderItemsParamsSchema } from '../controllers/orderItemController';
-import { getOrdersController, getOrdersQuerrySchema, updateOrderStatusController } from '../controllers/orderController';
+import { getOrdersController, getOrdersQuerrySchema, updateOrderStatusController, updateStatusBody, updateStatusParams } from '../controllers/orderController';
 
 
 const OrderRouter = Router();
@@ -16,7 +16,7 @@ const OrderRouter = Router();
 OrderRouter.get("/", validationMiddleware(getOrdersQuerrySchema, 'query'), getOrdersController);
 
 //update the satus of the order
-OrderRouter.put("/:id/status", validationMiddleware(getOrdersQuerrySchema, 'query'), updateOrderStatusController);
+OrderRouter.patch("/:id/status",validationMiddleware(updateStatusParams, 'params'), validationMiddleware(updateStatusBody, 'body'), updateOrderStatusController);
 
 //get all the items of a specific order
 OrderRouter.get("/:id/items", validationMiddleware(getOrderItemsParamsSchema, "params"), getOrderItemsController);

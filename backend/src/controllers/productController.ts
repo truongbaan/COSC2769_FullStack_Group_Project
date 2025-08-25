@@ -7,8 +7,8 @@
 
 import * as z from "zod";
 import { Request, Response } from "express";
-import {ProductInsertNoId, ProductService } from "../service/products.service";
 import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes";
+import {ProductInsertNoId, ProductService } from "../service/products.service";
 
 export const getProductsQuerySchema = z.object({
     page: z.coerce.number().min(1).default(1),
@@ -109,7 +109,7 @@ export const createProductBodySchema = z.object({
 export const createProductController = async (req: Request, res: Response) => {
     try {
         const vendorId = req.user_id;
-        //const body = createProductBodySchema.parse(req.body);
+
         const body = (req as unknown as Record<string, unknown> & { validatedbody: CreateProductBodyType }).validatedbody;
 
         const payload: ProductInsertNoId = { vendor_id: vendorId, ...body };
