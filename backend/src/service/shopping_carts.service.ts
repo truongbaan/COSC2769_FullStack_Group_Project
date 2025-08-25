@@ -78,7 +78,7 @@ export const ShoppingCartService = {
       quantity: i.quantity,
     }));
   },
-  async deleteItemById(id: string, customerId: string): Promise<boolean> {
+  async removeItemById(id: string, customerId: string): Promise<boolean> {
     //delete by product_id and customer_id (verify the customer)
     const { data, error } = await supabase
       .from("shopping_carts")
