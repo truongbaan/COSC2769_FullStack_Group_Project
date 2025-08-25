@@ -19,9 +19,6 @@ export type ProductInsert = Database["public"]["Tables"]["products"]["Insert"];
 
 export type ProductInsertNoId = Omit<ProductInsert, "id">;
 
-export type CreateProductInput = z.infer<typeof createProductBodySchema>;
-
-
 export type ProductsFilters = {
   category?: string;
   priceMin?: number;
