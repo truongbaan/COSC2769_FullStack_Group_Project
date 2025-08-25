@@ -72,12 +72,4 @@ ProductRouter.patch(
   updateProductStatusController
 );
 
-// // Vendor delete a product 
-// ProductRouter.delete(
-//   "/:productId",
-//   requireAuth("vendor"),
-//   validationMiddleware(getProductByIdParamsSchema, "params"),
-//   deleteProductController
-// );
-
 export default ProductRouter;

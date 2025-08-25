@@ -147,6 +147,10 @@ export const createProductController = async (req: Request, res: Response) => {
 type UpdateProductBodyType = z.output<typeof updateProductStatusBodySchema>;
 
 export const updateProductStatusBodySchema = z.object({
+    name: z.string().trim().min(1).max(150).optional(),
+    price: z.coerce.number().min(0).optional(),
+    category: z.string().trim().min(1).max(100).optional(),
+    description: z.string().trim().max(5000).optional(),
     instock: z.coerce.boolean().optional(),
 }).strict();
 
@@ -156,7 +160,7 @@ export const updateProductStatusController = async (req: Request, res: Response)
 
         //Destruct object to take values
         const { productId } = (req as unknown as Record<string, unknown> & { validatedparams: GetProductByIdParamsType }).validatedparams;
-        const { instock } = (req as unknown as Record<string, unknown> & { validatedbody: UpdateProductBodyType }).validatedbody;
+        const { name, price, category, description, instock } = (req as unknown as Record<string, unknown> & { validatedbody: UpdateProductBodyType }).validatedbody;
 
         let newImagePath: string | undefined;
 
@@ -170,11 +174,15 @@ export const updateProductStatusController = async (req: Request, res: Response)
         const { data: oldRow } = await supabase
             .from("products").select("image").eq("vendor_id", vendorId).eq("id", productId).maybeSingle();
 
-        const updated = await ProductService.updateProductStatus(
+        const updated = await ProductService.updateProduct(
             vendorId,
             productId,
-            instock,
-            newImagePath
+            name,
+            price,
+            category,
+            description,
+            newImagePath,
+            instock
         );
 
         if (!updated) {
@@ -185,13 +193,6 @@ export const updateProductStatusController = async (req: Request, res: Response)
         if (newImagePath && oldRow?.image && oldRow.image !== newImagePath) {
             await ImageService.deleteImage(oldRow.image, "productimages");
         }
-
-        // // Trả về kèm public URL cho FE dùng ngay
-        // const pub = ImageService.getPublicImageUrl(updated.image, "productimages");
-        // return SuccessJsonResponse(res, 200, {
-        //     message: "Update product success",
-        //     product: { ...updated, image: pub.success ? pub.url : updated.image },
-        // });
 
         return SuccessJsonResponse(res, 200, {
             message: "Update Status Success",

@@ -138,9 +138,23 @@ export const ProductService = {
     return data;
   },
 
-  async updateProductStatus(vendorId: string, productId: string, instock?: boolean, imagePath?: string) {
-    // Only add the fields needed to be changed
+  async updateProduct(
+    vendorId: string,
+    productId: string,
+    name?: string,
+    price?: number,
+    category?: string,
+    description?: string,
+    imagePath?: string,
+    instock?: boolean,
+  ) {
+
     const toUpdate: Record<string, any> = {};
+
+    if (name !== undefined) toUpdate.name = name;
+    if (price !== undefined) toUpdate.price = price;
+    if (category !== undefined) toUpdate.category = category;
+    if (description !== undefined) toUpdate.description = description;
     if (typeof instock === "boolean") toUpdate.instock = instock;
     if (imagePath) toUpdate.image = imagePath;
 
