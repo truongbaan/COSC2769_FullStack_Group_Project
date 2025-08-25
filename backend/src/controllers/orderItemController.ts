@@ -19,10 +19,13 @@ export async function getOrderItemsController(req: Request, res: Response) {
   try {
     const { id } = (req as unknown as { validatedparams: GetParams }).validatedparams;
 
+    const shipperId = req.user_id
     const [items, customer] = await Promise.all([
-      OrderItemService.getItemsByOrderId(id),
+      OrderItemService.getItemsByOrderId(id, shipperId),
       OrderItemService.getCustomerNameAndAddressByOrderId(id),
     ]);
+
+    if (items === null) return ErrorJsonResponse(res, 404, "Order not found");
 
     return SuccessJsonResponse(res, 200, {
       order_id: id,

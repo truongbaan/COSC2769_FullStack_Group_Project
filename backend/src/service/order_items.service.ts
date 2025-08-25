@@ -48,7 +48,29 @@ export const OrderItemService = {
     return { name: cust.name as string, address: cust.address as string };
   },
 
-  async getItemsByOrderId(orderId: string): Promise<OrderItemWithProduct[]> {
+  async getItemsByOrderId(orderId: string, shipperId: string): Promise<OrderItemWithProduct[] | null> {
+
+      const { data: shipper, error: shipperErr } = await supabase
+      .from("shippers")
+      .select("hub_id")            
+      .eq("id", shipperId)      
+      .single();
+
+    if (shipperErr) throw shipperErr;
+    const hubId = shipper.hub_id;
+    if (!hubId) throw new Error("SHIPPER_NOT_FOUND");
+
+    // 2) Xác minh order thuộc đúng hub của shipper
+    const { data: ord, error: ordErr } = await supabase
+      .from("orders")
+      .select("id")
+      .eq("id", orderId)
+      .eq("hub_id", hubId) 
+      .maybeSingle<OrderItemRow>();
+
+    if (ordErr) throw ordErr;
+    if (!ord) return null;
+
     const { data: items, error: errItems } = await supabase
       .from("order_items")
       .select("order_id, product_id, quantity, price_at_order_time")
