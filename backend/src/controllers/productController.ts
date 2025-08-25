@@ -7,7 +7,7 @@
 
 import * as z from "zod";
 import { Request, Response } from "express";
-import {ProductInsertNoId, ProductService } from "../service/products.service";
+import { ProductInsertNoId, ProductService } from "../service/products.service";
 import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes";
 import { ImageService } from "../service/image.service";
 
@@ -98,8 +98,6 @@ export const getProductByIdController = async (req: Request, res: Response) => {
 
 type CreateProductBodyType = z.output<typeof createProductBodySchema>;
 
-const PRODUCT_BUCKET = "productimages";
-
 export const createProductBodySchema = z.object({
     name: z.string().trim().min(1, "Name is required"),
     price: z.coerce.number().min(0),
@@ -125,13 +123,8 @@ export const createProductController = async (req: Request, res: Response) => {
             return res.status(500).json({ message: up.error });
         }
 
-        const pub = ImageService.getPublicImageUrl(up.url!, "productimages");
-        if (!pub.success) {
-            return res.status(500).json({ message: pub.error });
-        }
-
         const payload: ProductInsertNoId = {
-            vendor_id: vendorId, ...body, image: pub.url!,
+            vendor_id: vendorId, ...body, image: up.url!,
         };
 
         const created = await ProductService.createProduct(payload);
