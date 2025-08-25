@@ -10,6 +10,7 @@ import { supabase, Database } from "../db/db";
 import { createProductBodySchema } from "../controllers/productController";
 
 import generateUUID from "../utils/generator";
+import { ImageService } from "./image.service";
 
 //Use "Row" to return data
 export type ProductRow = Database["public"]["Tables"]["products"]["Row"];
@@ -18,9 +19,6 @@ export type ProductRow = Database["public"]["Tables"]["products"]["Row"];
 export type ProductInsert = Database["public"]["Tables"]["products"]["Insert"];
 
 export type ProductInsertNoId = Omit<ProductInsert, "id">;
-
-export type CreateProductInput = z.infer<typeof createProductBodySchema>;
-
 
 export type ProductsFilters = {
   category?: string;
@@ -33,6 +31,13 @@ export type Pagination = {
   page: number;
   size: number;
 }
+
+const toUrl = (path?: string | null) => {
+  if (!path) return null;
+  // nếu đã là full URL thì trả luôn
+  if (/^https?:\/\//i.test(path)) return path;
+  return ImageService.getPublicImageUrl(path, "productimages").url ?? null;
+};
 
 export const ProductService = {
   async getCustomerProducts(
@@ -71,10 +76,9 @@ export const ProductService = {
     }
     console.log(data);
 
-    if (!data) {
-      return null; // explicitly return null to trigger 404 in route
-      // return [];
-    }
+    if (!data) return null;
+
+    data.forEach(r => (r as any).image = toUrl((r as any).image));
     return data;
   },
 
@@ -93,7 +97,10 @@ export const ProductService = {
       throw error;
     }
 
-    return data || null;
+    if (!data) return null;
+
+    (data as any).image = toUrl((data as any).image);
+    return data;
   },
 
   async createProduct(product: ProductInsertNoId): Promise<ProductRow | null> {
@@ -131,10 +138,10 @@ export const ProductService = {
     }
     console.log(data);
 
-    if (!data) {
-      return null; // explicitly return null to trigger 404 in route
-      // return [];
-    }
+    if (!data) return null;
+
+    data.forEach(r => (r as any).image = toUrl((r as any).image));
+
     return data;
   },
 
