@@ -6,8 +6,8 @@
 # ID: s3975844*/
 import { z } from "zod"
 import { type Request, type Response } from "express"
-import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes"
 import { ShoppingCartService } from "../service/shopping_carts.service"
+import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes"
 
 export const getCartQuerrySchema = z.object({
   page: z.coerce.number().min(1).default(1),
@@ -61,5 +61,47 @@ export async function deleteCartItemByIdController(req: Request, res: Response) 
   } catch (err: any) {
     const msg = err?.message?.startsWith("Unauthorized") ? err.message : "Failed to delete cart item";
     return ErrorJsonResponse(res, msg.startsWith("Unauthorized") ? 401 : 500, msg);
+  }
+}
+
+export const addToCartBodySchema = z.object({
+  product_id: z.string(), 
+  quantity: z.coerce.number().int().min(1).default(1),
+})
+
+export async function addToCartController(req: Request, res: Response) {
+  try {
+    const customerId = req.user_id; // user_id of customer
+    
+
+    const { product_id, quantity } = (req as any).validatedbody
+
+    const item = await ShoppingCartService.addToCart(customerId, { product_id, quantity })
+    return SuccessJsonResponse(res, 200, { item })
+  } catch (e: any) {
+    console.error("ADD_CART_ERROR:", e)
+    return ErrorJsonResponse(res, e.status ?? 500, e.message ?? "ADD_CART_FAILED")
+  }
+}
+
+
+export async function checkoutController(req: Request, res: Response) {
+  try {
+    const customerId = req.user_id; // user_id of customer
+
+    const result = await ShoppingCartService.checkout(customerId as string)
+
+    return SuccessJsonResponse(res, 201, {
+      message: "Checkout success",
+      order: {
+        id: result.orderId,
+        hub_id: result.hubId,
+        status: "active",
+        total_price: result.total,
+      },
+    })
+  } catch (err) {
+    console.error(err)
+    return ErrorJsonResponse(res, 500, (err as Error).message)
   }
 }

@@ -7,14 +7,14 @@
 
 import { type Request, type Response, type NextFunction } from 'express'
 import { ErrorJsonResponse } from "../utils/json_mes"
-import { supabase } from "../db/db"
+import { Database, supabase } from "../db/db"
 import { UserService } from '../service/user.service'
 
 declare global {
     namespace Express {
         interface Request {
             user_id: string;
-            user_role?: string; // for verifying role of router with multiple role allowed
+            user_role: Database['public']['Tables']['users']['Row']['role']; // for verifying role of router with multiple role allowed
         }
     }
 }
@@ -49,8 +49,7 @@ export function requireAuth(role: string | string[] = '') {
                 return ErrorJsonResponse(res, 403, `Unauthorized: only roles [${roles.join(', ')}] can access this resource`);
             }
         }
-
-        req.user_role = data.user.role
+        req.user_role = user.role
         req.user_id = data.user.id//return user_id field for other controller uses
         next();
     };

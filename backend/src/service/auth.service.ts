@@ -5,13 +5,14 @@
 # Author: Truong Ba An
 # ID: s3999568 */
 
-import { deleteAuthenUser } from '../db/db'
+import { Database, deleteAuthenUser } from '../db/db'
 import { signUpUser } from '../db/db';
 import { User, UserService } from './user.service';
 import { Customer, CustomerService } from './customer.service';
 import { Shipper, ShipperService } from './shipper.service';
 import { Vendor, VendorService } from './vendor.service';
 import { hashPassword } from '../utils/password';
+import { UserRole } from '../types/general.type';
 
 //return result
 interface AuthResult {
@@ -23,7 +24,7 @@ interface AuthResult {
     };
     error?: string;
 }
-type UserRole = 'customer' | 'shipper' | 'vendor';
+
 //remove id field and role field from the required form
 type NewUser = Omit<User, 'id' | 'role'>;
 type NewCustomer = Omit<Customer, 'id'>;
@@ -89,15 +90,14 @@ export const AuthService = {
                 await deleteAuthenUser(session.user.id);
                 return {
                     success: false,
-                    error: 'Error creating user in database'
+                    error: 'Error creating user in database. Username may already exist'
                 };
             }
 
             // Create role-specific using the mapping
-            let roleRecord: any;
-            try {
-                roleRecord = await ROLE_CREATORS[role](session.user.id, roleSpecificData as any);
-            } catch (error) {
+            const roleRecord = await ROLE_CREATORS[role](session.user.id, roleSpecificData as any);
+
+            if (!roleRecord) {
                 await deleteAuthenUser(session.user.id);
                 await UserService.deleteUser(session.user.id);
                 return {
@@ -105,7 +105,6 @@ export const AuthService = {
                     error: `Failed to create ${role} record`
                 };
             }
-
             const userData_complete = { ...createdUser, ...roleRecord };
 
             return {

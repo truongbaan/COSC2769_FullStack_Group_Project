@@ -6,7 +6,7 @@
 # ID: s3999568 */
 
 import { Router } from 'express';
-import { loginBodySchema, loginController, registerCustomerBodySchema, registerCustomerController, registerShipperBodySchema, registerShipperController, registerVendorBodySchema, registerVendorController } from '../controllers/auth.controller';
+import { loginBodySchema, loginController, logoutController, registerCustomerBodySchema, registerCustomerController, registerShipperBodySchema, registerShipperController, registerVendorBodySchema, registerVendorController } from '../controllers/auth.controller';
 import { validationMiddleware } from '../middleware/validation.middleware';
 
 const authRouter = Router();
@@ -16,5 +16,6 @@ authRouter.post('/login', validationMiddleware(loginBodySchema, 'body'), loginCo
 authRouter.post('/register/customer', validationMiddleware(registerCustomerBodySchema, 'body'), registerCustomerController);
 authRouter.post('/register/shipper', validationMiddleware(registerShipperBodySchema, 'body'), registerShipperController);
 authRouter.post('/register/vendor', validationMiddleware(registerVendorBodySchema, 'body'), registerVendorController);
+authRouter.post('/logout', logoutController)
 
 export default authRouter;

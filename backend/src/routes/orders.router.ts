@@ -5,8 +5,9 @@
 # Author: Nguyen The Anh
 # ID: s3975844 */
 
-import { Router, Request, Response } from 'express';
+import { Router } from 'express';
 import { validationMiddleware } from '../middleware/validation.middleware';
+import { getOrderItemsController, getOrderItemsParamsSchema } from '../controllers/orderItemController';
 import { getOrdersController, getOrdersQuerrySchema, updateOrderStatusController } from '../controllers/orderController';
 
 
@@ -16,4 +17,7 @@ OrderRouter.get("/", validationMiddleware(getOrdersQuerrySchema, 'query'), getOr
 
 //update the satus of the order
 OrderRouter.put("/:id/status", validationMiddleware(getOrdersQuerrySchema, 'query'), updateOrderStatusController);
+
+//get all the items of a specific order
+OrderRouter.get("/:id/items", validationMiddleware(getOrderItemsParamsSchema, "params"), getOrderItemsController);
 export default OrderRouter

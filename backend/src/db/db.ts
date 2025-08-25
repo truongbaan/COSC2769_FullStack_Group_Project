@@ -6,6 +6,7 @@
 # ID: s3999568 */
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
+import { UserRole } from '../types/general.type'
 
 //if needed for Json
 export type Json =
@@ -18,8 +19,6 @@ export type Json =
 
 // ----- Database schema -----
 // Define schema once so all CRUD calls infer Row/Insert/Update types automatically
-// so later if create new table, could use this for easier coding
-// how db right now looks like
 export interface Database {
     public: {
         Tables: {
@@ -31,7 +30,7 @@ export interface Database {
                     password: string
                     username: string
                     profile_picture: string
-                    role: string
+                    role: UserRole
                 }
                 // .insert() for table 'users'
                 Insert: {
@@ -40,7 +39,7 @@ export interface Database {
                     password: string
                     username: string
                     profile_picture: string
-                    role: string
+                    role: UserRole
                 }
                 // .update() in table 'users'
                 Update: {
@@ -295,4 +294,13 @@ export async function changePassword(newPassword: string): Promise<boolean> {
     }
 
     return true;
+}
+
+export async function signOutUser(): Promise<boolean> {
+    const { error } = await supabaseClient.auth.signOut()
+    if (error) {
+        console.error('Error signing out:', error.message)
+        return false
+    }
+    return true
 }

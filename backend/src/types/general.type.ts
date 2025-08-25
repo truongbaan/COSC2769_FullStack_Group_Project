@@ -23,3 +23,9 @@ export const getUsersRoleQuerySchema = z.object({
 }).strict();
 
 export type GetUsersRoleQueryType = z.output<typeof getUsersRoleQuerySchema>;
+
+const usernameRegex = /^[A-Za-z0-9]{8,15}$/;
+const passwordRegex =/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,20}$/;
+export const usernameSchema = z.string().regex(usernameRegex, "Username must be 8-15 letters/digits").trim();
+export const passwordSchema = z.string().regex(passwordRegex,"Password 8-20, includes upper, lower, digit, special !@#$%^&*").trim();
+export type UserRole = 'vendor' | 'shipper' | 'customer'

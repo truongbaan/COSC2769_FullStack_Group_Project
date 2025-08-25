@@ -7,6 +7,7 @@
 
 import { supabase, Database } from "../db/db"
 import { Pagination } from "../types/general.type"
+import { ImageService } from "./image.service"
 
 export type Shipper = Database['public']['Tables']['shippers']['Row']
 type ShipperUpdate = Database['public']['Tables']['shippers']['Update'] & { id: string }
@@ -54,8 +55,33 @@ export const ShipperService = {
         }
 
         if (!data) return null;
+        const withAdjustedImages = await Promise.all(
+            data.map(async (shipper) => {
+                let profile_picture = "";
+
+                if (shipper.users?.profile_picture) {
+                    const result = await ImageService.getPublicImageUrl(
+                        shipper.users.profile_picture,
+                        "profileimages"
+                    );
+
+                    if (result.success && result.url) {
+                        profile_picture = result.url;
+                    }
+                }
+
+                return {
+                    ...shipper,
+                    users: {
+                        ...shipper.users,
+                        profile_picture, // always string
+                    },
+                };
+            })
+        );
+
         //flatten data
-        return data.map(Shipper => {
+        return withAdjustedImages.map(Shipper => {
             const { users, ...restOfShipper } = Shipper;
 
             return {
