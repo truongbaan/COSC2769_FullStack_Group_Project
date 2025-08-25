@@ -7,7 +7,7 @@
 
 import * as z from "zod";
 import { Request, Response } from "express";
-import { ProductInsertNoId, ProductService } from "../service/products.service";
+import {ProductInsertNoId, ProductService } from "../service/products.service";
 import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes";
 import { ImageService } from "../service/image.service";
 

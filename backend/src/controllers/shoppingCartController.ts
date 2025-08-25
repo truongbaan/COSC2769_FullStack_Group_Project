@@ -19,29 +19,28 @@ type GetCartQuerryType = z.output<typeof getCartQuerrySchema>
 
 export const getCartController = async (req: Request, res: Response) => {
   try {
+    const {page, size} = (req as unknown as Record<string, unknown> & { validatedquery: GetCartQuerryType }).validatedquery;
+    const customerId = req.user_id;
 
-    const { page, size } =
-      (req as unknown as { validatedquery: GetCartQuerryType }).validatedquery
-
-    const items = await ShoppingCartService.getCart({ page, size }, req.user_id)
+    const items = await ShoppingCartService.getCart({ page, size }, customerId);
 
     if (items === null) {
-      return ErrorJsonResponse(res, 500, "Failed to fetch shopping cart")
+      return ErrorJsonResponse(res, 500, "Failed to fetch shopping cart");
     }
-
     return SuccessJsonResponse(res, 200, {
-      data: { items, count: items.length, page, size },
-    })
+      items,
+      count: items.length,
+      page,
+      size,
+    });
   } catch (err: any) {
     if (err?.issues) {
-      return ErrorJsonResponse(res, 400, err.issues[0]?.message ?? "Validation failed")
+      return ErrorJsonResponse(res, 400, err.issues?.[0]?.message ?? "Validation failed");
     }
-    console.log("ERR getCart:", err)
-
-    // throw error 500 of database
-    return ErrorJsonResponse(res, 500, "Unexpected error while fetching cart")
+    console.log("ERR getCart:", err);
+    return ErrorJsonResponse(res, 500, "Unexpected error while fetching cart");
   }
-}
+};
 
 type RemoveProductByIdParams = z.output<typeof removeByIdParamsSchema>
 

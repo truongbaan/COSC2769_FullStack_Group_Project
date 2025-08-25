@@ -32,9 +32,9 @@ async (req: Request, res: Response) => {
     return: id, customer_id, product_id, quantity
 ```
 
-#### `Delete /deleteItem/:id`
+#### `Delete /removeItem/:id`
 
-**Function**: delete product by id
+**Function**: delete product by productId
 
 ```typescript
 async function deleteCartItemByIdController(req: Request, res: Response) {
@@ -42,6 +42,8 @@ async function deleteCartItemByIdController(req: Request, res: Response) {
     //Returns all the product in shopping cart
     return: id, customer_id, product_id, quantity
 ```
+
+
 
 #### `GET /api/products`
 
