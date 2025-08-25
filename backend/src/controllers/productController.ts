@@ -9,6 +9,7 @@ import * as z from "zod";
 import { Request, Response } from "express";
 import { ProductInsertNoId, ProductService } from "../service/products.service";
 import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes";
+import { ImageService } from "../service/image.service";
 
 export const getProductsQuerySchema = z.object({
     page: z.coerce.number().min(1).default(1),
@@ -97,11 +98,13 @@ export const getProductByIdController = async (req: Request, res: Response) => {
 
 type CreateProductBodyType = z.output<typeof createProductBodySchema>;
 
+const PRODUCT_BUCKET = "productimages";
+
 export const createProductBodySchema = z.object({
     name: z.string().trim().min(1, "Name is required"),
     price: z.coerce.number().min(0),
     description: z.string().trim().min(1, "Description is required"),
-    image: z.string().trim(),
+    // image: z.string().trim(),
     category: z.string().trim().min(1),
     instock: z.coerce.boolean(),
 }).strict();
@@ -109,10 +112,27 @@ export const createProductBodySchema = z.object({
 export const createProductController = async (req: Request, res: Response) => {
     try {
         const vendorId = req.user_id;
-        //const body = createProductBodySchema.parse(req.body);
         const body = (req as unknown as Record<string, unknown> & { validatedbody: CreateProductBodyType }).validatedbody;
 
-        const payload: ProductInsertNoId = { vendor_id: vendorId, ...body };
+        const file = req.file;
+
+        if (!file) {
+            return res.status(400).json({ message: "Image file is required" });
+        }
+
+        const up = await ImageService.uploadImage(file, "productimages");
+        if (!up.success) {
+            return res.status(500).json({ message: up.error });
+        }
+
+        const pub = ImageService.getPublicImageUrl(up.url!, "productimages");
+        if (!pub.success) {
+            return res.status(500).json({ message: pub.error });
+        }
+
+        const payload: ProductInsertNoId = {
+            vendor_id: vendorId, ...body, image: pub.url!,
+        };
 
         const created = await ProductService.createProduct(payload);
         if (!created)
