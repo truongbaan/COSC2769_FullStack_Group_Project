@@ -7,10 +7,10 @@
 
 import { supabase } from "../db/db";
 
-export type Storage = 'profileimages' | 'productsimages';
+export type Storage = 'profileimages' | 'productimages';
 
 const allowedMimes = ['image/png', 'image/jpeg'];
-const allowedBuckets: Storage[] = ['profileimages', 'productsimages'];
+const allowedBuckets: Storage[] = ['profileimages', 'productimages'];
 
 interface ImageResult {
     success: boolean;
