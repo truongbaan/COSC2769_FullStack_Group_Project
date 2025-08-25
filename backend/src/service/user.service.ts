@@ -19,6 +19,8 @@ export type UsersFilters = {
 }
 
 export type User = Database['public']['Tables']['users']['Row']
+export type UserInsert = Database['public']['Tables']['users']['Insert']
+
 type UsersUpdate = {
     id: string
     password?: string
@@ -131,7 +133,7 @@ export const UserService = {
         return null
     },
 
-    async createUser(user: User): Promise<User | null> {
+    async createUser(user: UserInsert): Promise<User | null> {
         // First try to insert
         const { data: createdUser, error: createError } = await supabase
             .from('users')
@@ -140,7 +142,7 @@ export const UserService = {
                 email: user.email,
                 password: user.password,
                 username: user.username,
-                profile_picture: user.profile_picture,
+                profile_picture: "",
                 role: user.role
             })
             .select()
@@ -169,7 +171,7 @@ export const UserService = {
                     email: user.email,
                     password: user.password,
                     username: user.username,
-                    profile_picture: user.profile_picture,
+                    profile_picture: "",
                     role: user.role
                 })
                 .select()

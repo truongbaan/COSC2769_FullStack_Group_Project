@@ -22,7 +22,7 @@ export const registerCustomerBodySchema = z.object({
     email: z.email("Invalid email format").trim(),
     password: passwordSchema,
     username: usernameSchema,
-    profile_picture: z.string().trim(),
+    // profile_picture: z.string().trim(),
     // role: z.literal("customer"),
     address: z.string().trim(),
     name: z.string().trim()
@@ -32,7 +32,7 @@ export const registerShipperBodySchema = z.object({
     email: z.email("Invalid email format").trim(),
     password: passwordSchema,
     username: usernameSchema,
-    profile_picture: z.string().trim(),
+    // profile_picture: z.string().trim(),
     // role: z.literal("shipper"),
     hub_id: z.string().trim()
 }).strict();
@@ -41,7 +41,7 @@ export const registerVendorBodySchema = z.object({
     email: z.email("Invalid email format").trim(),
     password: passwordSchema,
     username: usernameSchema,
-    profile_picture: z.string().trim(),
+    // profile_picture: z.string().trim(),
     // role: z.literal("vendor"),
     business_address: z.string().trim(),
     business_name: z.string().trim()

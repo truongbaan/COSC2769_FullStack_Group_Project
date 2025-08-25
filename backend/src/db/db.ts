@@ -38,7 +38,6 @@ export interface Database {
                     email: string // for login using authen of supabase
                     password: string
                     username: string
-                    profile_picture: string
                     role: UserRole
                 }
                 // .update() in table 'users'
