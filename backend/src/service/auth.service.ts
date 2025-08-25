@@ -7,7 +7,7 @@
 
 import { Database, deleteAuthenUser } from '../db/db'
 import { signUpUser } from '../db/db';
-import { User, UserService } from './user.service';
+import { User, UserInsert, UserService } from './user.service';
 import { Customer, CustomerService } from './customer.service';
 import { Shipper, ShipperService } from './shipper.service';
 import { Vendor, VendorService } from './vendor.service';
@@ -26,7 +26,7 @@ interface AuthResult {
 }
 
 //remove id field and role field from the required form
-type NewUser = Omit<User, 'id' | 'role'>;
+type NewUser = Omit<User, 'id' | 'role' | 'profile_picture'>;
 type NewCustomer = Omit<Customer, 'id'>;
 type NewShipper = Omit<Shipper, 'id'>;
 type NewVendor = Omit<Vendor, 'id'>;
@@ -77,7 +77,7 @@ export const AuthService = {
             userData.password = hashPassword(userData.password)
 
             //user form
-            const user: User = {
+            const user: UserInsert = {
                 id: session.user.id,
                 ...userData,
                 role: role
@@ -125,20 +125,20 @@ export const AuthService = {
     
     // Convenience methods that accept combined data from req.body
     async registerCustomer(data: NewUser & NewCustomer): Promise<AuthResult> {
-        const { email, password, username, profile_picture, ...roleData } = data;
-        const userData = { email, password, username, profile_picture };
+        const { email, password, username, ...roleData } = data;
+        const userData = { email, password, username };
         return this.registerUser(userData, 'customer', roleData);
     },
     
     async registerShipper(data: NewUser & NewShipper): Promise<AuthResult> {
-        const { email, password, username, profile_picture, ...roleData } = data;
-        const userData = { email, password, username, profile_picture };
+        const { email, password, username, ...roleData } = data;
+        const userData = { email, password, username };
         return this.registerUser(userData, 'shipper', roleData);
     },
     
     async registerVendor(data: NewUser & NewVendor): Promise<AuthResult> {
-        const { email, password, username, profile_picture, ...roleData } = data;
-        const userData = { email, password, username, profile_picture };
+        const { email, password, username, ...roleData } = data;
+        const userData = { email, password, username };
         return this.registerUser(userData, 'vendor', roleData);
     }
 };

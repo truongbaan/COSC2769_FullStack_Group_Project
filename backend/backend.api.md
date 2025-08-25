@@ -77,8 +77,7 @@ Register a new customer account.
   "username": "string", // 8-15 alphanumeric characters
   "password": "string", // 8-20 chars with upper, lower, digit, special
   "name": "string",
-  "address": "string",
-  "profile_picture": "string"
+  "address": "string"
 }
 ```
 
@@ -91,7 +90,7 @@ Register a new customer account.
         "data": {
             "user": {
                 "username": "string",
-                "profile_picture": "string",
+                "profile_picture": "",
                 "role": "customer",
                 "id": "string",
                 "password": "hash password(string)",
@@ -124,9 +123,8 @@ Register a new vendor account.
   "email": "string", // valid email address
   "username": "string", // 8-15 alphanumeric characters
   "password": "string", // 8-20 chars with upper, lower, digit, special
-  "profile_picture": "string",
-  "businessName": "string", // minimum 5 characters
-  "businessAddress": "string" // minimum 5 characters
+  "business_name": "string",
+  "business_address": "string"
 }
 ```
 
@@ -139,7 +137,7 @@ Register a new vendor account.
         "data": {
             "user": {
                 "username": "string",
-                "profile_picture": "string",
+                "profile_picture": "",
                 "role": "vendor",
                 "id": "string",
                 "password": "hash password(string)",
@@ -171,7 +169,6 @@ Register a new shipper account with distribution hub selection.
   "email": "string", // valid email address
   "username": "string", // 8-15 alphanumeric characters
   "password": "string", // 8-20 chars with upper, lower, digit, special
-  "profile_picture": "",
   "hub_id": "string" // distribution hub id
 }
 ```
@@ -185,7 +182,7 @@ Register a new shipper account with distribution hub selection.
         "data": {
             "user": {
                 "username": "string",
-                "profile_picture": "string",
+                "profile_picture": "",
                 "role": "vendor",
                 "id": "string",
                 "password": "hash password(string)",
