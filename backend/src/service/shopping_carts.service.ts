@@ -99,7 +99,7 @@ export const ShoppingCartService = {
 
     return details;
   },
-
+  
   async removeItemById(id: string, customerId: string): Promise<boolean> {
     //delete by product_id and customer_id (verify the customer)
     const { data, error } = await supabase
@@ -211,6 +211,7 @@ export const ShoppingCartService = {
       status: "active",
       total_price: total,
     })
+    
     if (orderError) throw orderError
 
     // create order items

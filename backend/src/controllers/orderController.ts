@@ -48,11 +48,11 @@ export const getOrdersController = async (req: Request, res: Response) => {
 };
 
 
-const updateStatusParams = z.object({
+export const updateStatusParams = z.object({
   id: z.string().min(1),
 }).strict()
 
-const updateStatusBody = z.object({
+export const updateStatusBody = z.object({
   status: z.enum(["delivered", "canceled"]), //only 2 statuses can be updated to
 }).strict()
 

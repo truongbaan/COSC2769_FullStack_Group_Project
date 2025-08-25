@@ -111,6 +111,7 @@ export const createProductBodySchema = z.object({
 export const createProductController = async (req: Request, res: Response) => {
     try {
         const vendorId = req.user_id;
+        //const body = createProductBodySchema.parse(req.body);
         const body = (req as unknown as Record<string, unknown> & { validatedbody: CreateProductBodyType }).validatedbody;
 
         const file = req.file;
