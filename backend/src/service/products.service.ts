@@ -138,10 +138,18 @@ export const ProductService = {
     return data;
   },
 
-  async updateProductStatus(vendorId: string, productId: string, instock: boolean) {
+  async updateProductStatus(vendorId: string, productId: string, instock?: boolean, imagePath?: string) {
+    // Only add the fields needed to be changed
+    const toUpdate: Record<string, any> = {};
+    if (typeof instock === "boolean") toUpdate.instock = instock;
+    if (imagePath) toUpdate.image = imagePath;
+
+    // Update nothing
+    if (Object.keys(toUpdate).length === 0) return null;
+
     const query = supabase
       .from("products")
-      .update({ instock })
+      .update(toUpdate)
       .eq("vendor_id", vendorId)
       .eq("id", productId)
       .select("*")

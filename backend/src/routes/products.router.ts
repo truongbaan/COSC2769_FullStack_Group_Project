@@ -64,8 +64,9 @@ ProductRouter.post(
 )
 
 ProductRouter.patch(
-  "/:productId/instock",
+  "/:productId",
   requireAuth("vendor"),
+  upload.single("image"),
   validationMiddleware(getProductByIdParamsSchema, "params"),
   validationMiddleware(updateProductStatusBodySchema, "body"),
   updateProductStatusController

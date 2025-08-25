@@ -10,6 +10,7 @@ import { Request, Response } from "express";
 import { ProductInsertNoId, ProductService } from "../service/products.service";
 import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes";
 import { ImageService } from "../service/image.service";
+import { supabase } from "../db/db";
 
 export const getProductsQuerySchema = z.object({
     page: z.coerce.number().min(1).default(1),
@@ -118,13 +119,13 @@ export const createProductController = async (req: Request, res: Response) => {
             return res.status(400).json({ message: "Image file is required" });
         }
 
-        const up = await ImageService.uploadImage(file, "productimages");
-        if (!up.success) {
-            return res.status(500).json({ message: up.error });
+        const upload = await ImageService.uploadImage(file, "productimages");
+        if (!upload.success) {
+            return res.status(500).json({ message: upload.error });
         }
 
         const payload: ProductInsertNoId = {
-            vendor_id: vendorId, ...body, image: up.url!,
+            vendor_id: vendorId, ...body, image: upload.url!,
         };
 
         const created = await ProductService.createProduct(payload);
@@ -146,7 +147,7 @@ export const createProductController = async (req: Request, res: Response) => {
 type UpdateProductBodyType = z.output<typeof updateProductStatusBodySchema>;
 
 export const updateProductStatusBodySchema = z.object({
-    instock: z.coerce.boolean(),
+    instock: z.coerce.boolean().optional(),
 }).strict();
 
 export const updateProductStatusController = async (req: Request, res: Response) => {
@@ -157,15 +158,40 @@ export const updateProductStatusController = async (req: Request, res: Response)
         const { productId } = (req as unknown as Record<string, unknown> & { validatedparams: GetProductByIdParamsType }).validatedparams;
         const { instock } = (req as unknown as Record<string, unknown> & { validatedbody: UpdateProductBodyType }).validatedbody;
 
+        let newImagePath: string | undefined;
+
+        if (req.file) {
+            const up = await ImageService.uploadImage(req.file, "productimages");
+            if (!up.success) return res.status(500).json({ message: up.error });
+            newImagePath = up.url!; // save as PATH
+        }
+
+        // (Optional) lấy product cũ để biết path ảnh hiện tại — dùng để delete sau khi update
+        const { data: oldRow } = await supabase
+            .from("products").select("image").eq("vendor_id", vendorId).eq("id", productId).maybeSingle();
+
         const updated = await ProductService.updateProductStatus(
             vendorId,
             productId,
-            instock
+            instock,
+            newImagePath
         );
 
         if (!updated) {
             return res.status(404).json({ message: "Product not found or not owned by vendor" });
         }
+
+        // Xoá ảnh cũ nếu có ảnh mới và ảnh cũ tồn tại
+        if (newImagePath && oldRow?.image && oldRow.image !== newImagePath) {
+            await ImageService.deleteImage(oldRow.image, "productimages");
+        }
+
+        // // Trả về kèm public URL cho FE dùng ngay
+        // const pub = ImageService.getPublicImageUrl(updated.image, "productimages");
+        // return SuccessJsonResponse(res, 200, {
+        //     message: "Update product success",
+        //     product: { ...updated, image: pub.success ? pub.url : updated.image },
+        // });
 
         return SuccessJsonResponse(res, 200, {
             message: "Update Status Success",
