@@ -95,11 +95,11 @@ export const ProductService = {
 
     if (!data) return null;
 
-    (data as Array<{ image: string | null }>).forEach((r) => {
-      if (!r.image) { r.image = null; return; }
-      const { url } = ImageService.getPublicImageUrl(r.image, "productimages");
-      r.image = url ?? null;
-    }); return data;
+    const url = data.image
+      ? ImageService.getPublicImageUrl(data.image, "productimages")
+      : null;
+
+    return { ...data, image: url };
   },
 
   async createProduct(product: ProductInsertNoId): Promise<ProductRow | null> {
