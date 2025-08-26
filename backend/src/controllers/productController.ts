@@ -43,9 +43,7 @@ export const getProductsController = async (req: Request, res: Response) => {
                 return ErrorJsonResponse(res, 500, "Failed to fetch products");
             }
 
-            return SuccessJsonResponse(res, 200, {
-                data: { products, count: products.length },
-            });
+            return SuccessJsonResponse(res, 200, { products, count: products.length });
         }
         else if (userRole === "vendor") {
             const vendorId = req.user_id;
@@ -58,12 +56,10 @@ export const getProductsController = async (req: Request, res: Response) => {
                 return ErrorJsonResponse(res, 500, "Failed to fetch products");
             }
 
-            return SuccessJsonResponse(res, 200, {
-                data: { products, count: products.length },
-            });
+            return SuccessJsonResponse(res, 200, { products, count: products.length });
         }
 
-        return res.status(403).json({ message: "Forbidden: missing or invalid role" });
+        return ErrorJsonResponse(res, 403, "Forbidden: missing or invalid role");
 
 
     } catch (err: any) {
@@ -90,11 +86,7 @@ export const getProductByIdController = async (req: Request, res: Response) => {
         return ErrorJsonResponse(res, 404, 'Product is not found');
     }
 
-    return SuccessJsonResponse(res, 200, {
-        data: {
-            product
-        }
-    });
+    return SuccessJsonResponse(res, 200, { product });
 }
 
 type CreateProductBodyType = z.output<typeof createProductBodySchema>;
@@ -104,7 +96,7 @@ export const createProductBodySchema = z.object({
     price: z.coerce.number().min(0, "Price must be >= 0"),
     description: z.string().trim().min(1, "Description is required"),
     category: z.string().trim().min(1, "Category is required"),
-    instock: z.coerce.boolean(),
+    instock: z.coerce.boolean().default(true),
 }).strict();
 
 export const createProductController = async (req: Request, res: Response) => {
@@ -114,40 +106,31 @@ export const createProductController = async (req: Request, res: Response) => {
         const file = req.file;
 
         if (!file) {
-            return res.status(400).json({
-                success: false,
-                message: "Image file is required"
-            });
+            return ErrorJsonResponse(res, 400, "Image file is required");
         }
 
         const upload = await ImageService.uploadImage(file, "productimages");
         if (!upload.success) {
-            return res.status(500).json({
-                success: false,
-                message: upload.error
-            });
+            return ErrorJsonResponse(res, 500, upload.error ?? "Failed to upload image");
         }
 
         const payload: ProductInsertNoId = {
-            vendor_id: vendorId, ...body, image: upload.url!,
+            vendor_id: vendorId, ...body,
+            image: upload.url!,
         };
 
         const created = await ProductService.createProduct(payload);
-        if (!created)
-            res.status(500).json({
-                success: false,
-                message: "Failed to create product"
-            });
-
-        return SuccessJsonResponse(res, 201, {
-            data: { product: created },
-        });
+        if (!created) {
+            return ErrorJsonResponse(res, 500, "Failed to create product");
+        }
+        return SuccessJsonResponse(res, 201, { product: created });
 
     } catch (err: any) {
         console.error("createProductController error:", err);
-        return ErrorJsonResponse(
-            res, 500, err?.message ?? "Unexpected error while creating product"
-        );
+        if (err?.issues) {
+            return ErrorJsonResponse(res, 400, err.issues[0]?.message ?? "Validation failed",);
+        }
+        return ErrorJsonResponse(res, 500, err?.message ?? "Unexpected error while creating product");
     }
 };
 
@@ -173,11 +156,12 @@ export const updateProductStatusController = async (req: Request, res: Response)
 
         if (req.file) {
             const up = await ImageService.uploadImage(req.file, "productimages");
-            if (!up.success) return res.status(500).json({ message: up.error });
+            if (!up.success) {
+                return ErrorJsonResponse(res, 500, up.error ?? "Image upload failed");
+            }
             newImagePath = up.url!; // save as PATH
         }
 
-        // (Optional) lấy product cũ để biết path ảnh hiện tại — dùng để delete sau khi update
         const { data: oldRow } = await supabase
             .from("products").select("image").eq("vendor_id", vendorId).eq("id", productId).maybeSingle();
 
@@ -193,25 +177,21 @@ export const updateProductStatusController = async (req: Request, res: Response)
         );
 
         if (!updated) {
-            return res.status(404).json({ message: "Product not found or not owned by vendor" });
+            return ErrorJsonResponse(res, 404, "Product not found or not owned by vendor");
         }
 
-        // Xoá ảnh cũ nếu có ảnh mới và ảnh cũ tồn tại
+        //Delete old image if there's a new one
         if (newImagePath && oldRow?.image && oldRow.image !== newImagePath) {
             await ImageService.deleteImage(oldRow.image, "productimages");
         }
 
-        return SuccessJsonResponse(res, 200, {
-            message: "Update Status Success",
-            product: updated,
-
-        });
+        return SuccessJsonResponse(res, 200, { product: updated });
 
     } catch (err: any) {
         console.error("updateProductStatusController error:", err);
-        return res.status(500).json({
-            message: "Internal Server Error",
-            detail: err.message ?? "Unexpected error while updating product status",
-        });
+        if (err?.issues) {
+            return ErrorJsonResponse(res, 400, err.issues[0]?.message ?? "Validation failed",);
+        }
+        return ErrorJsonResponse(res, 500, "Unexpected error while updating product status");
     }
 };
