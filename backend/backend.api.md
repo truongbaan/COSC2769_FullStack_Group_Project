@@ -90,7 +90,7 @@ none
             "description": "string",
             "image": "string", // public URL
             "category": "string",
-            "instock": boolean    
+            "instock": boolean
       }
             "totalCount": number
     }
@@ -188,7 +188,7 @@ Any subset of:
             "description": "string",
             "image": "string", // public URL
             "category": "string",
-            "instock": boolean    
+            "instock": boolean
     }
   }
 }
