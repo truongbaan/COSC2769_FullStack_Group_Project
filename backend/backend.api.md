@@ -1071,5 +1071,6 @@ Any subset of:
 ```
 **Notes:**`
 - Image is stored as path.
+- If updating image, `form-data` is `required`. Otherwise, either `form-data` or `JSON` works.
 ---
 
