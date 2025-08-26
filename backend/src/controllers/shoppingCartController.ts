@@ -65,27 +65,36 @@ export async function removeCartItemByIdController(req: Request, res: Response) 
   }
 }
 
-export const addToCartBodySchema = z.object({
-  product_id: z.string(),
-  quantity: z.coerce.number().int().min(1).default(1),
-})
+export const addToCartParams = z.object({
+  productId: z.string().min(1),           // hoặc .uuid() nếu product dùng uuid
+}).strict();
 
-type AddToCartBodyType = z.output<typeof addToCartBodySchema>;
+// body: có thể bỏ trống, quantity mặc định = 1
+export const addToCartBody = z.object({
+  quantity: z.coerce.number().int().min(1).default(1),
+}).default({ quantity: 1 });
+
+
+
+
+type AddToCartParamsType = z.output<typeof addToCartParams>;
+type AddToCartBodyType   = z.output<typeof addToCartBody>;
 
 export async function addToCartController(req: Request, res: Response) {
   try {
-    const customerId = req.user_id; // user_id of customer
+    const { productId } = (req as unknown as Record<string, unknown> & { validatedparams: AddToCartParamsType }).validatedparams;
+    const { quantity } = (req as unknown as Record<string, unknown> & { validatedbody: AddToCartBodyType }).validatedbody;
+    
+    const customerId = req.user_id;
 
-    const { product_id, quantity } = (req as unknown as Record<string, unknown> & { validatedbody: AddToCartBodyType }).validatedbody;
-
-
-    const item = await ShoppingCartService.addToCart(customerId, { product_id, quantity })
-    return SuccessJsonResponse(res, 200, { item })
+    const item = await ShoppingCartService.addToCart(customerId, productId, quantity);
+    return SuccessJsonResponse(res, 200, { item });
   } catch (e: any) {
-    console.error("ADD_CART_ERROR:", e)
-    return ErrorJsonResponse(res, e.status ?? 500, e.message ?? "ADD_CART_FAILED")
+    console.error("ADD_CART_ERROR:", e);
+    return ErrorJsonResponse(res, e.status ?? 500, e.message ?? "ADD_CART_FAILED");
   }
 }
+
 
 export async function checkoutController(req: Request, res: Response) {
   try {
