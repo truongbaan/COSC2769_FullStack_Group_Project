@@ -75,18 +75,25 @@ export const ShoppingCartService = {
     });
 
     //create a cartItemDetail to set all the products
-    const details: CartItemDetail[] = items.map((i) => {
-      const p = productMap.get(i.product_id) ?? { name: "(unknown product)", price: 0, image: null as string | null };
+    const details: CartItemDetail[] = [];
+
+    for (const i of items as CartRow[]) {
+      const p = productMap.get(i.product_id) ?? {
+        name: "(unknown product)",
+        price: 0,
+        image: null as string | null,
+      };
 
       let image: string | null = null;
       if (p.image) {
-        const r = ImageService.getPublicImageUrl(p.image, IMAGE_BUCKET as any);
+        const r = await ImageService.getPublicImageUrl(p.image, IMAGE_BUCKET as any);
         image = r.success ? (r.url ?? null) : null;
       }
 
       const price = Number(p.price ?? 0);
       const quantity = Number(i.quantity ?? 0);
-      return {
+
+      details.push({
         id: i.id,
         product_id: i.product_id,
         name: p.name,
@@ -94,8 +101,8 @@ export const ShoppingCartService = {
         price,
         subtotal: price * quantity,
         image,
-      };
-    });
+      });
+    }
 
     return details;
   },
