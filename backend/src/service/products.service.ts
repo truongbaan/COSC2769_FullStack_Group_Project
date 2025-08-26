@@ -95,11 +95,13 @@ export const ProductService = {
 
     if (!data) return null;
 
-    const url = data.image
-      ? ImageService.getPublicImageUrl(data.image, "productimages")
-      : null;
+    const imageUrl =
+      !data.image ? null
+        : (data.image.startsWith("http://") || data.image.startsWith("https://"))
+          ? data.image
+          : (ImageService.getPublicImageUrl(data.image, "productimages").url ?? null);
 
-    return { ...data, image: url };
+    return { ...data, image: imageUrl };
   },
 
   async createProduct(product: ProductInsertNoId): Promise<ProductRow | null> {

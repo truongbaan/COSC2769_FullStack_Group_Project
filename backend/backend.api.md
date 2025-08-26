@@ -24,6 +24,10 @@ Retrieve all available products with optional filters & pagination.
 - `priceMax`: number (optional, max 100000000)
 - `name`: string (optional, search by product name)
   
+**Request:**
+```
+none
+```
 **Response:**
 ```json
 {
@@ -65,6 +69,10 @@ Retrieve a specific product by ID.
 **Path Parameters::**
 - `productId`: (string, required)
 
+**Request:**
+```
+none
+```
 **Response:**
 ```json
 {
@@ -72,15 +80,16 @@ Retrieve a specific product by ID.
   "message": {
     "data": {
       "product": {
-        "id": "lksdlfkjsalfdjkksdlj",
-        "vendor_id": "2f996e97-eee5-4d9c-9741-e36941c2849a",
-        "name": "condom",
-        "price": 100000,
-        "description": "not for adult",
-        "image": "https://supabase.co/storage/v1/object/public/productimages/PinkKondom.jpg",
-        "category": "18",
-        "instock": true
+          "id": "string",
+          "vendor_id": "string",
+          "name": "string",
+          "price": number,
+          "description": "string",
+          "image": "string", // public URL
+          "category": "string",
+          "instock": boolean    
       }
+            "totalCount": number
     }
   }
 }
