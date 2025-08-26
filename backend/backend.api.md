@@ -51,7 +51,7 @@ Retrieve all available products with optional filters & pagination.
 ```json
 {  }
 ```
-**Note:**
+**Notes:**
 - PriceMax needs to be larger than PriceMin.
 - Image is returned as a public URL (Supabase Storage).
 
@@ -90,7 +90,7 @@ Error Response (404):
 ```json
 {  }
 ```
-**Note:**
+**Notes:**
 - Image is returned as a public URL (Supabase Storage).
 
 ---
@@ -132,7 +132,7 @@ Create a new product.
 ```json
 {  }
 ```
-**Note:**`
+**Notes:**`
 - If `instock` is not provided, it is set to `false` by default.
 - Image is stored & returned as a public URL (Supabase Storage).
 
@@ -179,6 +179,6 @@ Any subset of:
 ```json
 {  }
 ```
-**Note:**`
+**Notes:**`
 - Image is stored & returned as a public URL (Supabase Storage).
 ---
