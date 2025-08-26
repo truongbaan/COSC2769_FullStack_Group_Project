@@ -1020,7 +1020,7 @@ Create a new product.
 }
 ```
 **Notes:**`
-- If `instock` is not provided, it is set to `false` by default.
+- If `instock` is not provided, it is set to `true` by default.
 - Image is stored as path in a bucket on Supabase.
 
 ---
