@@ -8,6 +8,7 @@ import { z } from "zod"
 import { Request, Response } from "express"
 import { UserService } from "../service/user.service"
 import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes"
+import { passwordSchema } from "../types/general.type";
 
 export const getUsersQuerySchema = z.object({
     page: z.string().default("-1").transform((val) => parseInt(val, 10)),
@@ -67,25 +68,15 @@ export const getUserByIdController = async (req: Request, res: Response) => {
     }
 }
 
-//same like get user by id, but might be other field added in get user by id, dont group them!
-export const deleteUserByIdParamsSchema = z.object({
-    id: z.string(),
-}).strict()
-
-type DeleteUserByIdParamsType = z.output<typeof deleteUserByIdParamsSchema>
-
 //use req.param
 export const deleteUserController = async (req: Request, res: Response) => {
     try {
-        const { id } = (req as unknown as Record<string, unknown> & {
-            validatedparams: DeleteUserByIdParamsType
-        }).validatedparams;
-
+        const id = req.user_id;
         const deleted = await UserService.deleteUser(id)
         if (!deleted) {
             return ErrorJsonResponse(res, 500, "Failed to delete user")
         }
-        return SuccessJsonResponse(res, 200, { message: "User deleted successfully" })
+        return SuccessJsonResponse(res, 200, { message: "User account deleted successfully." })
     } catch (err: any) {
         if (err?.issues) {
             return ErrorJsonResponse(res, 400, err.issues[0].message)
@@ -94,18 +85,14 @@ export const deleteUserController = async (req: Request, res: Response) => {
     }
 }
 
-const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,20}$/;
-const passwordSchema = z.string().regex(passwordRegex, "Password 8-20, includes upper, lower, digit, special !@#$%^&*").trim();
-
 export const updateUserByIdParamsSchema = z.object({
     password: passwordSchema.optional(),
     newPassword: passwordSchema.optional(),
-    profile_picture: z.string().optional(),
 }).strict()
 
 export const updateUserByIdController = async (req: Request, res: Response) => {
     try {
-        const { password, newPassword, profile_picture } = req.body;
+        const { password, newPassword } = req.body;
         // Ensure user can only update their own account
         const id = req.user_id
         
@@ -115,7 +102,7 @@ export const updateUserByIdController = async (req: Request, res: Response) => {
         }
 
         // Call service layer
-        const result = await UserService.updateUser({id,password,newPassword,profile_picture});
+        const result = await UserService.updateUser({id,password,newPassword});
 
         if (!result) {
             return ErrorJsonResponse(res, 400, "Failed to update user");

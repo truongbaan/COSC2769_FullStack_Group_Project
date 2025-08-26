@@ -6,18 +6,12 @@
 # ID: s3999568 */
 
 import * as z from "zod";
-import { signInUser } from "../db/db";
 import { Request, Response } from "express";
+import { signInUser, signOutUser } from "../db/db";
+import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes";
 import { UserService } from "../service/user.service";
 import { AuthService } from "../service/auth.service";
-import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes";
- 
-//xin frontend nhá =))
-const usernameRegex = /^[A-Za-z0-9]{8,15}$/;
-const passwordRegex =/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,20}$/;
-const usernameSchema = z.string().regex(usernameRegex, "Username must be 8-15 letters/digits").trim();
-const passwordSchema = z.string().regex(passwordRegex,"Password 8-20, includes upper, lower, digit, special !@#$%^&*").trim();
-
+import { passwordSchema, usernameSchema } from "../types/general.type";
 
 export const loginBodySchema = z.object({
     email: z.email("Invalid email format").trim(),
@@ -28,7 +22,7 @@ export const registerCustomerBodySchema = z.object({
     email: z.email("Invalid email format").trim(),
     password: passwordSchema,
     username: usernameSchema,
-    profile_picture: z.string().trim(),
+    // profile_picture: z.string().trim(),
     // role: z.literal("customer"),
     address: z.string().trim(),
     name: z.string().trim()
@@ -38,7 +32,7 @@ export const registerShipperBodySchema = z.object({
     email: z.email("Invalid email format").trim(),
     password: passwordSchema,
     username: usernameSchema,
-    profile_picture: z.string().trim(),
+    // profile_picture: z.string().trim(),
     // role: z.literal("shipper"),
     hub_id: z.string().trim()
 }).strict();
@@ -47,7 +41,7 @@ export const registerVendorBodySchema = z.object({
     email: z.email("Invalid email format").trim(),
     password: passwordSchema,
     username: usernameSchema,
-    profile_picture: z.string().trim(),
+    // profile_picture: z.string().trim(),
     // role: z.literal("vendor"),
     business_address: z.string().trim(),
     business_name: z.string().trim()
@@ -130,8 +124,6 @@ export const registerShipperController = async (req: Request, res: Response): Pr
         
         return SuccessJsonResponse(res, 200, {
             data: {
-                access_token: result.data!.access_token,
-                refresh_token: result.data!.refresh_token,
                 user: result.data!.user
             }
         });
@@ -153,8 +145,6 @@ export const registerVendorController = async (req: Request, res: Response): Pro
         
         return SuccessJsonResponse(res, 200, {
             data: {
-                access_token: result.data!.access_token,
-                refresh_token: result.data!.refresh_token,
                 user: result.data!.user
             }
         });
@@ -177,4 +167,25 @@ function addCookie(res : Response, session : any){
         secure: process.env.PRODUCTION_SITE === 'true', // http or https
         path: '/',
     })
+}
+
+export const logoutController = async (req: Request, res: Response) => {
+    try {
+        const token = req.cookies.access_token
+        if (!token) {
+            return ErrorJsonResponse(res, 401, 'Not logged in')
+        }
+        
+        const result = await signOutUser()
+        if (!result){
+            return ErrorJsonResponse(res, 500, 'Fail to sign out user')
+        }
+        // Clear cookies
+        res.clearCookie('access_token', { path: '/' })
+        res.clearCookie('refresh_token', { path: '/' })
+        
+        SuccessJsonResponse(res, 200, 'Logged out successfully' )
+    } catch (error) {
+        ErrorJsonResponse(res, 500, 'Internal server error')
+    }
 }

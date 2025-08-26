@@ -71,11 +71,17 @@ export const ProductService = {
 
     if (!data) return null;
 
-    (data as Array<{ image: string | null }>).forEach((r) => {
-      if (!r.image) { r.image = null; return; }
-      const { url } = ImageService.getPublicImageUrl(r.image, "productimages");
+    for (const r of data as Array<{ image: string | null }>) {
+      if (!r.image) {
+        r.image = null;
+        continue;
+      }
+
+      const { url } = await ImageService.getPublicImageUrl(r.image, "productimages");
       r.image = url ?? null;
-    }); return data;
+    }
+    
+    return data;
   },
 
   //Get Product By Id
@@ -97,7 +103,7 @@ export const ProductService = {
 
     let imageUrl: string | null = null;
     if (data.image) {
-      const res = ImageService.getPublicImageUrl(data.image, "productimages");
+      const res = await ImageService.getPublicImageUrl(data.image, "productimages");
       imageUrl = res?.success ? res.url ?? null : null;
     }
 
@@ -141,11 +147,16 @@ export const ProductService = {
 
     if (!data) return null;
 
-    (data as Array<{ image: string | null }>).forEach((r) => {
-      if (!r.image) { r.image = null; return; }
-      const { url } = ImageService.getPublicImageUrl(r.image, "productimages");
+    for (const r of data as Array<{ image: string | null }>) {
+      if (!r.image) {
+        r.image = null;
+        continue;
+      }
+
+      const { url } = await ImageService.getPublicImageUrl(r.image, "productimages");
       r.image = url ?? null;
-    });
+    }
+
     return data;
   },
 

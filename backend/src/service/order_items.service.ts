@@ -101,8 +101,8 @@ export const OrderItemService = {
     });
 
     // merge + build image_url
+     const results: OrderItemWithProduct[] = [];
 
-    const results: OrderItemWithProduct[] = [];
 
     for (const i of items as OrderItemRow[]) {
       const p = prodMap.get(i.product_id) ?? {

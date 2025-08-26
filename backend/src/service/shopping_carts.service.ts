@@ -75,6 +75,7 @@ export const ShoppingCartService = {
     });
 
     //create a cartItemDetail to set all the products
+
     const details: CartItemDetail[] = [];
 
     for (const i of items as CartRow[]) {
