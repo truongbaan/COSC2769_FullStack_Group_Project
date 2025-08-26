@@ -25,7 +25,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { placeOrderApi } from "~/lib/api";
+import { checkoutCartApi } from "~/lib/api";
+import { getBackendImageUrl } from "~/lib/utils";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -63,24 +64,17 @@ export default function Cart() {
 
     setIsOrdering(true);
     try {
-      const result = await placeOrderApi({
-        items: items.map((i) => ({
-          productId: i.product.id,
-          quantity: i.quantity,
-          price: i.product.price,
-        })),
-        total: getTotalPrice(),
-      });
+      const result = await checkoutCartApi();
 
       if (result.success) {
         clearCart();
         toast.success(result.message || "Order placed successfully");
-        if (result.orderId) {
-          console.log("Order ID:", result.orderId);
+        if (result.order?.id) {
+          console.log("Order ID:", result.order.id);
         }
         navigate("/products");
       } else {
-        toast.error(result.error || "Failed to place order. Please try again.");
+        toast.error("Failed to place order. Please try again.");
       }
     } catch (error) {
       console.error("Checkout error:", error);
@@ -153,7 +147,9 @@ export default function Cart() {
                   disabled={isLoading || !isAuthenticated()}
                   className='text-xs'
                 >
-                  <RefreshCw className={`h-3 w-3 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
+                  <RefreshCw
+                    className={`h-3 w-3 mr-1 ${isLoading ? "animate-spin" : ""}`}
+                  />
                   Sync
                 </Button>
               </div>
@@ -189,7 +185,10 @@ export default function Cart() {
                     <div className='flex-shrink-0'>
                       <div className='w-24 h-24 rounded-lg overflow-hidden bg-gray-100'>
                         <img
-                          src={item.product.imageUrl}
+                          src={
+                            getBackendImageUrl(item.product.imageUrl) ||
+                            item.product.imageUrl
+                          }
                           alt={item.product.name}
                           className='w-full h-full object-cover'
                         />
@@ -211,7 +210,6 @@ export default function Cart() {
                           <p className='text-gray-600 text-sm'>
                             by {item.product.vendorName}
                           </p>
-                       
                         </div>
                         <Button
                           variant='ghost'

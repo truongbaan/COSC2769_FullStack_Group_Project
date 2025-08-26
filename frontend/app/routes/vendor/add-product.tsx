@@ -63,11 +63,19 @@ export default function AddProduct() {
     setIsSubmitting(true);
 
     try {
+      const imageFile = (data as any).image;
+      if (!imageFile) {
+        toast.error("Please select an image for your product");
+        return;
+      }
+
       await createProductApi({
         name: data.name,
         price: Number(data.price),
         description: data.description,
-        image: (data as any).image ?? null,
+        category: data.category || "General",
+        instock: true, // Default to in stock
+        image: imageFile,
       });
 
       toast.success("Product added");
@@ -160,6 +168,18 @@ export default function AddProduct() {
                   step='0.01'
                   placeholder='0.00'
                   {...register("price")}
+                />
+              </Field>
+
+              <Field
+                id='category'
+                label='Category'
+                error={formState.errors.category?.message}
+              >
+                <Input
+                  id='category'
+                  placeholder='e.g., Electronics, Clothing, Home & Garden'
+                  {...register("category")}
                 />
               </Field>
 

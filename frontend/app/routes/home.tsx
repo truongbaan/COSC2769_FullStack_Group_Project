@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { ShoppingBag, Package, Truck, Star } from "~/components/ui/icons";
+import { useAuth } from "~/lib/auth";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -21,6 +22,7 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
+  const { user } = useAuth();
   return (
     <div className='container mx-auto px-4 py-8'>
       {/* Hero Section */}
@@ -35,17 +37,39 @@ export default function Home() {
             delivery network.
           </p>
           <div className='flex flex-col sm:flex-row gap-4 justify-center'>
-            <Link to='/products'>
-              <Button size='lg' className='text-lg px-8'>
-                <ShoppingBag className='mr-2 h-5 w-5' />
-                Browse Products
-              </Button>
-            </Link>
-            <Link to='/register/vendor'>
-              <Button variant='outline' size='lg' className='text-lg px-8'>
-                Start Selling
-              </Button>
-            </Link>
+            {/* Only show Browse Products for customers and unauthenticated users */}
+            {(!user || user.role === "customer") && (
+              <Link to='/products'>
+                <Button size='lg' className='text-lg px-8'>
+                  <ShoppingBag className='mr-2 h-5 w-5' />
+                  Browse Products
+                </Button>
+              </Link>
+            )}
+            {/* Show different CTAs based on user role */}
+            {!user && (
+              <Link to='/register/vendor'>
+                <Button variant='outline' size='lg' className='text-lg px-8'>
+                  Start Selling
+                </Button>
+              </Link>
+            )}
+            {user && user.role === "vendor" && (
+              <Link to='/vendor/products'>
+                <Button size='lg' className='text-lg px-8'>
+                  <Package className='mr-2 h-5 w-5' />
+                  My Products
+                </Button>
+              </Link>
+            )}
+            {user && user.role === "shipper" && (
+              <Link to='/shipper/orders'>
+                <Button size='lg' className='text-lg px-8'>
+                  <Truck className='mr-2 h-5 w-5' />
+                  Active Orders
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </section>
@@ -184,11 +208,14 @@ export default function Home() {
               Sign In
             </Button>
           </Link>
-          <Link to='/products'>
-            <Button size='lg' className='text-lg px-8'>
-              Explore Products
-            </Button>
-          </Link>
+          {/* Only show Explore Products for customers and unauthenticated users */}
+          {(!user || user.role === "customer") && (
+            <Link to='/products'>
+              <Button size='lg' className='text-lg px-8'>
+                Explore Products
+              </Button>
+            </Link>
+          )}
         </div>
       </section>
     </div>

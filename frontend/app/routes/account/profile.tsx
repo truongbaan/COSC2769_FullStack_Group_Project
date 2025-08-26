@@ -14,12 +14,13 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
-import { Avatar, AvatarFallback } from "~/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Field } from "~/components/shared/Field";
 import { useNavigate } from "react-router";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import type { z } from "zod";
+import { getBackendImageUrl } from "~/lib/utils";
 import {
   User,
   Package,
@@ -47,12 +48,23 @@ export default function Profile() {
   const navigate = useNavigate();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  
-  const { register, handleSubmit, formState, watch, reset } = useForm<ProfileImageFormValues>({
-    resolver: zodResolver(profileImageUploadSchema),
-  });
-  
+  const [currentProfilePicture, setCurrentProfilePicture] = useState<
+    string | null
+  >(null);
+
+  const { register, handleSubmit, formState, watch, reset } =
+    useForm<ProfileImageFormValues>({
+      resolver: zodResolver(profileImageUploadSchema),
+    });
+
   const watchedFile = watch("profileImage");
+
+  // Initialize current profile picture from user data
+  useEffect(() => {
+    if (user?.profile_picture && user.profile_picture.trim() !== "") {
+      setCurrentProfilePicture(user.profile_picture);
+    }
+  }, [user?.profile_picture]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -80,6 +92,22 @@ export default function Profile() {
     return "bg-gray-100 text-gray-900";
   };
 
+  const getUserAvatarUrl = () => {
+    return getBackendImageUrl(currentProfilePicture);
+  };
+
+  const getUserInitials = () => {
+    const name = user?.name || user?.businessName || user?.username;
+    if (name) {
+      return name
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase())
+        .slice(0, 2)
+        .join("");
+    }
+    return user?.username?.charAt(0).toUpperCase() || "U";
+  };
+
   const getRoleLinks = () => {
     switch (user.role) {
       case "vendor":
@@ -105,7 +133,7 @@ export default function Profile() {
       const file = watchedFile[0];
       const url = URL.createObjectURL(file);
       setPreviewUrl(url);
-      
+
       // Cleanup function
       return () => {
         URL.revokeObjectURL(url);
@@ -126,15 +154,16 @@ export default function Profile() {
 
   const onSubmit = async (data: ProfileImageFormValues) => {
     const file = data.profileImage[0];
-    
+
     setIsUploading(true);
     try {
       const result = await uploadProfileImageApi(file);
-      
+
       if (result.success) {
         toast.success("Profile picture updated successfully!");
         if (result.imageUrl) {
-          // In a real app, you might update the user's profile image URL here
+          // Update the current profile picture to immediately reflect the change
+          setCurrentProfilePicture(result.imageUrl);
           console.log("New profile image URL:", result.imageUrl);
         }
         reset();
@@ -172,8 +201,15 @@ export default function Profile() {
           <CardHeader>
             <div className='flex items-center space-x-4'>
               <Avatar className='h-16 w-16'>
-                <AvatarFallback className='bg-gray-100 text-gray-900'>
-                  {getRoleIcon(user.role)}
+                {getUserAvatarUrl() && (
+                  <AvatarImage
+                    src={getUserAvatarUrl()!}
+                    alt={`${user?.name || user?.username}'s profile picture`}
+                    className='object-cover'
+                  />
+                )}
+                <AvatarFallback className='bg-gray-100 text-gray-900 text-lg font-medium'>
+                  {getUserInitials()}
                 </AvatarFallback>
               </Avatar>
               <div className='flex-1'>
@@ -241,7 +277,6 @@ export default function Profile() {
                       className='group w-full inline-flex items-center justify-between rounded-lg border px-3 py-2 text-left hover:bg-gray-50'
                     >
                       <span className='inline-flex items-center gap-2'>
-                        
                         {link.label}
                       </span>
                       <ArrowRight className='h-4 w-4 opacity-70 transition-transform group-hover:translate-x-0.5' />
@@ -266,66 +301,96 @@ export default function Profile() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
-              <Field
-                id='profileImage'
-                label='Select Image File'
-                error={formState.errors.profileImage?.message as string}
-              >
-                <div className='space-y-4'>
-                  <div className='flex items-center gap-4'>
-                    <Input
-                      type='file'
-                      accept='image/*'
-                      {...register("profileImage")}
-                      className='flex-1 border-dashed'
+            <div className='space-y-6'>
+              {/* Current Profile Picture */}
+              <div className='flex items-center gap-4'>
+                <span className='text-sm font-medium text-gray-700'>
+                  Current:
+                </span>
+                <Avatar className='h-12 w-12'>
+                  {getUserAvatarUrl() && (
+                    <AvatarImage
+                      src={getUserAvatarUrl()!}
+                      alt='Current profile picture'
+                      className='object-cover'
                     />
-                    <div className='flex gap-2'>
-                      <Button
-                        type='submit'
-                        disabled={!watchedFile?.[0] || isUploading}
-                        className='min-w-[110px]'
-                      >
-                        {isUploading ? "Uploading..." : "Upload"}
-                      </Button>
-                      {watchedFile?.[0] && (
-                        <Button
-                          type='button'
-                          onClick={handleCancelUpload}
-                          variant='outline'
-                          disabled={isUploading}
-                          className='min-w-[90px]'
-                        >
-                          <XCircle className='h-4 w-4 mr-2' />
-                          Cancel
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <p className='text-xs text-gray-600'>PNG or JPG up to 2MB.</p>
-                  
-                  {watchedFile?.[0] && (
-                    <div className='space-y-2'>
-                      <p className='text-sm text-gray-600'>
-                        Selected: {watchedFile[0].name} ({(watchedFile[0].size / 1024 / 1024).toFixed(2)}{" "}
-                        MB)
-                      </p>
-                      {previewUrl && (
-                        <div className='flex items-center gap-3'>
-                          <span className='text-sm text-gray-600'>Preview:</span>
-                          <img 
-                            src={previewUrl} 
-                            alt="Preview" 
-                            className='w-16 h-16 object-cover rounded-md border'
-                          />
-                        </div>
-                      )}
-                    </div>
                   )}
-                </div>
-              </Field>
-            </form>
+                  <AvatarFallback className='bg-gray-100 text-gray-900 text-sm'>
+                    {getUserInitials()}
+                  </AvatarFallback>
+                </Avatar>
+                <span className='text-sm text-gray-600'>
+                  {getUserAvatarUrl()
+                    ? "Custom profile picture"
+                    : "Default avatar (initials)"}
+                </span>
+              </div>
+
+              <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
+                <Field
+                  id='profileImage'
+                  label='Select Image File'
+                  error={formState.errors.profileImage?.message as string}
+                >
+                  <div className='space-y-4'>
+                    <div className='flex items-center gap-4'>
+                      <Input
+                        type='file'
+                        accept='image/*'
+                        {...register("profileImage")}
+                        className='flex-1 border-dashed'
+                      />
+                      <div className='flex gap-2'>
+                        <Button
+                          type='submit'
+                          disabled={!watchedFile?.[0] || isUploading}
+                          className='min-w-[110px]'
+                        >
+                          {isUploading ? "Uploading..." : "Upload"}
+                        </Button>
+                        {watchedFile?.[0] && (
+                          <Button
+                            type='button'
+                            onClick={handleCancelUpload}
+                            variant='outline'
+                            disabled={isUploading}
+                            className='min-w-[90px]'
+                          >
+                            <XCircle className='h-4 w-4 mr-2' />
+                            Cancel
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+
+                    <p className='text-xs text-gray-600'>
+                      PNG or JPG up to 2MB.
+                    </p>
+
+                    {watchedFile?.[0] && (
+                      <div className='space-y-2'>
+                        <p className='text-sm text-gray-600'>
+                          Selected: {watchedFile[0].name} (
+                          {(watchedFile[0].size / 1024 / 1024).toFixed(2)} MB)
+                        </p>
+                        {previewUrl && (
+                          <div className='flex items-center gap-3'>
+                            <span className='text-sm text-gray-600'>
+                              Preview:
+                            </span>
+                            <img
+                              src={previewUrl}
+                              alt='Preview'
+                              className='w-16 h-16 object-cover rounded-md border'
+                            />
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </Field>
+              </form>
+            </div>
           </CardContent>
         </Card>
 

@@ -1,7 +1,8 @@
 import type { Route } from "./+types/products";
 import { useAuth } from "~/lib/auth";
 import { Link, useNavigate } from "react-router";
-import { deleteVendorProductApi, editVendorProductApi } from "~/lib/api";
+import { updateProductApi, fetchProducts } from "~/lib/api";
+import { getBackendImageUrl } from "~/lib/utils";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -59,28 +60,18 @@ export default function VendorProducts() {
     description: "",
     image: "",
   });
+  const [editImageFile, setEditImageFile] = useState<File | null>(null);
+  const [editPreviewImage, setEditPreviewImage] = useState<string | null>(null);
 
   // Fetch vendor products from API
-  const fetchVendorProducts = async (vendorId: string) => {
+  const fetchVendorProducts = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(
-        `/api-test/vendor/products?vendorId=${encodeURIComponent(vendorId)}`
-      );
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch products: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        setProducts(data.products || []);
-      } else {
-        throw new Error(data.error || "Failed to fetch products");
-      }
+      // The backend will filter products based on the authenticated vendor
+      const products = await fetchProducts();
+      setProducts(products || []);
     } catch (err) {
       console.error("Error fetching vendor products:", err);
       setError(err instanceof Error ? err.message : "Failed to fetch products");
@@ -102,7 +93,7 @@ export default function VendorProducts() {
     }
 
     // Fetch vendor products from API
-    fetchVendorProducts(user.id);
+    fetchVendorProducts();
   }, [isAuthenticated, user, navigate]);
 
   if (!user || user.role !== "vendor") {
@@ -119,26 +110,29 @@ export default function VendorProducts() {
       try {
         setDeleting(true);
 
-        // Call the delete API
-        const result = await deleteVendorProductApi(
-          productToDelete.id,
-          user.id
-        );
+        // Backend doesn't have delete - we'll just mark as out of stock
+        const result = await updateProductApi(productToDelete.id, {
+          instock: false,
+        });
 
         if (result.success) {
-          // Remove product from local state
-          setProducts(products.filter((p) => p.id !== productToDelete.id));
+          // Update product in local state
+          setProducts(
+            products.map((p) =>
+              p.id === productToDelete.id
+                ? { ...p, inStock: false, instock: false }
+                : p
+            )
+          );
           setDeleteDialogOpen(false);
           setProductToDelete(null);
-
-          // Optional: Show success message
-          console.log("Product deleted successfully:", result.message);
+          toast.success("Product marked as out of stock");
         } else {
-          throw new Error("Failed to delete product");
+          throw new Error("Failed to update product");
         }
       } catch (error) {
-        console.error("Error deleting product:", error);
-        toast.error("Failed to delete product. Please try again.");
+        console.error("Error updating product:", error);
+        toast.error("Failed to update product. Please try again.");
       } finally {
         setDeleting(false);
       }
@@ -158,6 +152,8 @@ export default function VendorProducts() {
       description: product.description,
       image: product.image || product.imageUrl || "",
     });
+    setEditImageFile(null);
+    setEditPreviewImage(null);
     setEditDialogOpen(true);
   };
 
@@ -166,25 +162,38 @@ export default function VendorProducts() {
       try {
         setEditing(true);
 
-        // Call the edit API
-        const result = await editVendorProductApi(
-          productToEdit.id,
-          user.id,
-          editForm
-        );
+        // Prepare update data, excluding empty/unchanged fields
+        const updateData: any = {};
+        if (editForm.name && editForm.name !== productToEdit.name) {
+          updateData.name = editForm.name;
+        }
+        if (editForm.price && editForm.price !== productToEdit.price) {
+          updateData.price = editForm.price;
+        }
+        if (
+          editForm.description &&
+          editForm.description !== productToEdit.description
+        ) {
+          updateData.description = editForm.description;
+        }
 
-        if (result.success && result.updatedProduct) {
+        // Add image file if user selected a new one
+        if (editImageFile) {
+          updateData.image = editImageFile;
+        }
+
+        const result = await updateProductApi(productToEdit.id, updateData);
+
+        if (result.success && result.product) {
           // Update product in local state
           setProducts(
             products.map((p) =>
-              p.id === productToEdit.id ? result.updatedProduct : p
+              p.id === productToEdit.id ? { ...p, ...result.product } : p
             )
           );
           setEditDialogOpen(false);
           setProductToEdit(null);
-
-          // Optional: Show success message
-          console.log("Product updated successfully:", result.message);
+          toast.success("Product updated successfully");
         } else {
           throw new Error("Failed to update product");
         }
@@ -206,6 +215,23 @@ export default function VendorProducts() {
       description: "",
       image: "",
     });
+    setEditImageFile(null);
+    setEditPreviewImage(null);
+  };
+
+  const handleEditImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    setEditImageFile(file || null);
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setEditPreviewImage(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setEditPreviewImage(null);
+    }
   };
 
   const totalProducts = products.length;
@@ -313,9 +339,7 @@ export default function VendorProducts() {
                 Failed to load products
               </h3>
               <p className='text-gray-600 mb-6'>{error}</p>
-              <Button onClick={() => fetchVendorProducts(user?.id || "")}>
-                Try Again
-              </Button>
+              <Button onClick={() => fetchVendorProducts()}>Try Again</Button>
             </CardContent>
           </Card>
         ) : products.length === 0 ? (
@@ -358,7 +382,13 @@ export default function VendorProducts() {
                   <CardHeader className='p-0'>
                     <div className='aspect-square overflow-hidden rounded-t-lg bg-gray-100'>
                       <img
-                        src={product.image || product.imageUrl}
+                        src={
+                          getBackendImageUrl(
+                            product.image || product.imageUrl
+                          ) ||
+                          product.image ||
+                          product.imageUrl
+                        }
                         alt={product.name}
                         className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-300'
                       />
@@ -467,10 +497,10 @@ export default function VendorProducts() {
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Product</DialogTitle>
+            <DialogTitle>Mark Product as Out of Stock</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete "{productToDelete?.name}"? This
-              action cannot be undone.
+              Are you sure you want to mark "{productToDelete?.name}" as out of
+              stock? You can update it later to bring it back in stock.
             </DialogDescription>
           </DialogHeader>
 
@@ -478,7 +508,13 @@ export default function VendorProducts() {
             {productToDelete && (
               <>
                 <img
-                  src={productToDelete.image || productToDelete.imageUrl}
+                  src={
+                    getBackendImageUrl(
+                      productToDelete.image || productToDelete.imageUrl
+                    ) ||
+                    productToDelete.image ||
+                    productToDelete.imageUrl
+                  }
                   alt={productToDelete.name}
                   className='w-16 h-16 object-cover rounded-lg'
                 />
@@ -510,7 +546,7 @@ export default function VendorProducts() {
               onClick={confirmDeleteProduct}
               disabled={deleting}
             >
-              {deleting ? "Deleting..." : "Delete Product"}
+              {deleting ? "Updating..." : "Mark Out of Stock"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -563,19 +599,49 @@ export default function VendorProducts() {
               />
             </div>
 
-            <div className='grid grid-cols-4 items-center gap-4'>
-              <Label htmlFor='edit-image' className='text-right'>
-                Image URL
+            <div className='grid grid-cols-4 items-start gap-4'>
+              <Label htmlFor='edit-image' className='text-right pt-2'>
+                Product Image
               </Label>
-              <Input
-                id='edit-image'
-                value={editForm.image}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, image: e.target.value })
-                }
-                className='col-span-3'
-                placeholder='https://example.com/image.jpg'
-              />
+              <div className='col-span-3 space-y-3'>
+                <Input
+                  id='edit-image'
+                  type='file'
+                  accept='image/*'
+                  onChange={handleEditImageChange}
+                  className='w-full'
+                />
+                {editPreviewImage ? (
+                  <div className='border rounded-lg p-3'>
+                    <p className='text-sm font-medium mb-2'>
+                      New Image Preview:
+                    </p>
+                    <img
+                      src={editPreviewImage}
+                      alt='New product preview'
+                      className='w-24 h-24 object-cover rounded-lg'
+                    />
+                  </div>
+                ) : (
+                  productToEdit && (
+                    <div className='border rounded-lg p-3'>
+                      <p className='text-sm font-medium mb-2'>Current Image:</p>
+                      <img
+                        src={
+                          getBackendImageUrl(
+                            productToEdit.image || productToEdit.imageUrl
+                          ) ||
+                          productToEdit.image ||
+                          productToEdit.imageUrl ||
+                          "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=400&fit=crop"
+                        }
+                        alt={productToEdit.name}
+                        className='w-24 h-24 object-cover rounded-lg'
+                      />
+                    </div>
+                  )
+                )}
+              </div>
             </div>
 
             <div className='grid grid-cols-4 items-start gap-4'>

@@ -1,5 +1,5 @@
 import type { Route } from "./+types/products";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,9 +15,10 @@ import {
 } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 import { Link } from "react-router";
-import { type Product } from "~/lib/data/products";
 import { fetchProducts, searchProductsApi } from "~/lib/api";
+import type { ProductDto } from "~/lib/schemas";
 import { useCart } from "~/lib/cart";
+import { getBackendImageUrl } from "~/lib/utils";
 import { ShoppingCart, Search, Star } from "~/components/ui/icons";
 import { toast } from "sonner";
 import {
@@ -28,6 +29,8 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import type { z } from "zod";
+import { useAuth } from "~/lib/auth";
+import { useNavigate } from "react-router";
 
 type FormValues = z.infer<typeof priceFilterSchema>;
 
@@ -42,11 +45,24 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Products() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect vendors and shippers away from products page
+  useEffect(() => {
+    if (user && (user.role === "vendor" || user.role === "shipper")) {
+      const redirectPath =
+        user.role === "vendor" ? "/vendor/products" : "/shipper/orders";
+      navigate(redirectPath);
+      toast.info(`Redirected to your ${user.role} dashboard`);
+    }
+  }, [user, navigate]);
+
   const { register, handleSubmit, watch, formState } = useForm<FormValues>({
     resolver: zodResolver(priceFilterSchema),
   });
   const { addItem, getTotalItems } = useCart();
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<ProductDto[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [sortBy, setSortBy] = useState<
     "relevance" | "price-asc" | "price-desc" | "rating-desc" | "name-asc"
@@ -113,9 +129,14 @@ export default function Products() {
     }
   }, [filteredProducts, sortBy]);
 
-  const handleAddToCart = (product: Product) => {
-    addItem(product);
-    toast.success(`${product.name} added to cart!`);
+  const handleAddToCart = async (product: ProductDto) => {
+    try {
+      await addItem(product);
+      toast.success(`${product.name} added to cart!`);
+    } catch (error) {
+      console.error("Failed to add to cart:", error);
+      toast.error("Failed to add to cart. Please try again.");
+    }
   };
 
   return (
@@ -259,7 +280,7 @@ export default function Products() {
             >
               <div className='relative aspect-square overflow-hidden bg-gray-100'>
                 <img
-                  src={product.imageUrl}
+                  src={getBackendImageUrl(product.imageUrl) || product.imageUrl}
                   alt={product.name}
                   className='h-full w-full object-cover transition-transform duration-300 group-hover:scale-105'
                 />

@@ -78,11 +78,37 @@ async function request<T>(
 // API endpoints (local mock uses /api-test; /api reserved for real backend)
 const API_BASE = "http://localhost:5000/api"; // you can swap to an env-based URL later
 
-// Products
-export async function fetchProducts(): Promise<ProductDto[]> {
+// Products - Updated to match backend
+export async function fetchProducts(params?: {
+  page?: number;
+  size?: number;
+  category?: string;
+  priceMin?: number;
+  priceMax?: number;
+  name?: string;
+}): Promise<ProductDto[]> {
+  const qs = new URLSearchParams();
+  if (params?.page) qs.set("page", String(params.page));
+  if (params?.size) qs.set("size", String(params.size));
+  if (params?.category) qs.set("category", params.category);
+  if (params?.priceMin !== undefined)
+    qs.set("priceMin", String(params.priceMin));
+  if (params?.priceMax !== undefined)
+    qs.set("priceMax", String(params.priceMax));
+  if (params?.name) qs.set("name", params.name);
+
+  const url = `${API_BASE}/products${qs.toString() ? "?" + qs.toString() : ""}`;
   const response = await request(
-    `${API_BASE}/products`,
-    ProductsApiResponseSchema
+    url,
+    z.object({
+      success: z.boolean(),
+      message: z.object({
+        data: z.object({
+          products: ProductsSchema,
+          count: z.number(),
+        }),
+      }),
+    })
   );
   return response.message.data.products;
 }
@@ -90,35 +116,52 @@ export async function fetchProducts(): Promise<ProductDto[]> {
 export async function fetchProduct(productId: string): Promise<ProductDto> {
   const response = await request(
     `${API_BASE}/products/${productId}`,
-    ProductApiResponseSchema
+    z.object({
+      success: z.boolean(),
+      message: z.object({
+        data: z.object({
+          product: ProductSchema,
+        }),
+      }),
+    })
   );
   return response.message.data.product;
 }
 
+// Search products is handled by fetchProducts with name parameter
 export async function searchProductsApi(params: {
   q?: string;
   min?: number;
   max?: number;
   category?: string;
 }): Promise<ProductDto[]> {
-  const qs = new URLSearchParams();
-  if (params.q) qs.set("q", params.q);
-  if (params.min !== undefined) qs.set("min", String(params.min));
-  if (params.max !== undefined) qs.set("max", String(params.max));
-  if (params.category) qs.set("category", params.category);
-  const response = await request(
-    `${API_BASE}/products/search?${qs.toString()}`,
-    ProductsApiResponseSchema
-  );
-  return response.message.data.products;
+  // Map search params to backend format
+  return fetchProducts({
+    name: params.q,
+    priceMin: params.min,
+    priceMax: params.max,
+    category: params.category,
+  });
 }
 
-// Orders (Shipper)
-export async function fetchOrdersByHub(hubName: string): Promise<OrderDto[]> {
-  return request(
-    `${API_BASE}/orders?hub=${encodeURIComponent(hubName)}`,
-    OrdersSchema
+// Orders (Shipper) - Updated to match backend API
+// Backend automatically determines hub from authenticated shipper's data
+export async function fetchOrdersByHub(): Promise<OrderDto[]> {
+  const response = await request(
+    `${API_BASE}/orders`,
+    z.object({
+      success: z.boolean(),
+      message: z.object({
+        data: z.object({
+          orders: OrdersSchema,
+          count: z.number(),
+          page: z.number(),
+          size: z.number(),
+        }),
+      }),
+    })
   );
+  return response.message.data.orders;
 }
 
 export async function fetchOrder(orderId: string): Promise<OrderDto> {
@@ -128,12 +171,25 @@ export async function fetchOrder(orderId: string): Promise<OrderDto> {
 export async function updateOrderStatusApi(
   orderId: string,
   status: "delivered" | "cancelled"
-): Promise<{ success: boolean }> {
-  return request(
+): Promise<{ success: boolean; order?: any }> {
+  const response = await request(
     `${API_BASE}/orders/${orderId}/status`,
-    z.object({ success: z.boolean() }),
-    { method: "POST", body: JSON.stringify({ status }) }
+    z.object({
+      success: z.boolean(),
+      message: z
+        .object({
+          data: z.object({
+            order: z.any().optional(),
+          }),
+        })
+        .optional(),
+    }),
+    { method: "PATCH", body: JSON.stringify({ status }) }
   );
+  return {
+    success: response.success,
+    order: response.message?.data?.order,
+  };
 }
 
 // Auth
@@ -149,14 +205,13 @@ export async function loginApi(
 export async function registerCustomerApi(
   data: z.infer<typeof customerRegistrationSchema>
 ): Promise<{ success: boolean }> {
-  // Add missing profile_picture field that backend expects
+  // Transform field names to match backend expectations
   const transformedData = {
     email: data.email,
     username: data.username,
     password: data.password,
     name: data.name,
     address: data.address,
-    profile_picture: null, // Backend expects this field
   };
 
   return request(
@@ -177,7 +232,6 @@ export async function registerVendorApi(
     password: data.password,
     business_name: data.businessName, // camelCase → snake_case
     business_address: data.businessAddress, // camelCase → snake_case
-    profile_picture: null, // Backend expects this field
   };
 
   return request(
@@ -197,7 +251,6 @@ export async function registerShipperApi(
     username: data.username,
     password: data.password,
     hub_id: data.hub, // hub → hub_id
-    profile_picture: null, // Backend expects this field
   };
 
   return request(
@@ -207,140 +260,185 @@ export async function registerShipperApi(
   );
 }
 
-// Vendor - create product (demo)
+// Vendor - create product (updated to match backend)
 export async function createProductApi(data: {
   name: string;
   price: number;
   description: string;
-  image?: File | null;
-}): Promise<{ success: boolean; id?: string }> {
-  return request(
-    `${API_BASE}/vendor/products`,
-    z.object({ success: z.boolean(), id: z.string().optional() }),
-    { method: "POST", body: JSON.stringify({ ...data, image: undefined }) }
-  );
-}
+  category: string;
+  instock: boolean;
+  image: File;
+}): Promise<{ success: boolean; product?: any }> {
+  const formData = new FormData();
+  formData.append("name", data.name);
+  formData.append("price", String(data.price));
+  formData.append("description", data.description);
+  formData.append("category", data.category);
+  formData.append("instock", String(data.instock));
+  formData.append("image", data.image);
 
-// Delete vendor product
-export async function deleteVendorProductApi(
-  productId: string,
-  vendorId: string
-): Promise<{ success: boolean; message?: string; productId?: string }> {
-  const url = `${API_BASE}/vendor/products?productId=${encodeURIComponent(productId)}&vendorId=${encodeURIComponent(vendorId)}`;
-
-  const response = await fetch(url, {
-    method: "DELETE",
+  const res = await fetch(`${API_BASE}/products`, {
+    method: "POST",
     credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    body: formData,
   });
 
-  if (!response.ok) {
-    const text = await response.text().catch(() => "");
-    throw new Error(`API ${response.status}: ${text || response.statusText}`);
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`API ${res.status}: ${text || res.statusText}`);
   }
 
-  const data = await response.json();
-  const schema = z.object({
-    success: z.boolean(),
-    message: z.string().optional(),
-    productId: z.string().optional(),
-  });
+  const responseData = await res.json();
+  const parsed = z
+    .object({
+      success: z.boolean(),
+      message: z.object({
+        data: z.object({
+          product: z.any(),
+        }),
+      }),
+    })
+    .safeParse(responseData);
 
-  const parsed = schema.safeParse(data);
   if (!parsed.success) {
     throw new Error(parsed.error.message);
   }
 
-  return parsed.data;
+  return {
+    success: parsed.data.success,
+    product: parsed.data.message.data.product,
+  };
 }
 
-// Edit vendor product
-export async function editVendorProductApi(
+// Note: Backend doesn't have delete product endpoint, only update status
+
+// Update vendor product - matches backend PATCH endpoint
+export async function updateProductApi(
   productId: string,
-  vendorId: string,
   productData: {
-    name: string;
-    price: number;
-    description: string;
-    image?: string;
+    name?: string;
+    price?: number;
+    description?: string;
+    category?: string;
+    instock?: boolean;
+    image?: File;
   }
 ): Promise<{
   success: boolean;
   message?: string;
-  productId?: string;
-  updatedProduct?: any;
+  product?: any;
 }> {
-  const url = `${API_BASE}/vendor/products?productId=${encodeURIComponent(productId)}&vendorId=${encodeURIComponent(vendorId)}`;
+  const formData = new FormData();
 
-  const response = await fetch(url, {
-    method: "PUT",
+  if (productData.name !== undefined) formData.append("name", productData.name);
+  if (productData.price !== undefined)
+    formData.append("price", String(productData.price));
+  if (productData.description !== undefined)
+    formData.append("description", productData.description);
+  if (productData.category !== undefined)
+    formData.append("category", productData.category);
+  if (productData.instock !== undefined)
+    formData.append("instock", String(productData.instock));
+  if (productData.image) formData.append("image", productData.image);
+
+  const res = await fetch(`${API_BASE}/products/${productId}`, {
+    method: "PATCH",
     credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(productData),
+    body: formData,
   });
 
-  if (!response.ok) {
-    const text = await response.text().catch(() => "");
-    throw new Error(`API ${response.status}: ${text || response.statusText}`);
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`API ${res.status}: ${text || res.statusText}`);
   }
 
-  const data = await response.json();
-  const schema = z.object({
-    success: z.boolean(),
-    message: z.string().optional(),
-    productId: z.string().optional(),
-    updatedProduct: z.any().optional(),
-  });
+  const responseData = await res.json();
+  const parsed = z
+    .object({
+      success: z.boolean(),
+      message: z.object({
+        message: z.string().optional(),
+        product: z.any().optional(),
+      }),
+    })
+    .safeParse(responseData);
 
-  const parsed = schema.safeParse(data);
   if (!parsed.success) {
     throw new Error(parsed.error.message);
   }
 
-  return parsed.data;
+  return {
+    success: parsed.data.success,
+    message: parsed.data.message.message,
+    product: parsed.data.message.product,
+  };
 }
 
-// Checkout (enhanced)
-export async function placeOrderApi(payload: {
-  items: Array<{ productId: string; quantity: number; price: number }>;
-  total: number;
-}): Promise<{
+// Checkout - Updated to match backend cart checkout endpoint
+export async function checkoutCartApi(): Promise<{
   success: boolean;
-  orderId?: string;
-  message?: string;
-  total?: number;
-  itemCount?: number;
-  error?: string;
-  details?: any;
+  order?: {
+    id: string;
+    hub_id: string;
+    status: string;
+    total_price: number;
+  };
+  message: string;
 }> {
   return request(
-    `${API_BASE}/orders/checkout`,
+    `${API_BASE}/cart/checkout`,
     z.object({
       success: z.boolean(),
-      orderId: z.string().optional(),
-      message: z.string().optional(),
-      total: z.number().optional(),
-      itemCount: z.number().optional(),
-      error: z.string().optional(),
-      details: z.any().optional(),
+      message: z.object({
+        message: z.string(),
+        order: z.object({
+          id: z.string(),
+          hub_id: z.string(),
+          status: z.string(),
+          total_price: z.number(),
+        }),
+      }),
     }),
-    { method: "POST", body: JSON.stringify(payload) }
-  );
+    { method: "POST" }
+  ).then((response) => ({
+    success: response.success,
+    order: response.message.order,
+    message: response.message.message,
+  }));
 }
 
-// Profile image upload
+// Add product to cart - new function based on backend
+export async function addToCartApi(
+  productId: string,
+  quantity: number = 1
+): Promise<{
+  success: boolean;
+  item: any;
+}> {
+  return request(
+    `${API_BASE}/products/${productId}/addToCart`,
+    z.object({
+      success: z.boolean(),
+      message: z.object({
+        item: z.any(),
+      }),
+    }),
+    { method: "POST", body: JSON.stringify({ quantity }) }
+  ).then((response) => ({
+    success: response.success,
+    item: response.message.item,
+  }));
+}
+
+// Profile image upload - Updated to match backend
 export async function uploadProfileImageApi(file: File): Promise<{
   success: boolean;
   imageUrl?: string;
 }> {
   const formData = new FormData();
-  formData.append("profileImage", file);
+  formData.append("file", file);
 
-  const res = await fetch(`${API_BASE}/profile/upload-image`, {
+  const res = await fetch(`${API_BASE}/users/upload-image`, {
     method: "POST",
     credentials: "include",
     body: formData,
@@ -355,7 +453,7 @@ export async function uploadProfileImageApi(file: File): Promise<{
   const parsed = z
     .object({
       success: z.boolean(),
-      imageUrl: z.string().optional(),
+      message: z.string().optional(),
     })
     .safeParse(data);
 
@@ -363,105 +461,314 @@ export async function uploadProfileImageApi(file: File): Promise<{
     throw new Error(parsed.error.message);
   }
 
-  return parsed.data;
+  return {
+    success: parsed.data.success,
+    imageUrl: parsed.data.message,
+  };
 }
 
-// Cart API functions
-export async function fetchCartApi(userId: string): Promise<{
+// Cart API functions - Updated to match backend API
+export async function fetchCartApi(params?: {
+  page?: number;
+  size?: number;
+}): Promise<{
   success: boolean;
   items: Array<{
-    product: {
-      id: string;
-      name: string;
-      price: number;
-      description: string;
-      imageUrl: string;
-      vendorId: string;
-      vendorName: string;
-      category: string;
-      inStock: boolean;
-      rating: number;
-      reviewCount: number;
-    };
+    id: string;
+    product_id: string;
+    name: string;
     quantity: number;
+    price: number;
+    subtotal: number;
+    image: string | null;
   }>;
-  lastUpdated?: string;
-  error?: string;
+  count: number;
+  page: number;
+  size: number;
 }> {
-  const res = await fetch(
-    `${API_BASE}/cart?userId=${encodeURIComponent(userId)}`,
-    {
-      method: "GET",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
+  const qs = new URLSearchParams();
+  if (params?.page) qs.set("page", String(params.page));
+  if (params?.size) qs.set("size", String(params.size));
+
+  const url = `${API_BASE}/cart${qs.toString() ? "?" + qs.toString() : ""}`;
+  const response = await request(
+    url,
+    z.object({
+      success: z.boolean(),
+      message: z.object({
+        items: z.array(
+          z.object({
+            id: z.string(),
+            product_id: z.string(),
+            name: z.string(),
+            quantity: z.number(),
+            price: z.number(),
+            subtotal: z.number(),
+            image: z.string().nullable(),
+          })
+        ),
+        count: z.number(),
+        page: z.number(),
+        size: z.number(),
+      }),
+    }),
+    { method: "GET" }
   );
-
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`API ${res.status}: ${text || res.statusText}`);
-  }
-
-  const data = await res.json();
-  const parsed = cartResponseSchema.safeParse(data);
-
-  if (!parsed.success) {
-    throw new Error(parsed.error.message);
-  }
-
-  return parsed.data;
+  return {
+    success: response.success,
+    items: response.message.items,
+    count: response.message.count,
+    page: response.message.page,
+    size: response.message.size,
+  };
 }
 
-export async function syncCartApi(
-  userId: string,
-  items: Array<{
-    product: {
-      id: string;
-      name: string;
-      price: number;
-      description: string;
-      imageUrl: string;
-      vendorId: string;
-      vendorName: string;
-      category: string;
-      inStock: boolean;
-      rating: number;
-      reviewCount: number;
-    };
-    quantity: number;
-  }>
-): Promise<{
+// Delete cart item by ID - Based on backend API
+export async function deleteCartItemApi(itemId: string): Promise<{
+  success: boolean;
+  removed: boolean;
+  id: string;
+}> {
+  const response = await request(
+    `${API_BASE}/cart/removeItem/${itemId}`,
+    z.object({
+      success: z.boolean(),
+      message: z.object({
+        data: z.object({
+          removed: z.boolean(),
+          id: z.string(),
+        }),
+      }),
+    }),
+    { method: "DELETE" }
+  );
+  return {
+    success: response.success,
+    removed: response.message.data.removed,
+    id: response.message.data.id,
+  };
+}
+
+// Logout API - Added to match backend
+export async function logoutApi(): Promise<{
   success: boolean;
   message?: string;
-  itemCount?: number;
-  lastUpdated?: string;
-  error?: string;
 }> {
-  const res = await fetch(
-    `${API_BASE}/cart?userId=${encodeURIComponent(userId)}`,
-    {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ items }),
-    }
+  return request(
+    `${API_BASE}/auth/logout`,
+    z.object({
+      success: z.boolean(),
+      message: z.string().optional(),
+    }),
+    { method: "POST" }
   );
+}
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`API ${res.status}: ${text || res.statusText}`);
-  }
+// Distribution Hubs API - Added to match backend
+export async function fetchDistributionHubsApi(params?: {
+  page?: number;
+  size?: number;
+}): Promise<any[]> {
+  const qs = new URLSearchParams();
+  if (params?.page) qs.set("page", String(params.page));
+  if (params?.size) qs.set("size", String(params.size));
 
-  const data = await res.json();
-  const parsed = cartSyncResponseSchema.safeParse(data);
+  const url = `${API_BASE}/distribution-hubs${qs.toString() ? "?" + qs.toString() : ""}`;
+  const response = await request(
+    url,
+    z.object({
+      success: z.boolean(),
+      message: z.object({
+        data: z.object({
+          hubs: z.array(z.any()),
+          count: z.number(),
+        }),
+      }),
+    })
+  );
+  return response.message.data.hubs;
+}
 
-  if (!parsed.success) {
-    throw new Error(parsed.error.message);
-  }
+// User Management APIs - Added to match backend
+export async function fetchUsersApi(params?: {
+  page?: number;
+  size?: number;
+  role?: "customer" | "shipper" | "vendor" | "all";
+}): Promise<any[]> {
+  const qs = new URLSearchParams();
+  if (params?.page) qs.set("page", String(params.page));
+  if (params?.size) qs.set("size", String(params.size));
+  if (params?.role) qs.set("role", params.role);
 
-  return parsed.data;
+  const url = `${API_BASE}/users${qs.toString() ? "?" + qs.toString() : ""}`;
+  const response = await request(
+    url,
+    z.object({
+      success: z.boolean(),
+      message: z.object({
+        data: z.object({
+          users: z.array(z.any()),
+          count: z.number(),
+        }),
+      }),
+    })
+  );
+  return response.message.data.users;
+}
+
+export async function fetchUserByIdApi(userId: string): Promise<any> {
+  const response = await request(
+    `${API_BASE}/users/${userId}`,
+    z.object({
+      success: z.boolean(),
+      message: z.object({
+        data: z.any(),
+      }),
+    })
+  );
+  return response.message.data;
+}
+
+export async function deleteUserApi(): Promise<{
+  success: boolean;
+  message?: string;
+}> {
+  return request(
+    `${API_BASE}/users/me`,
+    z.object({
+      success: z.boolean(),
+      message: z.object({
+        message: z.string().optional(),
+      }),
+    }),
+    { method: "DELETE" }
+  ).then((response) => ({
+    success: response.success,
+    message: response.message.message,
+  }));
+}
+
+export async function updatePasswordApi(data: {
+  password: string;
+  newPassword: string;
+}): Promise<{ success: boolean; message?: string }> {
+  return request(
+    `${API_BASE}/users/update-password`,
+    z.object({
+      success: z.boolean(),
+      message: z.string().optional(),
+    }),
+    { method: "PATCH", body: JSON.stringify(data) }
+  );
+}
+
+// Order Items Schema - Updated to match backend response
+const OrderItemDetailSchema = z.object({
+  order_id: z.string(),
+  product_id: z.string(),
+  product_name: z.string(),
+  quantity: z.number(),
+  price_at_order_time: z.number(),
+  total: z.number(),
+  image: z.string(),
+});
+
+const OrderItemsResponseSchema = z.object({
+  success: z.boolean(),
+  message: z.object({
+    order_id: z.string(),
+    customer: z.object({
+      name: z.string(),
+      address: z.string(),
+    }),
+    items: z.array(OrderItemDetailSchema),
+    count: z.number(),
+  }),
+});
+
+export type OrderItemDetail = z.infer<typeof OrderItemDetailSchema>;
+export type OrderItemsResponse = z.infer<typeof OrderItemsResponseSchema>;
+
+// Get order items - Updated to match backend response structure
+export async function fetchOrderItemsApi(
+  orderId: string
+): Promise<OrderItemsResponse["message"]> {
+  const response = await request(
+    `${API_BASE}/orders/${orderId}/Items`,
+    OrderItemsResponseSchema
+  );
+  return response.message;
+}
+
+// Get vendors, customers, shippers lists - Added to match backend
+export async function fetchVendorsApi(params?: {
+  page?: number;
+  size?: number;
+}): Promise<any[]> {
+  const qs = new URLSearchParams();
+  if (params?.page) qs.set("page", String(params.page));
+  if (params?.size) qs.set("size", String(params.size));
+
+  const url = `${API_BASE}/vendors${qs.toString() ? "?" + qs.toString() : ""}`;
+  const response = await request(
+    url,
+    z.object({
+      success: z.boolean(),
+      message: z.object({
+        data: z.object({
+          vendors: z.array(z.any()),
+          count: z.number(),
+        }),
+      }),
+    })
+  );
+  return response.message.data.vendors;
+}
+
+export async function fetchCustomersApi(params?: {
+  page?: number;
+  size?: number;
+}): Promise<any[]> {
+  const qs = new URLSearchParams();
+  if (params?.page) qs.set("page", String(params.page));
+  if (params?.size) qs.set("size", String(params.size));
+
+  const url = `${API_BASE}/customers${qs.toString() ? "?" + qs.toString() : ""}`;
+  const response = await request(
+    url,
+    z.object({
+      success: z.boolean(),
+      message: z.object({
+        data: z.object({
+          customers: z.array(z.any()),
+          count: z.number(),
+        }),
+      }),
+    })
+  );
+  return response.message.data.customers;
+}
+
+export async function fetchShippersApi(params?: {
+  page?: number;
+  size?: number;
+}): Promise<any[]> {
+  const qs = new URLSearchParams();
+  if (params?.page) qs.set("page", String(params.page));
+  if (params?.size) qs.set("size", String(params.size));
+
+  const url = `${API_BASE}/shippers${qs.toString() ? "?" + qs.toString() : ""}`;
+  const response = await request(
+    url,
+    z.object({
+      success: z.boolean(),
+      message: z.object({
+        data: z.object({
+          shippers: z.array(z.any()),
+          count: z.number(),
+        }),
+      }),
+    })
+  );
+  return response.message.data.shippers;
 }

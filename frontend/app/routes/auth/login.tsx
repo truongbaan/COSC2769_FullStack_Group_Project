@@ -37,6 +37,32 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Helper function to extract error message from API response
+  function getErrorMessage(error: any): string {
+    try {
+      // Try to parse the error message from API response
+      const errorText = error.message || "";
+
+      // Look for JSON in the error message (format: "API 400: {...}")
+      const jsonMatch = errorText.match(/API \d+: (.+)/);
+      if (jsonMatch) {
+        try {
+          const parsed = JSON.parse(jsonMatch[1]);
+          if (parsed.message) {
+            return parsed.message;
+          }
+        } catch {
+          // If JSON parsing fails, fall through to default
+        }
+      }
+
+      // Fallback to generic message
+      return "Invalid email or password";
+    } catch {
+      return "Invalid email or password";
+    }
+  }
+
   const onSubmit = async (data: FormValues) => {
     setIsLoading(true);
 
@@ -56,7 +82,8 @@ export default function Login() {
 
       navigate(redirectPath);
     } catch (error) {
-      setError("root", { message: "Invalid email or password" });
+      const errorMessage = getErrorMessage(error);
+      setError("root", { message: errorMessage });
     } finally {
       setIsLoading(false);
     }

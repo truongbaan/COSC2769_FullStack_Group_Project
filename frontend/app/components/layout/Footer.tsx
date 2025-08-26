@@ -1,6 +1,9 @@
 import { Link } from "react-router";
+import { useAuth } from "~/lib/auth";
 
 export default function Footer() {
+  const { user } = useAuth();
+
   return (
     <footer className='border-t bg-white'>
       <div className='container mx-auto px-4 py-8'>
@@ -20,12 +23,15 @@ export default function Footer() {
           <div className='space-y-4'>
             <h3 className='font-semibold'>Quick Links</h3>
             <div className='space-y-2 text-sm'>
-              <Link
-                to='/products'
-                className='block hover:underline transition-colors'
-              >
-                Browse Products
-              </Link>
+              {/* Only show Browse Products for customers and unauthenticated users */}
+              {(!user || user.role === "customer") && (
+                <Link
+                  to='/products'
+                  className='block hover:underline transition-colors'
+                >
+                  Browse Products
+                </Link>
+              )}
               <Link
                 to='/about'
                 className='block hover:underline transition-colors'

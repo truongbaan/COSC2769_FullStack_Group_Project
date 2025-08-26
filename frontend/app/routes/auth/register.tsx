@@ -87,6 +87,32 @@ export default function Register() {
     resolver: zodResolver(shipperRegistrationSchema),
   });
 
+  // Helper function to extract error message from API response
+  function getErrorMessage(error: any): string {
+    try {
+      // Try to parse the error message from API response
+      const errorText = error.message || "";
+
+      // Look for JSON in the error message (format: "API 400: {...}")
+      const jsonMatch = errorText.match(/API \d+: (.+)/);
+      if (jsonMatch) {
+        try {
+          const parsed = JSON.parse(jsonMatch[1]);
+          if (parsed.message) {
+            return parsed.message;
+          }
+        } catch {
+          // If JSON parsing fails, fall through to default
+        }
+      }
+
+      // Fallback to generic message
+      return "Registration failed. Please try again.";
+    } catch {
+      return "Registration failed. Please try again.";
+    }
+  }
+
   async function onCustomerSubmit(data: CustomerForm) {
     setLoading(true);
     try {
@@ -94,7 +120,8 @@ export default function Register() {
       toast.success("Customer account created successfully! Please log in.");
       navigate("/login");
     } catch (error) {
-      toast.error("Failed to create customer account. Please try again.");
+      const errorMessage = getErrorMessage(error);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -107,7 +134,8 @@ export default function Register() {
       toast.success("Vendor account created successfully! Please log in.");
       navigate("/login");
     } catch (error) {
-      toast.error("Failed to create vendor account. Please try again.");
+      const errorMessage = getErrorMessage(error);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -120,7 +148,8 @@ export default function Register() {
       toast.success("Shipper account created successfully! Please log in.");
       navigate("/login");
     } catch (error) {
-      toast.error("Failed to create shipper account. Please try again.");
+      const errorMessage = getErrorMessage(error);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

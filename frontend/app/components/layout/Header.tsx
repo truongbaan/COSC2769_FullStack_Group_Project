@@ -6,8 +6,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "~/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { useAuth } from "~/lib/auth";
+import { getBackendImageUrl } from "~/lib/utils";
 import { ShoppingCart, User, Package, Truck } from "~/components/ui/icons";
 
 export default function Header() {
@@ -30,6 +31,19 @@ export default function Header() {
     }
   };
 
+  const getUserInitials = () => {
+    if (!user) return "U";
+    const name = user.name || user.businessName || user.username;
+    if (name) {
+      return name
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase())
+        .slice(0, 2)
+        .join("");
+    }
+    return user.username?.charAt(0).toUpperCase() || "U";
+  };
+
   const getRoleLinks = () => {
     if (!user) return null;
 
@@ -38,11 +52,9 @@ export default function Header() {
         return (
           <>
             <DropdownMenuItem asChild>
-
               <Link to='/vendor/products'>My Products</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-
               <Link to='/vendor/products/new'>Add Product</Link>
             </DropdownMenuItem>
           </>
@@ -56,10 +68,7 @@ export default function Header() {
       case "customer":
         return (
           <DropdownMenuItem asChild>
-            <Link to='/cart'>
-              
-              Shopping Cart
-            </Link>
+            <Link to='/cart'>Shopping Cart</Link>
           </DropdownMenuItem>
         );
       default:
@@ -78,12 +87,31 @@ export default function Header() {
         </Link>
 
         <nav className='hidden md:flex items-center gap-6'>
-          <Link
-            to='/products'
-            className='text-sm hover:underline transition-colors'
-          >
-            Browse Products
-          </Link>
+          {/* Only show Browse Products for customers and unauthenticated users */}
+          {(!user || user.role === "customer") && (
+            <Link
+              to='/products'
+              className='text-sm hover:underline transition-colors'
+            >
+              Browse Products
+            </Link>
+          )}
+          {user && user.role === "vendor" && (
+            <Link
+              to='/vendor/products'
+              className='text-sm hover:underline transition-colors'
+            >
+              My Products
+            </Link>
+          )}
+          {user && user.role === "shipper" && (
+            <Link
+              to='/shipper/orders'
+              className='text-sm hover:underline transition-colors'
+            >
+              Active Orders
+            </Link>
+          )}
           <Link
             to='/about'
             className='text-sm hover:underline transition-colors'
@@ -104,7 +132,16 @@ export default function Header() {
               <DropdownMenuTrigger asChild>
                 <Button variant='ghost' className='flex items-center gap-2'>
                   <Avatar className='h-8 w-8'>
-                    <AvatarFallback>{getRoleIcon(user.role)}</AvatarFallback>
+                    {getBackendImageUrl(user?.profile_picture) && (
+                      <AvatarImage
+                        src={getBackendImageUrl(user.profile_picture)!}
+                        alt={`${user?.name || user?.username}'s profile picture`}
+                        className='object-cover'
+                      />
+                    )}
+                    <AvatarFallback className='bg-gray-100 text-gray-900 text-xs font-medium'>
+                      {getUserInitials()}
+                    </AvatarFallback>
                   </Avatar>
                   <span className='hidden sm:inline'>
                     {user.name || user.businessName || user.username}

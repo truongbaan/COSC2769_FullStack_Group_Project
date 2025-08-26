@@ -22,6 +22,7 @@ export const productSchema = z.object({
   price: z.coerce.number().positive(),
   image: z.any().optional(),
   description: z.string().max(500),
+  category: z.string().min(1, "Category is required").max(100),
 });
 
 export const priceFilterSchema = z

@@ -28,19 +28,4 @@ export default [
   // Shipper routes
   route("shipper/orders", "routes/shipper/orders.tsx"),
   route("shipper/orders/:orderId", "routes/shipper/order-detail.tsx"),
-
-  // API routes (mock backend under /api-test)
-  route("api-test/products", "routes/api/products.ts"),
-  route("api-test/products/search", "routes/api/products.search.ts"),
-  route("api-test/products/:productId", "routes/api/products.$productId.ts"),
-  route("api-test/vendor/products", "routes/api/vendor.products.ts"),
-  route("api-test/orders", "routes/api/orders.ts"),
-  route("api-test/orders/checkout", "routes/api/orders.checkout.ts"),
-  route("api-test/orders/:orderId", "routes/api/orders.$orderId.ts"),
-  route(
-    "api-test/orders/:orderId/status",
-    "routes/api/orders.$orderId.status.ts"
-  ),
-  route("api-test/profile/upload-image", "routes/api/profile.upload-image.ts"),
-  route("api-test/cart", "routes/api/cart.ts"),
 ] satisfies RouteConfig;
