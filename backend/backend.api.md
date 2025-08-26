@@ -43,7 +43,7 @@ none
             "description": "string",
             "image": "string", // public URL
             "category": "string",
-            "instock": boolean    
+            "instock": boolean
         }
       ],
       "totalCount": 2
