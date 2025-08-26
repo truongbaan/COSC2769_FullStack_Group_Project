@@ -20,7 +20,6 @@ import {
 
 import {
   createProductController,
-  // deleteProductController,
   getProductByIdController,
   getProductByIdParamsSchema,
   updateProductStatusBodySchema,
