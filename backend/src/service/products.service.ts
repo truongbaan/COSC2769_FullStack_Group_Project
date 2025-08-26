@@ -5,9 +5,7 @@
 # Author: Nguyen Vo Truong Toan
 # ID: s3979056 */
 
-import z from "zod";
 import { supabase, Database } from "../db/db";
-import { createProductBodySchema } from "../controllers/productController";
 
 import generateUUID from "../utils/generator";
 import { ImageService } from "./image.service";

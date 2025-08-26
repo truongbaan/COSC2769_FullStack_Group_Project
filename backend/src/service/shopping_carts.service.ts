@@ -8,7 +8,7 @@ import { supabase, Database } from "../db/db";
 import generateUUID from "../utils/generator";
 import { ImageService } from "./image.service";
 
-export type Pagination = { page: number; size: number };
+
 
 type productRow = { id: string; price: number }
 type cartCustomer = { id: string; product_id: string; quantity: number }
@@ -31,9 +31,9 @@ export type CartItemDetail = {
   subtotal: number;
   image: string | null;
 };
-
+export type Pagination = { page: number; size: number };
 export const ShoppingCartService = {
-  async getCart({ page, size }: { page: number; size: number },customerId: string): Promise<CartItemDetail[] | null> {
+  async getCart({ page, size }: Pagination,customerId: string): Promise<CartItemDetail[] | null> {
     const offset = (page - 1) * size;
 
     if (!customerId) return []; 
