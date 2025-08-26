@@ -990,9 +990,9 @@ Any subset of:
             "name": "string",
             "price": number,
             "description": "string",
-            "image": "string",
+            "image": "string", //must use form-data
             "category": "string",
-            "instock": boolean
+            "instock": boolean //must use JSON
     }
   }
 }
@@ -1006,7 +1006,8 @@ Any subset of:
 ```
 **Notes:**`
 - Image is stored as path.
-- If updating image, `form-data` is `required`. Otherwise, either `form-data` or `JSON` works.
+- If updating an image, `form-data` is `required`. Otherwise, either `form-data` or `JSON` works.
+- If updating instock status, must use JSON.
 ---
 
 ---
