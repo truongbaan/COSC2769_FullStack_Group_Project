@@ -39,7 +39,7 @@ none
             "name": "string",
             "price": number,
             "description": "string",
-            "image": "string", // public URL
+            "image": "string",
             "category": "string",
             "instock": boolean
         }
@@ -58,7 +58,7 @@ none
 ```
 **Notes:**
 - PriceMax needs to be larger than PriceMin.
-- Image is returned as a public URL (Supabase Storage).
+- Image is returned as a public URL.
 
 ---
 ### GET /products/:productId
@@ -132,7 +132,7 @@ Create a new product.
             "name": "string",
             "price": number,
             "description": "string",
-            "image": "string", // public URL
+            "image": "string",
             "category": "string",
             "instock": boolean
       }
@@ -183,7 +183,7 @@ Any subset of:
             "name": "string",
             "price": number,
             "description": "string",
-            "image": "string", // public URL
+            "image": "string",
             "category": "string",
             "instock": boolean
     }
@@ -198,5 +198,5 @@ Any subset of:
 }
 ```
 **Notes:**`
-- Image is stored as path in a bucket on Supabase.
+- Image is stored as path.
 ---
