@@ -1,3 +1,4 @@
+
 # API Endpoints
 
 ## Table Content
@@ -353,13 +354,19 @@ Register a new shipper account with distribution hub selection.
 
 
 ## Orders Endpoints
-
+**Authentication**: 
+- `Required`: (role: `shipper')
 
 
 ### [GET /api/orders]
 **GET /api/orders**
 **Function**: Fetch all orders by hubID
   - **Description:**: Receive all the order related to hubID by shipper
+  
+**Query Parameters (optional):**
+- `page`: number (default 1, min 1)
+- `size`: number (default 10, max 30)
+
   - **Request:**
     ```
      none
@@ -423,7 +430,7 @@ Register a new shipper account with distribution hub selection.
         }
     ```
 
-
+---
 
 ### [PATCH /api/orders/:id/status]
 **Function**: Change the order status
@@ -491,7 +498,7 @@ Register a new shipper account with distribution hub selection.
         }
     ```
 
-
+---
 
 ### [GET /api/orders/:id/Items]
 **Function**: get all the order item list 
@@ -540,12 +547,18 @@ Register a new shipper account with distribution hub selection.
 
 
 ## ShoppingCarts Endpoints
-
+**Authentication**: 
+- `Required`: (role: `customer`)
 
 
 ### [GET /api/cart]
 **Function**: Fetch all product in shopping cart
 - **Description:**: Receive all the product in shopping cart
+
+**Query Parameters (optional):**
+- `page`: number (default 1, min 1)
+- `size`: number (default 10, max 30)
+
 - **Request:**
     ```
     none
@@ -614,7 +627,7 @@ Register a new shipper account with distribution hub selection.
             }
     ```
 
-
+---
 
 ### [DELETE /removeItem/:id]
 **Function**: Remove product by id
@@ -663,7 +676,7 @@ Register a new shipper account with distribution hub selection.
     }
 ```
 
-
+---
 
 ### [POST /api/products/:id/addToCart]
 **Function**: add product to cart
@@ -727,7 +740,7 @@ Register a new shipper account with distribution hub selection.
             }
     ```
 
-
+---
 
 ### [POST /api/cart/checkout]
 **Function**: check out the product in shopping cart
@@ -778,4 +791,199 @@ Register a new shipper account with distribution hub selection.
                 }
             }
     ```
+---
+
+## Product Endpoints
+
+### GET /products
+Retrieve all available products with optional filters & pagination.
+
+**Authentication**: 
+- `Required`: (role: `customer`, `vendor`)
+  
+**Query Parameters (optional):**
+- `page`: number (default 1, min 1)
+- `size`: number (default 10, max 30)
+- `category`: string | number (optional)
+- `priceMin`: number (optional, min 0)
+- `priceMax`: number (optional, max 100000000)
+- `name`: string (optional, search by product name)
+  
+**Request:**
+```
+none
+```
+**Response:**
+```json
+{
+  "success": true,
+  "message": {
+    "data": {
+      "products": [
+        {
+            "id": "string",
+            "vendor_id": "string",
+            "name": "string",
+            "price": number,
+            "description": "string",
+            "image": "string",
+            "category": "string",
+            "instock": boolean
+        }
+      ],
+      "totalCount": 2
+    }
+  }
+}
+```
+**Error Response:**
+```json
+{
+  "success": false,
+  "error": "string" // Error description
+}
+```
+**Notes:**
+- PriceMax needs to be larger than PriceMin.
+- Image is returned as a public URL.
+
+---
+### GET /products/:productId
+Retrieve a specific product by ID.
+
+**Authentication**: 
+- `Required`: (role: `customer`)
+
+**Path Parameters::**
+- `productId`: (string, required)
+
+**Request:**
+```
+none
+```
+**Response:**
+```json
+{
+  "success": true,
+  "message": {
+    "data": {
+      "product": {
+            "id": "string",
+            "vendor_id": "string",
+            "name": "string",
+            "price": number,
+            "description": "string",
+            "image": "string",
+            "category": "string",
+            "instock": boolean
+      }
+    }
+  }
+}
+```
+**Error Response:**
+```json
+{
+  "success": false,
+  "error": "string" // Error description
+}
+```
+**Notes:**
+- Image is returned as a public URL.
+
+---
+### POST /products
+Create a new product. 
+
+**Authentication**: 
+- Required (role: `customer`)
+
+**Request:** (multipart/ form-data)
+- `name`: string (required)
+- `price`: positive number (required)
+- `description`: string (required)
+- `category`: string (required)
+- `instock`: boolean (optional)
+- `image`: file (PNG/JPG) (required)
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": {
+    "data": {
+      "product": {
+            "id": "string",
+            "vendor_id": "string",
+            "name": "string",
+            "price": number,
+            "description": "string",
+            "image": "string",
+            "category": "string",
+            "instock": boolean
+      }
+    }
+  }
+}
+```
+**Error Response:**
+```json
+{
+  "success": false,
+  "error": "string" // Error description
+}
+```
+**Notes:**`
+- If `instock` is not provided, it is set to `false` by default.
+- Image is stored as path in a bucket on Supabase.
+
+---
+### PATCH /products/:productId
+Update an existing product.
+
+**Authentication**: 
+Required (role: `vendor`)
+
+**Path Parameters::**
+- `productId`: (string, required)
+
+**Request:** (multipart/ form-data or JSON)
+    
+Any subset of:
+- `name`: string (optional)
+- `price`: positive number (optional)
+- `description`: string (optional)
+- `category`: string (optional)
+- `instock`: boolean (optional)
+- `image`: file (PNG/JPG) (optional)
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": {
+    "message": "Update Status Success",
+    "product": {
+            "id": "string",
+            "vendor_id": "string",
+            "name": "string",
+            "price": number,
+            "description": "string",
+            "image": "string",
+            "category": "string",
+            "instock": boolean
+    }
+  }
+}
+```
+**Error Response:**
+```json
+{
+  "success": false,
+  "error": "string" // Error description
+}
+```
+**Notes:**`
+- Image is stored as path.
+---
 

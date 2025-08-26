@@ -101,19 +101,16 @@ type CreateProductBodyType = z.output<typeof createProductBodySchema>;
 
 export const createProductBodySchema = z.object({
     name: z.string().trim().min(1, "Name is required"),
-    price: z.coerce.number().min(0),
+    price: z.coerce.number().min(0, "Price must be >= 0"),
     description: z.string().trim().min(1, "Description is required"),
-    // image: z.string().trim(),
-    category: z.string().trim().min(1),
+    category: z.string().trim().min(1, "Category is required"),
     instock: z.coerce.boolean(),
 }).strict();
 
 export const createProductController = async (req: Request, res: Response) => {
     try {
         const vendorId = req.user_id;
-        //const body = createProductBodySchema.parse(req.body);
         const body = (req as unknown as Record<string, unknown> & { validatedbody: CreateProductBodyType }).validatedbody;
-
         const file = req.file;
 
         if (!file) {
@@ -138,6 +135,13 @@ export const createProductController = async (req: Request, res: Response) => {
         });
 
     } catch (err: any) {
+        if (err.name === "ZodError")
+            return res.status(400).json({
+                success: false,
+                message: "Please provide valid values for: "
+                    + err.errors.map((e: any) => e.path.join(".")).join(", ")
+            });
+
         console.error("createProductController error:", err);
         return ErrorJsonResponse(
             res, 500, err?.message ?? "Unexpected error while creating product"
