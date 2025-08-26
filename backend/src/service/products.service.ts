@@ -95,11 +95,11 @@ export const ProductService = {
 
     if (!data) return null;
 
-    const imageUrl =
-      !data.image ? null
-        : (data.image.startsWith("http://") || data.image.startsWith("https://"))
-          ? data.image
-          : (ImageService.getPublicImageUrl(data.image, "productimages").url ?? null);
+    let imageUrl: string | null = null;
+    if (data.image) {
+      const res = ImageService.getPublicImageUrl(data.image, "productimages");
+      imageUrl = res?.success ? res.url ?? null : null;
+    }
 
     return { ...data, image: imageUrl };
   },
