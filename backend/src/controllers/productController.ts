@@ -114,12 +114,18 @@ export const createProductController = async (req: Request, res: Response) => {
         const file = req.file;
 
         if (!file) {
-            return res.status(400).json({ message: "Image file is required" });
+            return res.status(400).json({
+                success: false,
+                message: "Image file is required"
+            });
         }
 
         const upload = await ImageService.uploadImage(file, "productimages");
         if (!upload.success) {
-            return res.status(500).json({ message: upload.error });
+            return res.status(500).json({
+                success: false,
+                message: upload.error
+            });
         }
 
         const payload: ProductInsertNoId = {
@@ -128,20 +134,16 @@ export const createProductController = async (req: Request, res: Response) => {
 
         const created = await ProductService.createProduct(payload);
         if (!created)
-            res.status(500).json({ message: "Failed to create product" });
+            res.status(500).json({
+                success: false,
+                message: "Failed to create product"
+            });
 
         return SuccessJsonResponse(res, 201, {
             data: { product: created },
         });
 
     } catch (err: any) {
-        if (err.name === "ZodError")
-            return res.status(400).json({
-                success: false,
-                message: "Please provide valid values for: "
-                    + err.errors.map((e: any) => e.path.join(".")).join(", ")
-            });
-
         console.error("createProductController error:", err);
         return ErrorJsonResponse(
             res, 500, err?.message ?? "Unexpected error while creating product"
