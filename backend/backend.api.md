@@ -36,14 +36,14 @@ none
     "data": {
       "products": [
         {
-          "id": "f3d00277-dd78-4cba-8d35-cc5a25b6891d",
-          "vendor_id": "d8a93cce-a277-4ef0-aa4e-73921d5b7732",
-          "name": "Mot Mon Do Re Tien So 4",
-          "price": 25000,
-          "description": "Mon Do Nay Rat Rat Re Tien!",
-          "image": "https://supabase.co/storage/v1/object/public/productimages/example.png",
-          "category": "poor",
-          "instock": false
+            "id": "string",
+            "vendor_id": "string",
+            "name": "string",
+            "price": number,
+            "description": "string",
+            "image": "string", // public URL
+            "category": "string",
+            "instock": boolean    
         }
       ],
       "totalCount": 2
@@ -53,7 +53,10 @@ none
 ```
 **Error Response:**
 ```json
-{  }
+{
+  "success": false,
+  "error": "string" // Error description
+}
 ```
 **Notes:**
 - PriceMax needs to be larger than PriceMin.
@@ -80,14 +83,14 @@ none
   "message": {
     "data": {
       "product": {
-          "id": "string",
-          "vendor_id": "string",
-          "name": "string",
-          "price": number,
-          "description": "string",
-          "image": "string", // public URL
-          "category": "string",
-          "instock": boolean    
+            "id": "string",
+            "vendor_id": "string",
+            "name": "string",
+            "price": number,
+            "description": "string",
+            "image": "string", // public URL
+            "category": "string",
+            "instock": boolean    
       }
             "totalCount": number
     }
@@ -97,7 +100,10 @@ none
 Error Response (404):
 **Error Response:**
 ```json
-{  }
+{
+  "success": false,
+  "error": "string" // Error description
+}
 ```
 **Notes:**
 - Image is returned as a public URL (Supabase Storage).
@@ -124,14 +130,14 @@ Create a new product.
   "message": {
     "data": {
       "product": {
-        "id": "c43b962e-da2b-4107-b63d-4a827b2bae53",
-        "vendor_id": "d8a93cce-a277-4ef0-aa4e-73921d5b7732",
-        "name": "Katy Perry vinyl boxset2",
-        "price": 5000000,
-        "description": "This is the 10th anni ones",
-        "image": "https://supabase.co/storage/v1/object/public/productimages/41zu-8eZ80L.jpg",
-        "category": "Vinyl Records",
-        "instock": true
+            "id": "string",
+            "vendor_id": "string",
+            "name": "string",
+            "price": number,
+            "description": "string",
+            "image": "string", // public URL
+            "category": "string",
+            "instock": boolean
       }
     }
   }
@@ -139,11 +145,14 @@ Create a new product.
 ```
 **Error Response:**
 ```json
-{  }
+{
+  "success": false,
+  "error": "string" // Error description
+}
 ```
 **Notes:**`
 - If `instock` is not provided, it is set to `false` by default.
-- Image is stored & returned as a public URL (Supabase Storage).
+- Image is stored as path in a bucket on Supabase.
 
 ---
 ### PATCH /products/:productId
@@ -172,22 +181,25 @@ Any subset of:
   "message": {
     "message": "Update Status Success",
     "product": {
-      "id": "0c88e05c-39ff-4d8f-a34e-1daba470ac5c",
-      "vendor_id": "d8a93cce-a277-4ef0-aa4e-73921d5b7732",
-      "name": "Teenage Dream vinyl",
-      "price": 1500000,
-      "description": "Another Katy Perry one",
-      "image": "https://supabase.co/storage/v1/object/public/productimages/images.jpg",
-      "category": "Vinyl Records",
-      "instock": true
+            "id": "string",
+            "vendor_id": "string",
+            "name": "string",
+            "price": number,
+            "description": "string",
+            "image": "string", // public URL
+            "category": "string",
+            "instock": boolean    
     }
   }
 }
 ```
 **Error Response:**
 ```json
-{  }
+{
+  "success": false,
+  "error": "string" // Error description
+}
 ```
 **Notes:**`
-- Image is stored & returned as a public URL (Supabase Storage).
+- Image is stored as path in a bucket on Supabase.
 ---
