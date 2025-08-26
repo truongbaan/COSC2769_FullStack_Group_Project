@@ -80,7 +80,7 @@ export const ProductService = {
       const { url } = await ImageService.getPublicImageUrl(r.image, "productimages");
       r.image = url ?? null;
     }
-    
+
     return data;
   },
 
@@ -200,8 +200,7 @@ export const ProductService = {
     console.log(data);
 
     if (!data) {
-      return null; // explicitly return null to trigger 404 in route
-      // return [];
+      return null;
     }
     return data;
   },
