@@ -75,18 +75,26 @@ export const ShoppingCartService = {
     });
 
     //create a cartItemDetail to set all the products
-    const details: CartItemDetail[] = items.map((i) => {
-      const p = productMap.get(i.product_id) ?? { name: "(unknown product)", price: 0, image: null as string | null };
+    //create a cartItemDetail to set all the products
+    const details: CartItemDetail[] = [];
+
+    for (const i of items as CartRow[]) {
+      const p = productMap.get(i.product_id) ?? {
+        name: "(unknown product)",
+        price: 0,
+        image: null as string | null,
+      };
 
       let image: string | null = null;
       if (p.image) {
-        const r = ImageService.getPublicImageUrl(p.image, IMAGE_BUCKET as any);
+        const r = await ImageService.getPublicImageUrl(p.image, IMAGE_BUCKET as any);
         image = r.success ? (r.url ?? null) : null;
       }
 
       const price = Number(p.price ?? 0);
       const quantity = Number(i.quantity ?? 0);
-      return {
+
+      details.push({
         id: i.id,
         product_id: i.product_id,
         name: p.name,
@@ -94,8 +102,8 @@ export const ShoppingCartService = {
         price,
         subtotal: price * quantity,
         image,
-      };
-    });
+      });
+    }
 
     return details;
   },
@@ -118,7 +126,7 @@ export const ShoppingCartService = {
     productId: string,
     quantity = 1
   ): Promise<CartRow> {
-    // 1) Kiểm tra product còn hàng
+    // check product instock
     const { data: product, error: pErr } = await supabase
       .from("products")
       .select("id, instock")
@@ -128,7 +136,7 @@ export const ShoppingCartService = {
     if (pErr) throw new Error("DB_READ_FAILED");
     if (!product)  throw new HttpError(404, "PRODUCT_NOT_FOUND_OR_OUT_OF_STOCK");
 
-    // 2) Tìm item đã có trong giỏ
+    // 2) find the product in cart
     const { data: existing, error: shoppingError } = await supabase
       .from("shopping_carts")
       .select("*")
@@ -137,7 +145,7 @@ export const ShoppingCartService = {
       .maybeSingle();
     if (shoppingError) throw shoppingError;
 
-    // 3) Update hoặc Insert
+    // update or insert the quantity
     if (existing) {
       const { data, error } = await supabase
         .from("shopping_carts")

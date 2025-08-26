@@ -29,8 +29,8 @@ export async function getOrderItemsController(req: Request, res: Response) {
 
     return SuccessJsonResponse(res, 200, {
       order_id: id,
-      customer,            // { name, address } | null
-      items,               // mỗi item có image_url
+      customer,           
+      items,               
       count: items.length,
     });
   } catch (e) {
