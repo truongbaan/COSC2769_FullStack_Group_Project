@@ -41,7 +41,7 @@ ProductRouter.get(
 // Get product details by id
 ProductRouter.get(
   "/:productId",
-  requireAuth("customer"),
+  requireAuth(["vendor", "customer"]),
   validationMiddleware(getProductByIdParamsSchema, "params"),
   getProductByIdController
 );

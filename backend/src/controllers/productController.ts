@@ -78,15 +78,26 @@ export const getProductByIdParamsSchema = z.object({
 type GetProductByIdParamsType = z.output<typeof getProductByIdParamsSchema>;
 
 export const getProductByIdController = async (req: Request, res: Response) => {
-    const { productId } = (req as unknown as Record<string, unknown> & { validatedparams: GetProductByIdParamsType }).validatedparams;
+    try {
+        const userRole = req.user_role;
+        const userId = req.user_id;
+        const { productId } = (req as unknown as Record<string, unknown> & { validatedparams: GetProductByIdParamsType }).validatedparams;
+        const vendorId = userRole === "vendor" ? userId : undefined;
+        const product = await ProductService.getProductById(productId, { vendorId });
 
-    const product = await ProductService.getProductById(productId);
+        if (!product) {
+            return ErrorJsonResponse(res, 404, 'Product is not found');
+        }
+        return SuccessJsonResponse(res, 200, { product });
 
-    if (!product) {
-        return ErrorJsonResponse(res, 404, 'Product is not found');
+    } catch (err: any) {
+        if (err?.issues) {
+            return ErrorJsonResponse(res, 400, err.issues[0].message);
+        }
+        console.log('getProductsController error: ', err);
+        return ErrorJsonResponse(res, 500, "Unexpected error while fetching products");
     }
 
-    return SuccessJsonResponse(res, 200, { product });
 }
 
 type CreateProductBodyType = z.output<typeof createProductBodySchema>;
@@ -94,7 +105,7 @@ type CreateProductBodyType = z.output<typeof createProductBodySchema>;
 export const createProductBodySchema = z.object({
     name: z.string().trim().min(1, "Name is required"),
     price: z.coerce.number().min(0, "Price must be >= 0"),
-    description: z.string().trim().min(1, "Description is required"),
+    description: z.string().trim().min(1, "Description is required").max(500, "Description must be at most 500 characters"),
     category: z.string().trim().min(1, "Category is required"),
     instock: z.coerce.boolean().default(true),
 }).strict();
