@@ -1,251 +1,174 @@
-#### `Put /api/orders`
-**Function**: Fetch all orders by hubID
-````
-```typescript
-async (req: Request, res: Response) => {
-    const orders = await OrderService.getOrders({ page, size }, hubId);
-    //Returns all Orders relevant to hubID
-    return: id, customer_id, hub_id, status, total_price
-````
-##response
-````
+## Product Endpoints
+
+### GET /products
+Retrieve all available products with optional filters & pagination.
+
+**Authentication**: 
+- `Required`: (role: `customer`, `vendor`)
+  
+**Query Parameters (optional):**
+- `page`: number (default 1, min 1)
+- `size`: number (default 10, max 30)
+- `category`: string | number (optional)
+- `priceMin`: number (optional, min 0)
+- `priceMax`: number (optional, max 100000000)
+- `name`: string (optional, search by product name)
+  
+**Response:**
+```json
 {
-    "success": true,
-    "message": {
-        "data": {
-            "orders": [
-                {
-                    "id": "8e648b53-1aa2-48c7-bb09-72dc019a6fab",
-                    "customer_id": "398d0185-8e1e-4268-bf49-5f3a155e74d1",
-                    "hub_id": "hcm_hub",
-                    "status": "active",
-                    "total_price": 16301000
-                },
-                {
-                    "id": "7568be7c-22a7-4284-b9ad-3571e950f0c6",
-                    "customer_id": "398d0185-8e1e-4268-bf49-5f3a155e74d1",
-                    "hub_id": "hcm_hub",
-                    "status": "active",
-                    "total_price": 5050000
-                }
-            ],
-            "count": 2,
-            "page": 1,
-            "size": 10
+  "success": true,
+  "message": {
+    "data": {
+      "products": [
+        {
+          "id": "f3d00277-dd78-4cba-8d35-cc5a25b6891d",
+          "vendor_id": "d8a93cce-a277-4ef0-aa4e-73921d5b7732",
+          "name": "Mot Mon Do Re Tien So 4",
+          "price": 25000,
+          "description": "Mon Do Nay Rat Rat Re Tien!",
+          "image": "https://supabase.co/storage/v1/object/public/productimages/example.png",
+          "category": "poor",
+          "instock": false
         }
+      ],
+      "totalCount": 2
     }
+  }
 }
-````
-#### `Patch /api/orders/:id/status`
-**Function**: Change the order status active -> delivered or canceled
-```typescript
-async (req: Request, res: Response) => {
-   const updated = await OrderService.updateStatus(id, status, {
-      restrictHubId: shipper.hub_id
-    })
-    //Returns updateed status of order
-    return: return: id, customer_id, hub_id, updated status, total_price
 ```
-**Request:**
-````
+**Error Response:**
+```json
+{  }
+```
+**Note:**
+- PriceMax needs to be larger than PriceMin.
+- Image is returned as a public URL (Supabase Storage).
+
+---
+### GET /products/:productId
+Retrieve a specific product by ID.
+
+**Authentication**: 
+- `Required`: (role: `customer`)
+
+**Path Parameters::**
+- `productId`: (string, required)
+
+**Response:**
+```json
 {
-	"status": "delivered"
-}
-````
-**Response**
-````
-{
-    "success": true,
-    "message": {
-        "message": "Order status updated",
-        "data": {
-            "order": {
-                "id": "8e648b53-1aa2-48c7-bb09-72dc019a6fab",
-                "customer_id": "398d0185-8e1e-4268-bf49-5f3a155e74d1",
-                "hub_id": "hcm_hub",
-                "status": "delivered",
-                "total_price": 16301000
-            }
-        }
+  "success": true,
+  "message": {
+    "data": {
+      "product": {
+        "id": "lksdlfkjsalfdjkksdlj",
+        "vendor_id": "2f996e97-eee5-4d9c-9741-e36941c2849a",
+        "name": "condom",
+        "price": 100000,
+        "description": "not for adult",
+        "image": "https://supabase.co/storage/v1/object/public/productimages/PinkKondom.jpg",
+        "category": "18",
+        "instock": true
+      }
     }
+  }
 }
-
-````
-#### `Put /api/orders/:id/items`
-**Function**: Change the order status active -> delivered or canceled
-```typescript
-async (req: Request, res: Response) => {
-   const updated = await OrderService.updateStatus(id, status, {
-      restrictHubId: shipper.hub_id
-    })
-    //Returns updateed status of order
-    return: return: id, customer_id, hub_id, updated status, total_price
 ```
-**Request:**
-````
-set id: 7568be7c-22a7-4284-b9ad-3571e950f0c6
-````
-**Response**
-````
+Error Response (404):
+**Error Response:**
+```json
+{  }
+```
+**Note:**
+- Image is returned as a public URL (Supabase Storage).
+
+---
+### POST /products
+Create a new product. 
+
+**Authentication**: 
+- Required (role: `customer`)
+
+**Request:** (multipart/ form-data)
+- `name`: string (required)
+- `price`: positive number (required)
+- `description`: string (required)
+- `category`: string (required)
+- `instock`: boolean (optional)
+- `image`: file (PNG/JPG) (required)
+
+**Response:**
+```json
 {
-    "success": true,
-    "message": {
-        "order_id": "7568be7c-22a7-4284-b9ad-3571e950f0c6",
-        "customer": {
-            "name": "The Anh Customer",
-            "address": "the anh house"
-        },
-        "items": [
-            {
-                "order_id": "7568be7c-22a7-4284-b9ad-3571e950f0c6",
-                "product_id": "5fcb3c27-59f1-48bc-8bbc-57dd1ebaca04",
-                "product_name": "Mot Mon Do Re Tien So 3",
-                "quantity": 2,
-                "price_at_order_time": 25000,
-                "total": 50000,
-                "image": "https://udgzhggwprkrqkmtthfi.supabase.co/storage/v1/object/public/productimages/mot%20tam%20anh%20cho%20mon%20do%20nay"
-            },
-            {
-                "order_id": "7568be7c-22a7-4284-b9ad-3571e950f0c6",
-                "product_id": "24ca7ecf-d618-4ac3-85c5-ea176cc66d8e",
-                "product_name": "Luxury Smart Watch",
-                "quantity": 2,
-                "price_at_order_time": 2500000,
-                "total": 5000000,
-                "image": "https://udgzhggwprkrqkmtthfi.supabase.co/storage/v1/object/public/productimages/luxurywatch.jpg"
-            }
-        ],
-        "count": 2
+  "success": true,
+  "message": {
+    "data": {
+      "product": {
+        "id": "c43b962e-da2b-4107-b63d-4a827b2bae53",
+        "vendor_id": "d8a93cce-a277-4ef0-aa4e-73921d5b7732",
+        "name": "Katy Perry vinyl boxset2",
+        "price": 5000000,
+        "description": "This is the 10th anni ones",
+        "image": "https://supabase.co/storage/v1/object/public/productimages/41zu-8eZ80L.jpg",
+        "category": "Vinyl Records",
+        "instock": true
+      }
     }
+  }
 }
-````
-==============================================================================================================================================================
-#### `GET /api/cart`
-**Function**: Fetch all orders by hubID
-```typescript
-async (req: Request, res: Response) => {
-    const items = await ShoppingCartService.getCart({ page, size }, req.user_id)
-    //Returns all the product in shopping cart
-    return: id, customer_id, product_id, quantity
 ```
+**Error Response:**
+```json
+{  }
+```
+**Note:**`
+- If `instock` is not provided, it is set to `false` by default.
+- Image is stored & returned as a public URL (Supabase Storage).
 
-**response**: 
-```
+---
+### PATCH /products/:productId
+Update an existing product.
+
+**Authentication**: 
+Required (role: `vendor`)
+
+**Path Parameters::**
+- `productId`: (string, required)
+
+**Request:** (multipart/ form-data or JSON)
+    
+Any subset of:
+- `name`: string (optional)
+- `price`: positive number (optional)
+- `description`: string (optional)
+- `category`: string (optional)
+- `instock`: boolean (optional)
+- `image`: file (PNG/JPG) (optional)
+
+**Response:**
+```json
 {
-    "success": true,
-    "message": {
-        "items": [
-            {
-                "id": "5dcb1f2b-0a65-4ea3-99b8-814cdf0eb375",
-                "product_id": "24ca7ecf-d618-4ac3-85c5-ea176cc66d8e",
-                "name": "Luxury Smart Watch",
-                "quantity": 2,
-                "price": 2500000,
-                "subtotal": 5000000,
-                "image": "https://udgzhggwprkrqkmtthfi.supabase.co/storage/v1/object/public/productimages/luxurywatch.jpg"
-            },
-            {
-                "id": "1bb58f32-95e9-447d-bf86-4e4bfaa8d985",
-                "product_id": "lksdlfkjsalfdjkksdlj",
-                "name": "condom",
-                "quantity": 2,
-                "price": 100000,
-                "subtotal": 200000,
-                "image": "https://udgzhggwprkrqkmtthfi.supabase.co/storage/v1/object/public/productimages/PinkKondom.jpg"
-            }
-        ],
-        "count": 2,
-        "page": 1,
-        "size": 10
+  "success": true,
+  "message": {
+    "message": "Update Status Success",
+    "product": {
+      "id": "0c88e05c-39ff-4d8f-a34e-1daba470ac5c",
+      "vendor_id": "d8a93cce-a277-4ef0-aa4e-73921d5b7732",
+      "name": "Teenage Dream vinyl",
+      "price": 1500000,
+      "description": "Another Katy Perry one",
+      "image": "https://supabase.co/storage/v1/object/public/productimages/images.jpg",
+      "category": "Vinyl Records",
+      "instock": true
     }
+  }
 }
 ```
-
-#### `DELETE /api/cart/removeItem/:id`
-**Function**: delete product by productId
-```typescript
-async function deleteCartItemByIdController(req: Request, res: Response) {
-    const deleted = await ShoppingCartService.deleteItemById(id, userId);
-    //Returns all the product in shopping cart
-    return: id, customer_id, product_id, quantity
+**Error Response:**
+```json
+{  }
 ```
-**request (JSON)**:
-```
-product id: 24ca7ecf-d618-4ac3-85c5-ea176cc66d8e
-```
-
-**response**:
-```
-{
-    "success": true,
-    "message": {
-        "data": {
-            "removed": true,
-            "id": "24ca7ecf-d618-4ac3-85c5-ea176cc66d8e"
-        }
-    }
-}
-```
-
-### "POST api/cart/checkout/"
-**function**: checkout product in cart
-```typescript
-
-```
-**request**:
-```
-http://localhost:5000/api/cart/checkout
-```
-
-**response**:
-```
-```
-### "POST api/products/:id/addToCart"
-**function**: checkout product in cart
-
-**request (JSON)**:
-```
-{
-  "product_id": "lksdlfkjsalfdjkksdlj"
-}
-```
-
-**response**:
-```
-{
-    "success": true,
-    "message": {
-        "item": {
-            "id": "bff433cc-f40a-4f1a-8c54-f01d80bb5c8c",
-            "customer_id": "b297d44d-cc6c-4643-9fd0-18963e49db15",
-            "product_id": "lksdlfkjsalfdjkksdlj",
-            "quantity": 1
-        }
-    }
-}
-```
-
-==========================================================================================================================================================
-#### `GET /api/products`
-**Function**: Fetch all products
-```typescript
-async (req: Request, res: Response) => {
-    const items = await ShoppingCartService.getCart({ page, size }, req.user_id)
-    //Returns all the products
-```
-
-
-#### `GET /api/products/:productId`
-**Function**: Fetch all products
-```typescript
-async (req: Request, res: Response) => {
-    const product = await ProductService.getProductById(productId);
-    //Returns single product object
-```
-
-#### `POST /api/products/:productId`
-**Function**: Create a new product
-```typescript
-async (req: Request, res: Response) => {
-    const created = await ProductService.createProduct(payload);
-```
+**Note:**`
+- Image is stored & returned as a public URL (Supabase Storage).
+---

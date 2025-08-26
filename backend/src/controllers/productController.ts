@@ -103,7 +103,6 @@ export const createProductBodySchema = z.object({
     name: z.string().trim().min(1, "Name is required"),
     price: z.coerce.number().min(0),
     description: z.string().trim().min(1, "Description is required"),
-    // image: z.string().trim(),
     category: z.string().trim().min(1),
     instock: z.coerce.boolean(),
 }).strict();
@@ -111,9 +110,7 @@ export const createProductBodySchema = z.object({
 export const createProductController = async (req: Request, res: Response) => {
     try {
         const vendorId = req.user_id;
-        //const body = createProductBodySchema.parse(req.body);
         const body = (req as unknown as Record<string, unknown> & { validatedbody: CreateProductBodyType }).validatedbody;
-
         const file = req.file;
 
         if (!file) {
