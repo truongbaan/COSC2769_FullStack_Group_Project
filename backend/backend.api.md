@@ -90,7 +90,6 @@ none
             "category": "string",
             "instock": boolean
       }
-            "totalCount": number
     }
   }
 }
