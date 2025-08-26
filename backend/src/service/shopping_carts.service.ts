@@ -115,54 +115,52 @@ export const ShoppingCartService = {
 
   async addToCart(
     customerId: string,
-    { product_id, quantity }: { product_id: string; quantity: number }
+    productId: string,
+    quantity = 1
   ): Promise<CartRow> {
-   
+    // 1) Kiểm tra product còn hàng
     const { data: product, error: pErr } = await supabase
       .from("products")
       .select("id, instock")
-      .eq("id", product_id)
-      .eq("instock", true) 
-      .single()
+      .eq("id", productId)
+      .eq("instock", true)
+      .maybeSingle();
+    if (pErr) throw new Error("DB_READ_FAILED");
+    if (!product)  throw new HttpError(404, "PRODUCT_NOT_FOUND_OR_OUT_OF_STOCK");
 
-    if (pErr || !product) throw new HttpError(404, "PRODUCT_NOT_FOUND")
-    if (!product.instock) throw new HttpError(409, "PRODUCT_OUT_OF_STOCK")
-
-    // 2. Kiểm tra giỏ hàng hiện có
+    // 2) Tìm item đã có trong giỏ
     const { data: existing, error: shoppingError } = await supabase
       .from("shopping_carts")
       .select("*")
       .eq("customer_id", customerId)
-      .eq("product_id", product_id)
-      .maybeSingle()
+      .eq("product_id", productId)
+      .maybeSingle();
+    if (shoppingError) throw shoppingError;
 
-    if (shoppingError) throw shoppingError
-
+    // 3) Update hoặc Insert
     if (existing) {
-      //update quantity
       const { data, error } = await supabase
         .from("shopping_carts")
         .update({ quantity: existing.quantity + quantity })
         .eq("id", existing.id)
         .select("*")
-        .single()
-      if (error) throw error
-      return data
+        .single();
+      if (error) throw error;
+      return data!;
     } else {
-      //insert a new item
       const randomId = generateUUID();
       const { data, error } = await supabase
         .from("shopping_carts")
         .insert({
           id: randomId,
           customer_id: customerId,
-          product_id,
+          product_id: productId,
           quantity,
         })
         .select("*")
-        .single()
-      if (error) throw error
-      return data
+        .single();
+      if (error) throw error;
+      return data!;
     }
   },
 

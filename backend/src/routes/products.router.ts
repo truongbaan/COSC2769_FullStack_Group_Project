@@ -10,7 +10,7 @@ import { Router } from "express";
 import multer from "multer";
 import { requireAuth } from "../middleware/requireAuth";
 import { validationMiddleware } from "../middleware/validation.middleware";
-import { addToCartBodySchema, addToCartController } from "../controllers/shoppingCartController";
+import { addToCartBody, addToCartController, addToCartParams } from "../controllers/shoppingCartController";
 
 import {
   createProductBodySchema,
@@ -58,7 +58,8 @@ ProductRouter.post(
 ProductRouter.post(
   "/:productId/addToCart",
   requireAuth("customer"),
-  validationMiddleware(addToCartBodySchema, "body"),
+  validationMiddleware(addToCartBody, "body"),
+  validationMiddleware(addToCartParams, "params"),
   addToCartController
 )
 
