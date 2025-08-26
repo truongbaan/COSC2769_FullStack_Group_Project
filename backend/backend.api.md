@@ -16,20 +16,20 @@
 * [POST /users/upload-image](#post-usersupload-image)
 ---
 ### Orders Endpoints
-* [GET /api/orders](#get-apiorders)
-* [PATCH /api/orders/:id/status](#put-apiorders:idstatus)
-* [GET /api/orders/:id/Items]
+* [GET /orders](#get-apiorders)
+* [PATCH /orders/:id/status](#put-apiorders:idstatus)
+* [GET /orders/:id/Items](#get-apiorder:iditems)
 ---
 ### Shopping Carts Endpoints
-* [GET /api/cart](#get-apicart)
-* [DELETE /removeItem/:id](#delete-deleteitem:id)
-* [POST /api/products/:id/addToCart]
-* [POST /api/cart/checkout]
+* [GET /cart](#get-apicart)
+* [DELETE /cart/removeItem/:id](#delete-deleteitem:id)
+* [POST /cart/checkout](#post-apicartcheckout)
 ---
 ### Products Endpoints
-* [GET /api/products](#get-apiproducts)
-* [GET /api/products/:productId](#get-apiproducts:productid)
-* [POST /api/products/:productId](#post-apiproducts:productid)
+* [GET /products](#get-apiproducts)
+* [GET /products/:productId](#get-apiproducts:productid)
+* [POST /products/:productId](#post-apiproducts:productid)
+* [POST /products/:id/addToCart](#post-porduct:idaddtocart)
 ---
 ## Authentication Endpoints
 
@@ -358,7 +358,7 @@ Register a new shipper account with distribution hub selection.
 - `Required`: (role: `shipper')
 
 
-### [GET /api/orders]
+### GET /orders
 **GET /api/orders**
 **Function**: Fetch all orders by hubID
   - **Description:**: Receive all the order related to hubID by shipper
@@ -432,13 +432,13 @@ Register a new shipper account with distribution hub selection.
 
 ---
 
-### [PATCH /api/orders/:id/status]
+### /orders/:id/status
 **Function**: Change the order status
 - **Description:**: change the active order to delivered or canceled
   - **Request:**
     ```json
     {
-	    "status": "delivered" | "canceled";
+	    "status": "delivered" | "canceled"
     }
     ```
   - **Response:**
@@ -475,9 +475,9 @@ Register a new shipper account with distribution hub selection.
 
     ```json
         {
-            "status": "delivered";
+            "status": "delivered"
         }
-    ```
+    ```****
 
     **Response:**
     ```json
@@ -500,7 +500,7 @@ Register a new shipper account with distribution hub selection.
 
 ---
 
-### [GET /api/orders/:id/Items]
+### GET /orders/:id/Items
 **Function**: get all the order item list 
 - **Description:**: Receive all the order related to hubID by shipper
   - **Request:**
@@ -551,7 +551,7 @@ Register a new shipper account with distribution hub selection.
 - `Required`: (role: `customer`)
 
 
-### [GET /api/cart]
+### GET /cart
 **Function**: Fetch all product in shopping cart
 - **Description:**: Receive all the product in shopping cart
 
@@ -629,7 +629,7 @@ Register a new shipper account with distribution hub selection.
 
 ---
 
-### [DELETE /removeItem/:id]
+### DELETE /removeItem/:id
 **Function**: Remove product by id
 - **Description:**: remove the product in cart by product id
 - **Request:**
@@ -678,6 +678,7 @@ Register a new shipper account with distribution hub selection.
 
 ---
 
+<<<<<<< HEAD
 ### [POST /api/products/:id/addToCart]
 **Function**: add product to cart
 - **Description:**: add the product in cart by the product id
@@ -743,6 +744,9 @@ Register a new shipper account with distribution hub selection.
 ---
 
 ### [POST /api/cart/checkout]
+=======
+### POST /cart/checkout
+>>>>>>> dev/BE
 **Function**: check out the product in shopping cart
 - **Description:**: caculate the total price of shopping cart, after checkout, remove the product in shopping cart, create an order with the order item list
 - **Request:**
@@ -896,7 +900,7 @@ none
 Create a new product. 
 
 **Authentication**: 
-- Required (role: `customer`)
+- Required (role: `vendor`)
 
 **Request:** (multipart/ form-data)
 - `name`: string (required)
@@ -988,3 +992,69 @@ Any subset of:
 - If updating image, `form-data` is `required`. Otherwise, either `form-data` or `JSON` works.
 ---
 
+---
+
+### POST /products/:id/addToCart
+**Function**: add product to cart
+- **Description:**: add the product in cart by the product id
+ - **Path Parameter:**
+      - `id`: `string` (required) - The ID of the product
+
+- **Request:**
+    ```json
+        {
+            "quantity": number 
+        }
+    ```
+    **OR**
+    ```
+    none
+    ```
+- **Response:**
+```json
+    {
+        "success": true,
+        "message": {
+            "item": {
+                "id": "string",
+                "customer_id": "string",
+                "product_id": "string",
+                "quantity": number
+            }
+        }
+    }
+```
+
+- **Error Responses:**
+    ```json
+        {
+            "success": false,
+            "message": "string" //error description
+        }
+
+    ```
+**Notes:**
+- The request (JSON) can none or add the specific number of product want to add to cart
+
+- **example**:
+    **Request:**
+    ```json
+        {
+            "quantity": 500
+        }
+    ```
+
+    **Response:**
+    ```json
+            {
+                "success": true,
+                "message": {
+                    "item": {
+                        "id": "1bb58f32-95e9-447d-bf86-4e4bfaa8d985",
+                        "customer_id": "398d0185-8e1e-4268-bf49-5f3a155e74d1",
+                        "product_id": "lksdlfkjsalfdjkksdlj",
+                        "quantity": 704
+                    }
+                }
+            }
+    ```
