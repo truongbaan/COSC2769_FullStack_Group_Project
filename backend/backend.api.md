@@ -435,6 +435,8 @@ Register a new shipper account with distribution hub selection.
 ### [PATCH /api/orders/:id/status]
 **Function**: Change the order status
 - **Description:**: change the active order to delivered or canceled
+ - **Path Parameter:**
+      - `id`: `string` (required) - The ID of order
   - **Request:**
     ```json
     {
@@ -503,6 +505,8 @@ Register a new shipper account with distribution hub selection.
 ### [GET /api/orders/:id/Items]
 **Function**: get all the order item list 
 - **Description:**: Receive all the order related to hubID by shipper
+ - **Path Parameter:**
+      - `id`: `string` (required) - The ID of order.
   - **Request:**
     ```
     none
@@ -632,6 +636,8 @@ Register a new shipper account with distribution hub selection.
 ### [DELETE /removeItem/:id]
 **Function**: Remove product by id
 - **Description:**: remove the product in cart by product id
+ - **Path Parameter:**
+      - `id`: `string` (required) - The ID of product
 - **Request:**
     ```
     none
@@ -681,6 +687,9 @@ Register a new shipper account with distribution hub selection.
 ### [POST /api/products/:id/addToCart]
 **Function**: add product to cart
 - **Description:**: add the product in cart by the product id
+ - **Path Parameter:**
+      - `id`: `string` (required) - The ID of the product
+
 - **Request:**
     ```json
         {
