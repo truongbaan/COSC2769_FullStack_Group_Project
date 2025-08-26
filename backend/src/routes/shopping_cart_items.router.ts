@@ -5,11 +5,16 @@
 # Author: Nguyen The Anh
 # ID: s3975844*/
 
-import { Router, Request, Response } from 'express';
+import { Router } from 'express';
 import { validationMiddleware } from '../middleware/validation.middleware';
-import { get } from 'http';
-import { getCartQuerrySchema, getCartController, deleteByIdParamsSchema, deleteCartItemByIdController } from '../controllers/shoppingCartController';
-import { de } from 'zod/v4/locales/index.cjs';
+import {
+    getCartQuerrySchema,
+    getCartController,
+    removeByIdParamsSchema,
+    removeCartItemByIdController,
+    checkoutController
+}
+    from '../controllers/shoppingCartController';
 
 const ShoppingCartRouter = Router();
 
@@ -17,5 +22,8 @@ const ShoppingCartRouter = Router();
 ShoppingCartRouter.get("/", validationMiddleware(getCartQuerrySchema, 'query'), getCartController);
 
 //delete the product in shoppping cart by id
-ShoppingCartRouter.delete("/deleteItem/:id", validationMiddleware(deleteByIdParamsSchema, 'params'), deleteCartItemByIdController);
+ShoppingCartRouter.delete("/removeItem/:id", validationMiddleware(removeByIdParamsSchema, 'params'), removeCartItemByIdController);
+
+//checkout the shopping cart (all items in the cart will be ordered)
+ShoppingCartRouter.post("/checkout", checkoutController)
 export default ShoppingCartRouter;

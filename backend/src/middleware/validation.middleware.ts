@@ -6,8 +6,8 @@
 # ID: s3979056 */
 
 import * as z from "zod";
-import { NextFunction, Request, Response } from "express";
 import { ErrorJsonResponse } from "../utils/json_mes";
+import { NextFunction, Request, Response } from "express";
 
 export const validationMiddleware = (schema: z.Schema, validationPart: 'body' | 'params' | 'query') => (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -16,6 +16,14 @@ export const validationMiddleware = (schema: z.Schema, validationPart: 'body' | 
         (req as unknown as Record<string, unknown>)[validatedKeyword] = validatedData;
         next();
     } catch (err) {
-        ErrorJsonResponse(res, 400, (err as Error).message);
+        // ErrorJsonResponse(res, 400, (err as Error).message);
+        if (err instanceof z.ZodError) {
+            const fields = Array.from(new Set(err.issues.map(i => i.path.join(".")))).join(", ");
+            return res.status(400).json({
+                success: false,
+                message: "Please provide valid values for: " + fields,
+            });
+        }
+        return ErrorJsonResponse(res, 400, (err as Error).message);
     }
 }

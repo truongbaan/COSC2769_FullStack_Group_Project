@@ -2,25 +2,21 @@
 # Course: COSC2769 - Full Stack Development 
 # Semester: 2025B 
 # Assessment: Assignment 02 
-# Author: 
-# ID: */
+# Author: Nguyen Vo Truong Toan
+# ID: s3979056 */
 
-import z from "zod";
-import { createProductParamsSchema } from "../controllers/productController";
 import { supabase, Database } from "../db/db";
 
 import generateUUID from "../utils/generator";
+import { ImageService } from "./image.service";
 
-//Dùng "Row" để trả về
+//Use "Row" to return data
 export type ProductRow = Database["public"]["Tables"]["products"]["Row"];
 
-//Dùng "Insert" để tạo data
+//Use "Insert" to create data
 export type ProductInsert = Database["public"]["Tables"]["products"]["Insert"];
 
-export type CreateProductInput = z.infer<typeof createProductParamsSchema>;
-
 export type ProductInsertNoId = Omit<ProductInsert, "id">;
-
 
 export type ProductsFilters = {
   category?: string;
@@ -35,7 +31,7 @@ export type Pagination = {
 }
 
 export const ProductService = {
-  async getProducts(
+  async getCustomerProducts(
     { page, size }: Pagination,
     filters?: ProductsFilters,
   ): Promise<ProductRow[] | null> {
@@ -71,10 +67,18 @@ export const ProductService = {
     }
     console.log(data);
 
-    if (!data) {
-      return null; // explicitly return null to trigger 404 in route
-      // return [];
+    if (!data) return null;
+
+    for (const r of data as Array<{ image: string | null }>) {
+      if (!r.image) {
+        r.image = null;
+        continue;
+      }
+
+      const { url } = await ImageService.getPublicImageUrl(r.image, "productimages");
+      r.image = url ?? null;
     }
+    
     return data;
   },
 
@@ -93,7 +97,15 @@ export const ProductService = {
       throw error;
     }
 
-    return data || null;
+    if (!data) return null;
+
+    let imageUrl: string | null = null;
+    if (data.image) {
+      const res = await ImageService.getPublicImageUrl(data.image, "productimages");
+      imageUrl = res?.success ? res.url ?? null : null;
+    }
+
+    return { ...data, image: imageUrl };
   },
 
   async createProduct(product: ProductInsertNoId): Promise<ProductRow | null> {
@@ -110,6 +122,85 @@ export const ProductService = {
       return null;
     }
 
+    return data;
+  },
+
+  async getVendorProducts({ page, size }: Pagination, vendorId: string,): Promise<ProductRow[] | null> {
+    const offset = (page - 1) * size;
+
+    const query = supabase
+      .from("products")
+      .select("*")
+      .eq("vendor_id", vendorId)
+      .range(offset, offset + size - 1)
+      .order("id", { ascending: false });
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error("Error fetching product:", error);
+      throw error;
+    }
+    console.log(data);
+
+    if (!data) return null;
+
+    for (const r of data as Array<{ image: string | null }>) {
+      if (!r.image) {
+        r.image = null;
+        continue;
+      }
+
+      const { url } = await ImageService.getPublicImageUrl(r.image, "productimages");
+      r.image = url ?? null;
+    }
+
+    return data;
+  },
+
+  async updateProduct(
+    vendorId: string,
+    productId: string,
+    name?: string,
+    price?: number,
+    category?: string,
+    description?: string,
+    imagePath?: string,
+    instock?: boolean,
+  ) {
+
+    const toUpdate: Record<string, any> = {};
+
+    if (name !== undefined) toUpdate.name = name;
+    if (price !== undefined) toUpdate.price = price;
+    if (category !== undefined) toUpdate.category = category;
+    if (description !== undefined) toUpdate.description = description;
+    if (typeof instock === "boolean") toUpdate.instock = instock;
+    if (imagePath) toUpdate.image = imagePath;
+
+    // Update nothing
+    if (Object.keys(toUpdate).length === 0) return null;
+
+    const query = supabase
+      .from("products")
+      .update(toUpdate)
+      .eq("vendor_id", vendorId)
+      .eq("id", productId)
+      .select("*")
+      .maybeSingle();
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error("Error fetching product:", error);
+      throw error;
+    }
+    console.log(data);
+
+    if (!data) {
+      return null; // explicitly return null to trigger 404 in route
+      // return [];
+    }
     return data;
   },
 };

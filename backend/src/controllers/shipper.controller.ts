@@ -5,9 +5,9 @@
 # Author: Truong Ba An
 # ID: s3999568 */
 import { Request, Response } from "express"
-import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes"
 import { ShipperService } from "../service/shipper.service";
 import { GetUsersRoleQueryType } from "../types/general.type";
+import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes"
 
 export const getShippersController = async (req: Request, res: Response) => {
     try {

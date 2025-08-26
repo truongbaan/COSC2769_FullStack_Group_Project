@@ -6,8 +6,8 @@
 # ID: s3975844*/
 import { supabase, Database } from "../db/db";
 
-export type Order = Database["public"]["Tables"]["orders"]["Row"]; //take the orders table from database
 export type OrderStatus = "active" | "delivered" | "canceled"; //Statuses of an order
+export type Order = Database["public"]["Tables"]["orders"]["Row"]; //take the orders table from database
 
 export type Pagination = {
   page: number;
@@ -57,6 +57,8 @@ export const OrderService = {
     return data ?? null;
   },
 
+  // UPDATE orders o JOIN shippers s ON s.hub_id = o.hub_id SET o.status = 'delivered' WHERE o.status = 'active' and s.shipper_id = {shipper}
+
   // update the status of an order only "active" status -> "delivered" or "canceled"
   async updateStatus(
     orderId: string,
@@ -65,56 +67,56 @@ export const OrderService = {
   ): Promise<Order> {
     //take the current order same as orderId
     //check hub_id of shipper through user_id
-    const { data: distributionId, error: distributionErr } = await supabase //take the hub_id of shipper
+    const { data: shipper, error: shipperError } = await supabase //take the hub_id of shipper
       .from("shippers")
       .select("hub_id")
       .eq("id", shipperId)
       .maybeSingle();
 
-    if (distributionErr) {
-      console.error("Error fetching shipper hub:", distributionErr);
+    if (shipperError) {
+      console.error("Error fetching shipper hub:", shipperError);
       throw new Error("DB_READ_FAILED");
     }
-    if (!distributionId?.hub_id) {
-      //Vendor or customer can not access
-      throw new Error("Unauthorized: Only shipper can update order status");
-    }
-    const hubId = distributionId?.hub_id;
+
+    const hubId = shipper?.hub_id;
     if (!hubId) {
-      //empty hub_id, return empty orders
-      console.warn("No hub_id found for shipper:", shipperId);
+      // Can not find a shipper with the given shipper id
+      throw new Error("NOT_FOUND");
     }
 
-    const { data: currentOrder, error: getErr } = await supabase
-      .from("orders")
-      .select("id, status, hub_id")
-      .eq("id", orderId)
-      .maybeSingle();
+  const { data: order, error: readErr } = await supabase
+    .from("orders")
+    .select("id,status,hub_id")
+    .eq("id", orderId)
+    .eq("hub_id", hubId)
+    .maybeSingle();
 
-    if (getErr) throw new Error("DB_READ_FAILED");
-    if (!currentOrder) throw new Error("NOT_FOUND");
-    if (currentOrder.status !== "active") throw new Error("ALREADY_FINALIZED");
-    if (currentOrder.hub_id !== hubId)
-      throw new Error("Unauthorized: Order not in your hub"); //check if order in this hub
-    // only update status if current status is "active"
-    let q = supabase
-      .from("orders")
+  if (readErr) {
+    console.error("READ_ORDER_ERROR:", readErr);
+    throw new Error("DB_READ_FAILED");
+  }
+  if (!order) throw new Error("NOT_FOUND");
+
+  // 3) Nếu order đã finalize thì trả 409 ở controller
+  if (order.status !== "active") {
+    throw new Error("ALREADY_FINALIZED");
+  }
+
+    const { data, error: updErr } = await supabase
+      .from('orders')
       .update({ status: nextStatus })
-      .eq("id", orderId)
-      .eq("status", "active");
-
-    if (hubId) q = q.eq("hub_id", hubId);
-
-    const { data: updated, error: updErr } = await q
-      .select("id, status, hub_id, customer_id, total_price")
+      .eq('id', orderId)
+      .eq('status', 'active')
+      .eq('hub_id', hubId)
+      .select()
       .maybeSingle();
-
+  
+    
     if (updErr) {
       console.error("UPDATE_ERROR:", updErr); //Debugging purpose
       throw new Error("DB_WRITE_FAILED");
     }
-    if (!updated) throw new Error("CONFLICT");
 
-    return updated as Order;
+    return data as Order;
   },
 };

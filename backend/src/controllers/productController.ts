@@ -7,56 +7,82 @@
 
 import * as z from "zod";
 import { Request, Response } from "express";
-import { ProductInsert, ProductInsertNoId, ProductService } from "../service/products.service";
+import { ProductInsertNoId, ProductService } from "../service/products.service";
 import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes";
-import generateUUID from "../utils/generator";
+import { ImageService } from "../service/image.service";
+import { supabase } from "../db/db";
 
-export const getProductsQuerrySchema = z.object({
+export const getProductsQuerySchema = z.object({
     page: z.coerce.number().min(1).default(1),
     size: z.coerce.number().min(1).max(30).default(10),
     category: z.string().trim().max(100).optional(),
     priceMin: z.coerce.number().min(0).optional(),
     priceMax: z.coerce.number().min(0).max(100000000).optional(),
     name: z.string().optional(),
-}).strict();
+}).strict()
+    .refine(
+        q => q.priceMin == null || q.priceMax == null || q.priceMax >= q.priceMin,
+        { path: ["priceMax"], message: "priceMax must be >= priceMin" }
+    );
 
-
-type GetProductsQuerryType = z.output<typeof getProductsQuerrySchema>;
+type GetProductsQueryType = z.output<typeof getProductsQuerySchema>;
 
 // Request < params type, response body, request body, request query
 export const getProductsController = async (req: Request, res: Response) => {
     try {
-        const { page, size, category, priceMin, priceMax, name } = (req as unknown as Record<string, unknown> & { validatedquery: GetProductsQuerryType }).validatedquery;
+        const userRole = req.user_role;
+        const { page, size, category, priceMin, priceMax, name } = (req as unknown as Record<string, unknown> & { validatedquery: GetProductsQueryType }).validatedquery;
 
-        const products = await ProductService.getProducts(
-            { page, size },
-            { category, priceMax, priceMin, name }
-        );
+        if (userRole === "customer") {
+            const products = await ProductService.getCustomerProducts(
+                { page, size },
+                { category, priceMax, priceMin, name }
+            );
 
-        if (products === null) {
-            return ErrorJsonResponse(res, 500, "Failed to fetch products");
+            if (products === null) {
+                return ErrorJsonResponse(res, 500, "Failed to fetch products");
+            }
+
+            return SuccessJsonResponse(res, 200, {
+                data: { products, count: products.length },
+            });
+        }
+        else if (userRole === "vendor") {
+            const vendorId = req.user_id;
+
+            const products = await ProductService.getVendorProducts(
+                { page, size }, vendorId,
+            )
+
+            if (products === null) {
+                return ErrorJsonResponse(res, 500, "Failed to fetch products");
+            }
+
+            return SuccessJsonResponse(res, 200, {
+                data: { products, count: products.length },
+            });
         }
 
-        return SuccessJsonResponse(res, 200, {
-            data: { products, count: products.length },
-        });
+        return res.status(403).json({ message: "Forbidden: missing or invalid role" });
+
+
     } catch (err: any) {
         if (err?.issues) {
             return ErrorJsonResponse(res, 400, err.issues[0].message);
         }
-        console.log('ERRRRR: ', err);
+        console.log('getProductsController error: ', err);
         return ErrorJsonResponse(res, 500, "Unexpected error while fetching products");
     }
-};
+}
 
 export const getProductByIdParamsSchema = z.object({
     productId: z.string(),
 }).strict();
 
-type GetProductByIdParams = z.output<typeof getProductByIdParamsSchema>;
+type GetProductByIdParamsType = z.output<typeof getProductByIdParamsSchema>;
 
 export const getProductByIdController = async (req: Request, res: Response) => {
-    const { productId } = (req as unknown as Record<string, unknown> & { validatedparams: GetProductByIdParams }).validatedparams;
+    const { productId } = (req as unknown as Record<string, unknown> & { validatedparams: GetProductByIdParamsType }).validatedparams;
 
     const product = await ProductService.getProductById(productId);
 
@@ -71,34 +97,119 @@ export const getProductByIdController = async (req: Request, res: Response) => {
     });
 }
 
-export const createProductParamsSchema = z.object({
-    name: z.string().trim(),
-    price: z.coerce.number().min(0),
-    description: z.string().trim(),
-    image: z.string().trim(),
-    category: z.string().trim().min(1),
+type CreateProductBodyType = z.output<typeof createProductBodySchema>;
+
+export const createProductBodySchema = z.object({
+    name: z.string().trim().min(1, "Name is required"),
+    price: z.coerce.number().min(0, "Price must be >= 0"),
+    description: z.string().trim().min(1, "Description is required"),
+    category: z.string().trim().min(1, "Category is required"),
     instock: z.coerce.boolean(),
 }).strict();
 
-declare global {
-    namespace Express {
-        interface Request {
-            validatedbody?: {
-                name: string; price: number; description: string;
-                image: string; category: string; instock: boolean;
-            };
-        }
-    }
-}
-
 export const createProductController = async (req: Request, res: Response) => {
-    const vendorId = req.user_id;
-    if (!vendorId) return res.status(401).json({ message: "Unauthorized" });
+    try {
+        const vendorId = req.user_id;
+        const body = (req as unknown as Record<string, unknown> & { validatedbody: CreateProductBodyType }).validatedbody;
+        const file = req.file;
 
-    const body = req.validatedbody!; // do middleware set
-    const payload: ProductInsertNoId = { vendor_id: vendorId, ...body };
+        if (!file) {
+            return res.status(400).json({ message: "Image file is required" });
+        }
 
-    const created = await ProductService.createProduct(payload);
-    if (!created) return res.status(500).json({ message: "Failed to create product" });
-    return res.status(201).json({ data: { product: created } });
+        const upload = await ImageService.uploadImage(file, "productimages");
+        if (!upload.success) {
+            return res.status(500).json({ message: upload.error });
+        }
+
+        const payload: ProductInsertNoId = {
+            vendor_id: vendorId, ...body, image: upload.url!,
+        };
+
+        const created = await ProductService.createProduct(payload);
+        if (!created)
+            res.status(500).json({ message: "Failed to create product" });
+
+        return SuccessJsonResponse(res, 201, {
+            data: { product: created },
+        });
+
+    } catch (err: any) {
+        if (err.name === "ZodError")
+            return res.status(400).json({
+                success: false,
+                message: "Please provide valid values for: "
+                    + err.errors.map((e: any) => e.path.join(".")).join(", ")
+            });
+
+        console.error("createProductController error:", err);
+        return ErrorJsonResponse(
+            res, 500, err?.message ?? "Unexpected error while creating product"
+        );
+    }
+};
+
+type UpdateProductBodyType = z.output<typeof updateProductStatusBodySchema>;
+
+export const updateProductStatusBodySchema = z.object({
+    name: z.string().trim().min(1).max(150).optional(),
+    price: z.coerce.number().min(0).optional(),
+    category: z.string().trim().min(1).max(100).optional(),
+    description: z.string().trim().max(5000).optional(),
+    instock: z.coerce.boolean().optional(),
+}).strict();
+
+export const updateProductStatusController = async (req: Request, res: Response) => {
+    try {
+        const vendorId = req.user_id;
+
+        //Destruct object to take values
+        const { productId } = (req as unknown as Record<string, unknown> & { validatedparams: GetProductByIdParamsType }).validatedparams;
+        const { name, price, category, description, instock } = (req as unknown as Record<string, unknown> & { validatedbody: UpdateProductBodyType }).validatedbody;
+
+        let newImagePath: string | undefined;
+
+        if (req.file) {
+            const up = await ImageService.uploadImage(req.file, "productimages");
+            if (!up.success) return res.status(500).json({ message: up.error });
+            newImagePath = up.url!; // save as PATH
+        }
+
+        // (Optional) lấy product cũ để biết path ảnh hiện tại — dùng để delete sau khi update
+        const { data: oldRow } = await supabase
+            .from("products").select("image").eq("vendor_id", vendorId).eq("id", productId).maybeSingle();
+
+        const updated = await ProductService.updateProduct(
+            vendorId,
+            productId,
+            name,
+            price,
+            category,
+            description,
+            newImagePath,
+            instock
+        );
+
+        if (!updated) {
+            return res.status(404).json({ message: "Product not found or not owned by vendor" });
+        }
+
+        // Xoá ảnh cũ nếu có ảnh mới và ảnh cũ tồn tại
+        if (newImagePath && oldRow?.image && oldRow.image !== newImagePath) {
+            await ImageService.deleteImage(oldRow.image, "productimages");
+        }
+
+        return SuccessJsonResponse(res, 200, {
+            message: "Update Status Success",
+            product: updated,
+
+        });
+
+    } catch (err: any) {
+        console.error("updateProductStatusController error:", err);
+        return res.status(500).json({
+            message: "Internal Server Error",
+            detail: err.message ?? "Unexpected error while updating product status",
+        });
+    }
 };

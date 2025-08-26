@@ -7,11 +7,12 @@
 
 import { supabase, Database } from "../db/db"
 import { Pagination } from "../types/general.type"
+import { ImageService } from "./image.service"
 
 export type Customer = Database['public']['Tables']['customers']['Row']
-type CustomerUpdate = Database['public']['Tables']['customers']['Update'] & {id : string}
+type CustomerUpdate = Database['public']['Tables']['customers']['Update'] & { id: string }
 type FullCustomer = {
-    id : string,
+    id: string,
     name: string,
     address: string,
     email: string,
@@ -55,8 +56,34 @@ export const CustomerService = {
         }
 
         if (!data) return null;
+
+        const withAdjustedImages = await Promise.all(
+            data.map(async (customer) => {
+                let profile_picture = "";
+                    
+                if (customer.users?.profile_picture) {
+                    const result = await ImageService.getPublicImageUrl(
+                        customer.users.profile_picture,
+                        "profileimages"
+                    );
+                    
+                    if (result.success && result.url) {
+                        profile_picture = result.url;
+                    }
+                }
+                    
+                return {
+                    ...customer,
+                    users: {
+                        ...customer.users,
+                        profile_picture, // always string
+                    },
+                };
+            })
+        );
+        
         //flatten data
-        return data.map(customer => {
+        return withAdjustedImages.map(customer => {
             const { users, ...restOfCustomer } = customer;
 
             return {
@@ -107,7 +134,7 @@ export const CustomerService = {
         return data;
     },
 
-    async updateCustomer({id, address, name }: CustomerUpdate): Promise<boolean> {
+    async updateCustomer({ id, address, name }: CustomerUpdate): Promise<boolean> {
         const { error } = await supabase
             .from('customers')
             .update({
@@ -120,5 +147,5 @@ export const CustomerService = {
             return false;
         }
         return true;
-    }
+    }, 
 }
