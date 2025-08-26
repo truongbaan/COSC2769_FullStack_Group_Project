@@ -922,7 +922,7 @@ Create a new product.
 **Request:** (multipart/ form-data)
 - `name`: string (required)
 - `price`: positive number (required)
-- `description`: string (required)
+- `description`: string (required) (less than 500 characters)
 - `category`: string (required)
 - `instock`: boolean (optional)
 - `image`: file (PNG/JPG) (required)
@@ -938,10 +938,10 @@ Create a new product.
             "vendor_id": "string",
             "name": "string",
             "price": number,
-            "description": "string",
+            "description": "string", //less than 500 characters
             "image": "string",
             "category": "string",
-            "instock": boolean
+            "instock": boolean //optional
       }
     }
   }
