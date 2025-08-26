@@ -1,5 +1,15 @@
-## Product Endpoints
+# Backend API Documentation
 
+## Table of Contents
+
+1. [Product Endpoints](#product-endpoints)
+2. [Order Endpoints](#order-endpoints)
+3. [Shopping Cart Endpoints](#shoppingcart-endpoints)
+
+## Product Endpoints
+- Base path: `/api/products`
+
+---
 ### GET /products
 Retrieve all available products with optional filters & pagination.
 
