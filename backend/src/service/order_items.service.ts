@@ -95,19 +95,24 @@ export const OrderItemService = {
     });
 
     // merge + build image_url
-    return (items as OrderItemRow[]).map((i) => {
-      const p = prodMap.get(i.product_id) ?? { name: "(unknown product)", image: null as string | null };
+     const results: OrderItemWithProduct[] = [];
+
+    for (const i of items as OrderItemRow[]) {
+      const p = prodMap.get(i.product_id) ?? {
+        name: "(unknown product)",
+        image: null as string | null,
+      };
 
       let image: string | null = null;
       if (p.image) {
-        const r = ImageService.getPublicImageUrl(p.image, IMAGE_BUCKET as any);
+        const r = await ImageService.getPublicImageUrl(p.image, IMAGE_BUCKET as any);
         image = r.success ? (r.url ?? null) : null;
       }
 
       const qty = Number(i.quantity ?? 0);
       const price = Number(i.price_at_order_time ?? 0);
 
-      return {
+      results.push({
         order_id: i.order_id,
         product_id: i.product_id,
         product_name: p.name,
@@ -115,7 +120,9 @@ export const OrderItemService = {
         price_at_order_time: price,
         total: qty * price,
         image,
-      };
-    });
+      });
+    }
+
+    return results;
   },
 };
