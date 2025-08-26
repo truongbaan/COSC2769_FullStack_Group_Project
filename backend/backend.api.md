@@ -27,9 +27,9 @@
 ### Products Endpoints
 * [GET /products](#get-apiproducts)
 * [GET /products/:productId](#get-apiproducts:productid)
-* [PATCH /products/:productId](#patch-apiporduct:productid)
+* [PATCH /products/:productId](#patch-apiproduct:productid)
 * [POST /products/](#post-apiproducts)
-* [POST /products/:id/addToCart](#post-porduct:idaddtocart)
+* [POST /products/:id/addToCart](#post-product:idaddtocart)
 ---
 ## Authentication Endpoints
 
@@ -872,7 +872,7 @@ none
 Retrieve a specific product by ID.
 
 **Authentication**: 
-- `Required`: (role: `customer`)
+- `Required`: (role: `customer`, `vendor`)
 
 **Path Parameters::**
 - `productId`: (string, required)
@@ -910,6 +910,7 @@ none
 ```
 **Notes:**
 - Image is returned as a public URL.
+- Vendor can only access the details of their own products.
 
 ---
 ### POST /products
