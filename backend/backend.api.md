@@ -1,3 +1,4 @@
+
 # API Endpoints
 
 ## Table Content
@@ -34,42 +35,33 @@
 
 ### POST /auth/login
 
-- Description: Authenticate user credentials and return user information with role-specific data.
+Authenticate user credentials and return user information with role-specific data.
 
-- **Request:**
+**Request:**
 
-  ```json
-  {
-    "email": "string", // valid email address
-    "password": "string" // 8-20 chars with upper, lower, digit, special (!@#$%^&*)
-  }
-  ```
+```json
+{
+  "email": "string", // valid email address
+  "password": "string" // 8-20 chars with upper, lower, digit, special (!@#$%^&*)
+}
+```
 
-- **Response:**
+**Response:**
 
-  ```json
-  {
-    "id": "string",
-    "username": "string",
-    "role": "customer" | "vendor" | "shipper",
-    "email": "string",
-    "profile_picture": "string" // could put directly in img tag to display image
-    "name": "string",           // optional, for customers
-    "address": "string",          // optional, for customers
-    "business_name": "string",   // optional, for vendors  
-    "business_address": "string", // optional, for vendors
-    "distributionHub": "string" // optional, for shippers
-  }
-  ```
-
-- **Error Response:**
-
-  ```json
-  {
-    "success": false,
-    "error": "string" // Error description
-  }
-  ```
+```json
+{
+  "id": "string",
+  "username": "string",
+  "role": "customer" | "vendor" | "shipper",
+  "email": "string",
+  "profile_picture": "string" // could put directly in img tag to display image
+  "name": "string",           // optional, for customers
+  "address": "string",          // optional, for customers
+  "business_name": "string",   // optional, for vendors  
+  "business_address": "string", // optional, for vendors
+  "distributionHub": "string" // optional, for shippers
+}
+```
 
 **Notes:**
 - Returns user data based on stored registration information
@@ -78,141 +70,140 @@
 - Customers get their name and address from registration
 
 ### POST /auth/register/customer
+Register a new customer account.
 
-- **Description**: Register a new customer account.
+**Request:**
 
-- **Request:**
+```json
+{
+  "email": "string", // valid email address
+  "username": "string", // 8-15 alphanumeric characters
+  "password": "string", // 8-20 chars with upper, lower, digit, special
+  "name": "string",
+  "address": "string"
+}
+```
 
-  ```json
-  {
-    "email": "string", // valid email address
-    "username": "string", // 8-15 alphanumeric characters
-    "password": "string", // 8-20 chars with upper, lower, digit, special
-    "name": "string",
-    "address": "string"
-  }
-  ```
+**Response:**
 
-- **Response:**
+```json
+{
+    "success": true,
+    "message": {
+        "data": {
+            "user": {
+                "username": "string",
+                "profile_picture": "",
+                "role": "customer",
+                "id": "string",
+                "password": "hash password(string)",
+                "email": "string",
+                "address": "string",
+                "name": "string"
+            }
+        }
+    }
+}
+```
 
-  ```json
-  {
-      "success": true,
-      "message": {
-          "data": {
-              "user": {
-                  "username": "string",
-                  "profile_picture": "",
-                  "role": "customer",
-                  "id": "string",
-                  "password": "hash password(string)",
-                  "email": "string",
-                  "address": "string",
-                  "name": "string"
-              }
-          }
-      }
-  }
-  ```
+**Error Response:**
 
-- **Error Response:**
-
-  ```json
-  {
-    "success": false,
-    "error": "string" // Error description
-  }
-  ```
+```json
+{
+  "success": false,
+  "error": "string" // Error description
+}
+```
 
 ### POST /auth/register/vendor
 
-- **Description**: Register a new vendor account.
+Register a new vendor account.
 
-- **Request:**
+**Request:**
 
-  ```json
-  {
-    "email": "string", // valid email address
-    "username": "string", // 8-15 alphanumeric characters
-    "password": "string", // 8-20 chars with upper, lower, digit, special
-    "business_name": "string",
-    "business_address": "string"
-  }
-  ```
+```json
+{
+  "email": "string", // valid email address
+  "username": "string", // 8-15 alphanumeric characters
+  "password": "string", // 8-20 chars with upper, lower, digit, special
+  "business_name": "string",
+  "business_address": "string"
+}
+```
 
-- **Response:**
+**Response:**
 
-  ```json
-  {
-      "success": true,
-      "message": {
-          "data": {
-              "user": {
-                  "username": "string",
-                  "profile_picture": "",
-                  "role": "vendor",
-                  "id": "string",
-                  "password": "hash password(string)",
-                  "email": "string",
-                  "business_name": "bisu name",
-                  "business_address": "address of the bisu"
-              }
-          }
-      }
-  }
-  ```
-- **Error Response:**
+```json
+{
+    "success": true,
+    "message": {
+        "data": {
+            "user": {
+                "username": "string",
+                "profile_picture": "",
+                "role": "vendor",
+                "id": "string",
+                "password": "hash password(string)",
+                "email": "string",
+                "business_name": "bisu name",
+                "business_address": "address of the bisu"
+            }
+        }
+    }
+}
+```
+**Error Response:**
 
-  ```json
-  {
-    "success": false,
-    "error": "string" // Error description
-  }
-  ```
+```json
+{
+  "success": false,
+  "error": "string" // Error description
+}
+```
 
 ### POST /auth/register/shipper
 
-- **Description**: Register a new shipper account with distribution hub selection.
+Register a new shipper account with distribution hub selection.
 
-- **Request:**
+**Request:**
 
-  ```json
-  {
-    "email": "string", // valid email address
-    "username": "string", // 8-15 alphanumeric characters
-    "password": "string", // 8-20 chars with upper, lower, digit, special
-    "hub_id": "string" // distribution hub id
-  }
-  ```
+```json
+{
+  "email": "string", // valid email address
+  "username": "string", // 8-15 alphanumeric characters
+  "password": "string", // 8-20 chars with upper, lower, digit, special
+  "hub_id": "string" // distribution hub id
+}
+```
 
-- **Response:**
+**Response:**
 
-  ```json
-  {
-      "success": true,
-      "message": {
-          "data": {
-              "user": {
-                  "username": "string",
-                  "profile_picture": "",
-                  "role": "vendor",
-                  "id": "string",
-                  "password": "hash password(string)",
-                  "email": "string",
-                  "hub_id": "dn_hub"
-              }
-          }
-      }
-  }
-  ```
-- **Error Response:**
+```json
+{
+    "success": true,
+    "message": {
+        "data": {
+            "user": {
+                "username": "string",
+                "profile_picture": "",
+                "role": "vendor",
+                "id": "string",
+                "password": "hash password(string)",
+                "email": "string",
+                "hub_id": "dn_hub"
+            }
+        }
+    }
+}
+```
+**Error Response:**
 
-  ```json
-  {
-    "success": false,
-    "error": "string" // Error description
-  }
-  ```
+```json
+{
+  "success": false,
+  "error": "string" // Error description
+}
+```
 
 ---
 
@@ -239,7 +230,7 @@
             "profile_picture": "string"
           }
         ],
-        "count": "number"//total retrieve
+        "count": "string"//total retrieve
     }
     ```
   - **Error Responses:**
@@ -359,76 +350,8 @@
     ```
 
 ---
-## Shippers Endpoints
 
-**GET /shippers**
-  - **Description:** Get a list of shippers based on optional query parameters.
-  - **Request:**
-    - **Query Parameters:**
-      - `limit`: `number` (optional, default -1, query full db) - Maximum number of users to return.
-      - `page`: `number` (optional, default -1) - Page number for pagination.
-  - **Response:**
-    ```json
-    {
-      "success": true,
-      "data": {
-        "users": [
-          {
-              "id": "string",
-              "hub_id": "string",
-              "email": "string",
-              "username": "string",
-              "profile_picture": "string"
-          }
-        ],
-        "count": "number"//total retrieve
-    }
-    ```
-  - **Error Responses:**
-    ```json
-    {
-      "success": false,
-      "error": "string" // Error description
-    }
-    ```
 
----
-
-## Vendors Endpoints
-
-**GET /vendors**
-  - **Description:** Get a list of vendors based on optional query parameters.
-  - **Request:**
-    - **Query Parameters:**
-      - `limit`: `number` (optional, default -1, query full db) - Maximum number of users to return.
-      - `page`: `number` (optional, default -1) - Page number for pagination.
-  - **Response:**
-    ```json
-    {
-      "success": true,
-      "data": {
-        "users": [
-          {
-              "id": "string",
-              "business_name": "string",
-              "business_address": "string",
-              "email": "string",
-              "username": "string",
-              "profile_picture": ""
-          }
-        ],
-        "count": "number"//total retrieve
-    }
-    ```
-  - **Error Responses:**
-    ```json
-    {
-      "success": false,
-      "error": "string" // Error description
-    }
-    ```
-
----
 
 ## Orders Endpoints
 **Authentication**: 
@@ -512,8 +435,6 @@
 ### [PATCH /api/orders/:id/status]
 **Function**: Change the order status
 - **Description:**: change the active order to delivered or canceled
- - **Path Parameter:**
-      - `id`: `string` (required) - The ID of order
   - **Request:**
     ```json
     {
@@ -582,8 +503,6 @@
 ### [GET /api/orders/:id/Items]
 **Function**: get all the order item list 
 - **Description:**: Receive all the order related to hubID by shipper
- - **Path Parameter:**
-      - `id`: `string` (required) - The ID of order.
   - **Request:**
     ```
     none
@@ -713,8 +632,6 @@
 ### [DELETE /removeItem/:id]
 **Function**: Remove product by id
 - **Description:**: remove the product in cart by product id
- - **Path Parameter:**
-      - `id`: `string` (required) - The ID of product
 - **Request:**
     ```
     none
@@ -764,9 +681,6 @@
 ### [POST /api/products/:id/addToCart]
 **Function**: add product to cart
 - **Description:**: add the product in cart by the product id
- - **Path Parameter:**
-      - `id`: `string` (required) - The ID of the product
-
 - **Request:**
     ```json
         {
@@ -1020,7 +934,7 @@ Create a new product.
 }
 ```
 **Notes:**`
-- If `instock` is not provided, it is set to `false` by default.
+- If `instock` is not provided, it is set to `true` by default.
 - Image is stored as path in a bucket on Supabase.
 
 ---

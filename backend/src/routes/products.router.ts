@@ -46,6 +46,7 @@ ProductRouter.get(
   getProductByIdController
 );
 
+// Create a product
 ProductRouter.post(
   "/",
   requireAuth("vendor"),
@@ -63,6 +64,7 @@ ProductRouter.post(
   addToCartController
 )
 
+// Update a product
 ProductRouter.patch(
   "/:productId",
   requireAuth("vendor"),
