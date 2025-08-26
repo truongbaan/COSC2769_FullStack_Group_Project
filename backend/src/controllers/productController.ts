@@ -7,8 +7,10 @@
 
 import * as z from "zod";
 import { Request, Response } from "express";
-import {ProductInsertNoId, ProductService } from "../service/products.service";
+import { ProductInsertNoId, ProductService } from "../service/products.service";
 import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes";
+import { ImageService } from "../service/image.service";
+import { supabase } from "../db/db";
 
 export const getProductsQuerySchema = z.object({
     page: z.coerce.number().min(1).default(1),
@@ -99,20 +101,30 @@ type CreateProductBodyType = z.output<typeof createProductBodySchema>;
 
 export const createProductBodySchema = z.object({
     name: z.string().trim().min(1, "Name is required"),
-    price: z.coerce.number().min(0),
+    price: z.coerce.number().min(0, "Price must be >= 0"),
     description: z.string().trim().min(1, "Description is required"),
-    image: z.string().trim(),
-    category: z.string().trim().min(1),
+    category: z.string().trim().min(1, "Category is required"),
     instock: z.coerce.boolean(),
 }).strict();
 
 export const createProductController = async (req: Request, res: Response) => {
     try {
         const vendorId = req.user_id;
-        //const body = createProductBodySchema.parse(req.body);
         const body = (req as unknown as Record<string, unknown> & { validatedbody: CreateProductBodyType }).validatedbody;
+        const file = req.file;
 
-        const payload: ProductInsertNoId = { vendor_id: vendorId, ...body };
+        if (!file) {
+            return res.status(400).json({ message: "Image file is required" });
+        }
+
+        const upload = await ImageService.uploadImage(file, "productimages");
+        if (!upload.success) {
+            return res.status(500).json({ message: upload.error });
+        }
+
+        const payload: ProductInsertNoId = {
+            vendor_id: vendorId, ...body, image: upload.url!,
+        };
 
         const created = await ProductService.createProduct(payload);
         if (!created)
@@ -123,6 +135,13 @@ export const createProductController = async (req: Request, res: Response) => {
         });
 
     } catch (err: any) {
+        if (err.name === "ZodError")
+            return res.status(400).json({
+                success: false,
+                message: "Please provide valid values for: "
+                    + err.errors.map((e: any) => e.path.join(".")).join(", ")
+            });
+
         console.error("createProductController error:", err);
         return ErrorJsonResponse(
             res, 500, err?.message ?? "Unexpected error while creating product"
@@ -133,7 +152,11 @@ export const createProductController = async (req: Request, res: Response) => {
 type UpdateProductBodyType = z.output<typeof updateProductStatusBodySchema>;
 
 export const updateProductStatusBodySchema = z.object({
-    instock: z.coerce.boolean(),
+    name: z.string().trim().min(1).max(150).optional(),
+    price: z.coerce.number().min(0).optional(),
+    category: z.string().trim().min(1).max(100).optional(),
+    description: z.string().trim().max(5000).optional(),
+    instock: z.coerce.boolean().optional(),
 }).strict();
 
 export const updateProductStatusController = async (req: Request, res: Response) => {
@@ -142,16 +165,38 @@ export const updateProductStatusController = async (req: Request, res: Response)
 
         //Destruct object to take values
         const { productId } = (req as unknown as Record<string, unknown> & { validatedparams: GetProductByIdParamsType }).validatedparams;
-        const { instock } = (req as unknown as Record<string, unknown> & { validatedbody: UpdateProductBodyType }).validatedbody;
+        const { name, price, category, description, instock } = (req as unknown as Record<string, unknown> & { validatedbody: UpdateProductBodyType }).validatedbody;
 
-        const updated = await ProductService.updateProductStatus(
+        let newImagePath: string | undefined;
+
+        if (req.file) {
+            const up = await ImageService.uploadImage(req.file, "productimages");
+            if (!up.success) return res.status(500).json({ message: up.error });
+            newImagePath = up.url!; // save as PATH
+        }
+
+        // (Optional) lấy product cũ để biết path ảnh hiện tại — dùng để delete sau khi update
+        const { data: oldRow } = await supabase
+            .from("products").select("image").eq("vendor_id", vendorId).eq("id", productId).maybeSingle();
+
+        const updated = await ProductService.updateProduct(
             vendorId,
             productId,
+            name,
+            price,
+            category,
+            description,
+            newImagePath,
             instock
         );
 
         if (!updated) {
             return res.status(404).json({ message: "Product not found or not owned by vendor" });
+        }
+
+        // Xoá ảnh cũ nếu có ảnh mới và ảnh cũ tồn tại
+        if (newImagePath && oldRow?.image && oldRow.image !== newImagePath) {
+            await ImageService.deleteImage(oldRow.image, "productimages");
         }
 
         return SuccessJsonResponse(res, 200, {

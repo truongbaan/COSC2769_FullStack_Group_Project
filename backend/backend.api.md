@@ -16,11 +16,14 @@
 ---
 ### Orders Endpoints
 * [GET /api/orders](#get-apiorders)
-* [PUT /api/orders/:id/status](#put-apiorders:idstatus)
+* [PATCH /api/orders/:id/status](#put-apiorders:idstatus)
+* [GET /api/orders/:id/Items]
 ---
 ### Shopping Carts Endpoints
 * [GET /api/cart](#get-apicart)
-* [DELETE /deleteItem/:id](#delete-deleteitem:id)
+* [DELETE /removeItem/:id](#delete-deleteitem:id)
+* [POST /api/products/:id/addToCart]
+* [POST /api/cart/checkout]
 ---
 ### Products Endpoints
 * [GET /api/products](#get-apiproducts)
@@ -356,85 +359,6 @@
     ```
 
 ---
-
-## Orders Endpoints
-
-#### `GET /api/orders`
-**Function**: Fetch all orders by hubID
-```typescript
-async (req: Request, res: Response) => {
-    const orders = await OrderService.getOrders({ page, size }, hubId);
-    //Returns all Orders relevant to hubID
-    return: id, customer_id, hub_id, status, total_price
-````
-
-#### `Put /api/orders/:id/status`
-
-**Function**: Change the order status active -> delivered or canceled
-
-```typescript
-async (req: Request, res: Response) => {
-   const updated = await OrderService.updateStatus(id, status, {
-      restrictHubId: shipper.hub_id
-    })
-    //Returns updateed status of order
-    return: return: id, customer_id, hub_id, updated status, total_price
-```
-
-## ShoppingCarts Endpoints
-
-#### `GET /api/cart`
-
-**Function**: Fetch all orders by hubID
-
-```typescript
-async (req: Request, res: Response) => {
-    const items = await ShoppingCartService.getCart({ page, size }, req.user_id)
-    //Returns all the product in shopping cart
-    return: id, customer_id, product_id, quantity
-```
-
-#### `Delete /deleteItem/:id`
-
-**Function**: delete product by id
-
-```typescript
-async function deleteCartItemByIdController(req: Request, res: Response) {
-    const deleted = await ShoppingCartService.deleteItemById(id, userId);
-    //Returns all the product in shopping cart
-    return: id, customer_id, product_id, quantity
-```
-
-## Products Endpoints
-
-#### `GET /api/products`
-
-**Function**: Fetch all products
-
-```typescript
-async (req: Request, res: Response) => {
-    const items = await ShoppingCartService.getCart({ page, size }, req.user_id)
-    //Returns all the products
-```
-
-#### `GET /api/products/:productId`
-
-**Function**: Fetch all products
-
-```typescript
-async (req: Request, res: Response) => {
-    const product = await ProductService.getProductById(productId);
-    //Returns single product object
-```
-
-#### `POST /api/products/:productId`
-
-**Function**: Create a new product
-
-```typescript
-async (req: Request, res: Response) => {
-    const created = await ProductService.createProduct(payload);
-```
 ## Shippers Endpoints
 
 **GET /shippers**
@@ -505,3 +429,647 @@ async (req: Request, res: Response) => {
     ```
 
 ---
+
+## Orders Endpoints
+**Authentication**: 
+- `Required`: (role: `shipper')
+
+
+### [GET /api/orders]
+**GET /api/orders**
+**Function**: Fetch all orders by hubID
+  - **Description:**: Receive all the order related to hubID by shipper
+  
+**Query Parameters (optional):**
+- `page`: number (default 1, min 1)
+- `size`: number (default 10, max 30)
+
+  - **Request:**
+    ```
+     none
+    ```
+  - **Response:**
+    ```json
+    {
+        "success": true,
+        "message": {
+            "data": {
+                "orders": [
+                    {
+                        "id": "string",
+                        "customer_id": "string",
+                        "hub_id": "string",
+                        "status": "active",
+                        "total_price": number
+                    }
+                ],
+                "count": number,
+                "page": number,
+                "size": number
+            }
+        }
+    }
+    ```
+  - **Error Responses:**
+    ```json
+    {
+    "success": false,
+    "message": "string" //error description
+    }
+
+    ```
+- **example**
+    ```json
+        {
+            "success": true,
+            "message": {
+                "data": {
+                    "orders": [
+                        {
+                            "id": "8e648b53-1aa2-48c7-bb09-72dc019a6fab",
+                            "customer_id": "398d0185-8e1e-4268-bf49-5f3a155e74d1",
+                            "hub_id": "hcm_hub",
+                            "status": "active",
+                            "total_price": 16301000
+                        },
+                        {
+                            "id": "7568be7c-22a7-4284-b9ad-3571e950f0c6",
+                            "customer_id": "398d0185-8e1e-4268-bf49-5f3a155e74d1",
+                            "hub_id": "hcm_hub",
+                            "status": "active",
+                            "total_price": 5050000
+                        }
+                    ],
+                    "count": 2,
+                    "page": 1,
+                    "size": 10
+                }
+        }
+    ```
+
+---
+
+### [PATCH /api/orders/:id/status]
+**Function**: Change the order status
+- **Description:**: change the active order to delivered or canceled
+ - **Path Parameter:**
+      - `id`: `string` (required) - The ID of order
+  - **Request:**
+    ```json
+    {
+	    "status": "delivered" | "canceled";
+    }
+    ```
+  - **Response:**
+    ```json
+    {
+        "success": true,
+        "message": {
+            "message": "string",
+            "data": {
+                "order": {
+                    "id": "string",
+                    "customer_id": "string",
+                    "hub_id": "string",
+                    "status": "string",
+                    "total_price": number
+                }
+            }
+        }
+    }
+
+    ```
+  - **Error Responses:**
+    ```json
+    {
+    "success": false,
+    "message": "string" //order not found
+    }
+
+    ```
+
+- **example**
+
+    **Request:**
+
+    ```json
+        {
+            "status": "delivered";
+        }
+    ```
+
+    **Response:**
+    ```json
+        {
+            "success": true,
+            "message": {
+                "message": "Order status updated",
+                "data": {
+                    "order": {
+                        "id": "8e648b53-1aa2-48c7-bb09-72dc019a6fab",
+                        "customer_id": "398d0185-8e1e-4268-bf49-5f3a155e74d1",
+                        "hub_id": "hcm_hub",
+                        "status": "delivered",
+                        "total_price": 16301000
+                    }
+                }
+            }
+        }
+    ```
+
+---
+
+### [GET /api/orders/:id/Items]
+**Function**: get all the order item list 
+- **Description:**: Receive all the order related to hubID by shipper
+ - **Path Parameter:**
+      - `id`: `string` (required) - The ID of order.
+  - **Request:**
+    ```
+    none
+    ```
+  - **Response:**
+    ```json
+    {
+        "success": true,
+        "message": {
+            "order_id": "string",
+            "customer": {
+                "name": "string",
+                "address": "string"
+            },
+            "items": [
+                {
+                    "order_id": "string",
+                    "product_id": "string",
+                    "product_name": "string",
+                    "quantity": number,
+                    "price_at_order_time": number,
+                    "total": number,
+                    "image": "string"
+                },
+                
+            ],
+            "count": 1
+        }
+    }
+
+    ```
+  - **Error Responses:**
+    ```json
+    {
+    "success": false,
+    "message": "string" //error description
+    }
+
+    ```
+---
+
+
+
+## ShoppingCarts Endpoints
+**Authentication**: 
+- `Required`: (role: `customer`)
+
+
+### [GET /api/cart]
+**Function**: Fetch all product in shopping cart
+- **Description:**: Receive all the product in shopping cart
+
+**Query Parameters (optional):**
+- `page`: number (default 1, min 1)
+- `size`: number (default 10, max 30)
+
+- **Request:**
+    ```
+    none
+    ```
+
+- **Response:**
+    ```json
+    {
+        "success": true,
+        "message": {
+            "items": [
+                {
+                    "id": "string",
+                    "product_id": "string",
+                    "name": "string",
+                    "quantity": number,
+                    "price": number,
+                    "subtotal": number,
+                    "image": "string"
+                },
+            ],
+            "count": number,
+            "page": number,
+            "size": number
+        }
+    }
+    ```
+- **Response:**
+    ```json
+    {
+        "success": false,
+        "message": "string" ////error description
+    }
+    ```
+
+- **example**
+    **response**: 
+    ```json
+            {
+                "success": true,
+                "message": {
+                    "items": [
+                        {
+                            "id": "5dcb1f2b-0a65-4ea3-99b8-814cdf0eb375",
+                            "product_id": "24ca7ecf-d618-4ac3-85c5-ea176cc66d8e",
+                            "name": "Luxury Smart Watch",
+                            "quantity": 2,
+                            "price": 2500000,
+                            "subtotal": 5000000,
+                            "image": "https://udgzhggwprkrqkmtthfi.supabase.co/storage/v1/object/public/productimages/luxurywatch.jpg"
+                        },
+                        {
+                            "id": "1bb58f32-95e9-447d-bf86-4e4bfaa8d985",
+                            "product_id": "lksdlfkjsalfdjkksdlj",
+                            "name": "condom",
+                            "quantity": 2,
+                            "price": 100000,
+                            "subtotal": 200000,
+                            "image": "https://udgzhggwprkrqkmtthfi.supabase.co/storage/v1/object/public/productimages/PinkKondom.jpg"
+                        }
+                    ],
+                    "count": 2,
+                    "page": 1,
+                    "size": 10
+                }
+            }
+    ```
+
+---
+
+### [DELETE /removeItem/:id]
+**Function**: Remove product by id
+- **Description:**: remove the product in cart by product id
+ - **Path Parameter:**
+      - `id`: `string` (required) - The ID of product
+- **Request:**
+    ```
+    none
+    ```
+- **Response:**
+```json
+    {
+        "success": true,
+        "message": {
+            "data": {
+                "removed": boolean,
+                "id": "string"
+            }
+        }
+    }
+```
+
+- **Error Responses:**
+    ```json
+    {
+        "success": false,
+        "message": "string" //error description
+    }
+
+    ```
+- **example**:
+    **Request:**
+    ```
+    none
+    ```
+
+    **Response:**
+```json
+    {
+        "success": true,
+        "message": {
+            "data": {
+                "removed": true,
+                "id": "24ca7ecf-d618-4ac3-85c5-ea176cc66d8e"
+            }
+        }
+    }
+```
+
+---
+
+### [POST /api/products/:id/addToCart]
+**Function**: add product to cart
+- **Description:**: add the product in cart by the product id
+ - **Path Parameter:**
+      - `id`: `string` (required) - The ID of the product
+
+- **Request:**
+    ```json
+        {
+            "quantity": number 
+        }
+    ```
+    **OR**
+    ```
+    none
+    ```
+- **Response:**
+```json
+    {
+        "success": true,
+        "message": {
+            "item": {
+                "id": "string",
+                "customer_id": "string",
+                "product_id": "string",
+                "quantity": number
+            }
+        }
+    }
+```
+
+- **Error Responses:**
+    ```json
+        {
+            "success": false,
+            "message": "string" //error description
+        }
+
+    ```
+**Notes:**
+- The request (JSON) can none or add the specific number of product want to add to cart
+
+- **example**:
+    **Request:**
+    ```json
+        {
+            "quantity": 500
+        }
+    ```
+
+    **Response:**
+    ```json
+            {
+                "success": true,
+                "message": {
+                    "item": {
+                        "id": "1bb58f32-95e9-447d-bf86-4e4bfaa8d985",
+                        "customer_id": "398d0185-8e1e-4268-bf49-5f3a155e74d1",
+                        "product_id": "lksdlfkjsalfdjkksdlj",
+                        "quantity": 704
+                    }
+                }
+            }
+    ```
+
+---
+
+### [POST /api/cart/checkout]
+**Function**: check out the product in shopping cart
+- **Description:**: caculate the total price of shopping cart, after checkout, remove the product in shopping cart, create an order with the order item list
+- **Request:**
+    ```
+    none
+    ```
+- **Response:**
+    ```json
+        {
+            "success": true,
+            "message": {
+                "message": "string",
+                "order": {
+                    "id": "string",
+                    "hub_id": "string",
+                    "status": "string",
+                    "total_price": number
+                }
+            }
+        }   
+    ```
+
+- **Error Responses:**
+    ```json
+        {
+            "success": false,
+            "message": "string" //error description
+        }
+
+    ```
+
+
+- **example**:
+    **Response:**
+    ```json
+            {
+                "success": true,
+                "message": {
+                    "message": "Checkout success",
+                    "order": {
+                        "id": "260267ce-2cb8-4117-a690-b3f8a059f547",
+                        "hub_id": "hcm_hub",
+                        "status": "active",
+                        "total_price": 100000
+                    }
+                }
+            }
+    ```
+---
+
+## Product Endpoints
+
+### GET /products
+Retrieve all available products with optional filters & pagination.
+
+**Authentication**: 
+- `Required`: (role: `customer`, `vendor`)
+  
+**Query Parameters (optional):**
+- `page`: number (default 1, min 1)
+- `size`: number (default 10, max 30)
+- `category`: string | number (optional)
+- `priceMin`: number (optional, min 0)
+- `priceMax`: number (optional, max 100000000)
+- `name`: string (optional, search by product name)
+  
+**Request:**
+```
+none
+```
+**Response:**
+```json
+{
+  "success": true,
+  "message": {
+    "data": {
+      "products": [
+        {
+            "id": "string",
+            "vendor_id": "string",
+            "name": "string",
+            "price": number,
+            "description": "string",
+            "image": "string",
+            "category": "string",
+            "instock": boolean
+        }
+      ],
+      "totalCount": 2
+    }
+  }
+}
+```
+**Error Response:**
+```json
+{
+  "success": false,
+  "error": "string" // Error description
+}
+```
+**Notes:**
+- PriceMax needs to be larger than PriceMin.
+- Image is returned as a public URL.
+
+---
+### GET /products/:productId
+Retrieve a specific product by ID.
+
+**Authentication**: 
+- `Required`: (role: `customer`)
+
+**Path Parameters::**
+- `productId`: (string, required)
+
+**Request:**
+```
+none
+```
+**Response:**
+```json
+{
+  "success": true,
+  "message": {
+    "data": {
+      "product": {
+            "id": "string",
+            "vendor_id": "string",
+            "name": "string",
+            "price": number,
+            "description": "string",
+            "image": "string",
+            "category": "string",
+            "instock": boolean
+      }
+    }
+  }
+}
+```
+**Error Response:**
+```json
+{
+  "success": false,
+  "error": "string" // Error description
+}
+```
+**Notes:**
+- Image is returned as a public URL.
+
+---
+### POST /products
+Create a new product. 
+
+**Authentication**: 
+- Required (role: `customer`)
+
+**Request:** (multipart/ form-data)
+- `name`: string (required)
+- `price`: positive number (required)
+- `description`: string (required)
+- `category`: string (required)
+- `instock`: boolean (optional)
+- `image`: file (PNG/JPG) (required)
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": {
+    "data": {
+      "product": {
+            "id": "string",
+            "vendor_id": "string",
+            "name": "string",
+            "price": number,
+            "description": "string",
+            "image": "string",
+            "category": "string",
+            "instock": boolean
+      }
+    }
+  }
+}
+```
+**Error Response:**
+```json
+{
+  "success": false,
+  "error": "string" // Error description
+}
+```
+**Notes:**`
+- If `instock` is not provided, it is set to `false` by default.
+- Image is stored as path in a bucket on Supabase.
+
+---
+### PATCH /products/:productId
+Update an existing product.
+
+**Authentication**: 
+Required (role: `vendor`)
+
+**Path Parameters::**
+- `productId`: (string, required)
+
+**Request:** (multipart/ form-data or JSON)
+    
+Any subset of:
+- `name`: string (optional)
+- `price`: positive number (optional)
+- `description`: string (optional)
+- `category`: string (optional)
+- `instock`: boolean (optional)
+- `image`: file (PNG/JPG) (optional)
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": {
+    "message": "Update Status Success",
+    "product": {
+            "id": "string",
+            "vendor_id": "string",
+            "name": "string",
+            "price": number,
+            "description": "string",
+            "image": "string",
+            "category": "string",
+            "instock": boolean
+    }
+  }
+}
+```
+**Error Response:**
+```json
+{
+  "success": false,
+  "error": "string" // Error description
+}
+```
+**Notes:**`
+- Image is stored as path.
+---
+

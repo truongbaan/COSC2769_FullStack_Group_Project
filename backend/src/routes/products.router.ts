@@ -7,9 +7,10 @@
 */
 
 import { Router } from "express";
+import multer from "multer";
 import { requireAuth } from "../middleware/requireAuth";
 import { validationMiddleware } from "../middleware/validation.middleware";
-import { addToCartBodySchema, addToCartController } from "../controllers/shoppingCartController";
+import { addToCartBody, addToCartController, addToCartParams } from "../controllers/shoppingCartController";
 
 import {
   createProductBodySchema,
@@ -19,12 +20,13 @@ import {
 
 import {
   createProductController,
-  // deleteProductController,
   getProductByIdController,
   getProductByIdParamsSchema,
   updateProductStatusBodySchema,
   updateProductStatusController,
 } from "../controllers/productController";
+
+const upload = multer();
 
 const ProductRouter = Router();
 
@@ -47,6 +49,7 @@ ProductRouter.get(
 ProductRouter.post(
   "/",
   requireAuth("vendor"),
+  upload.single("image"),
   validationMiddleware(createProductBodySchema, "body"),
   createProductController
 );
@@ -55,24 +58,18 @@ ProductRouter.post(
 ProductRouter.post(
   "/:productId/addToCart",
   requireAuth("customer"),
-  validationMiddleware(addToCartBodySchema, "body"),
+  validationMiddleware(addToCartBody, "body"),
+  validationMiddleware(addToCartParams, "params"),
   addToCartController
 )
 
 ProductRouter.patch(
-  "/:productId/instock",
+  "/:productId",
   requireAuth("vendor"),
+  upload.single("image"),
   validationMiddleware(getProductByIdParamsSchema, "params"),
   validationMiddleware(updateProductStatusBodySchema, "body"),
   updateProductStatusController
 );
-
-// // Vendor delete a product 
-// ProductRouter.delete(
-//   "/:productId",
-//   requireAuth("vendor"),
-//   validationMiddleware(getProductByIdParamsSchema, "params"),
-//   deleteProductController
-// );
 
 export default ProductRouter;

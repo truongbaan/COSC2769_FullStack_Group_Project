@@ -84,6 +84,24 @@ export const OrderService = {
       throw new Error("NOT_FOUND");
     }
 
+  const { data: order, error: readErr } = await supabase
+    .from("orders")
+    .select("id,status,hub_id")
+    .eq("id", orderId)
+    .eq("hub_id", hubId)
+    .maybeSingle();
+
+  if (readErr) {
+    console.error("READ_ORDER_ERROR:", readErr);
+    throw new Error("DB_READ_FAILED");
+  }
+  if (!order) throw new Error("NOT_FOUND");
+
+  // 3) Nếu order đã finalize thì trả 409 ở controller
+  if (order.status !== "active") {
+    throw new Error("ALREADY_FINALIZED");
+  }
+
     const { data, error: updErr } = await supabase
       .from('orders')
       .update({ status: nextStatus })
@@ -93,15 +111,10 @@ export const OrderService = {
       .select()
       .maybeSingle();
   
+    
     if (updErr) {
       console.error("UPDATE_ERROR:", updErr); //Debugging purpose
       throw new Error("DB_WRITE_FAILED");
-    }
-
-    if (!data) {
-      // Can not find an order with the given hub id and order id and status active
-      console.warn(`NOT FOUND: Can not find the order with id ${orderId}, hubId ${hubId} and status active`);
-      throw new Error("NOT_FOUND");
     }
 
     return data as Order;

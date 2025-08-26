@@ -7,28 +7,34 @@
 
 import { z } from "zod"
 import { type Request, type Response } from "express"
-import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes"
 import { OrderItemService } from "../service/order_items.service"
+import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes"
 
 export const getOrderItemsParamsSchema = z.object({
-  id: z.string().min(1),
-})
-
-type getOrderItemsParamsType = z.output<typeof getOrderItemsParamsSchema>;
+  id: z.string().min(1), // order_id
+});
+type GetParams = z.infer<typeof getOrderItemsParamsSchema>;
 
 export async function getOrderItemsController(req: Request, res: Response) {
   try {
-    const { id } = (req as unknown as Record<string, unknown> & { validatedparams: getOrderItemsParamsType }).validatedparams;
+    const { id } = (req as unknown as { validatedparams: GetParams }).validatedparams;
 
-    const items = await OrderItemService.getByOrderId(id)
-    const customerInfo = await OrderItemService.getCustomerNameAndAddressByOrderId(id)
-    const customerName = customerInfo.length > 0 ? customerInfo[0].name : "(unknown customer)";
-    const customerAddress = customerInfo.length > 0 ? customerInfo[0].address : "(unknown address)";
+    const shipperId = req.user_id
+    const [items, customer] = await Promise.all([
+      OrderItemService.getItemsByOrderId(id, shipperId),
+      OrderItemService.getCustomerNameAndAddressByOrderId(id),
+    ]);
 
+    if (items === null) return ErrorJsonResponse(res, 404, "Order not found");
 
-    return SuccessJsonResponse(res, 200, { order_id: id, customerName, customerAddress, items })
+    return SuccessJsonResponse(res, 200, {
+      order_id: id,
+      customer,           
+      items,               
+      count: items.length,
+    });
   } catch (e) {
-    console.error(e)
-    return ErrorJsonResponse(res, 500, "Failed to load order items")
+    console.error(e);
+    return ErrorJsonResponse(res, 500, "Failed to load order items");
   }
 }

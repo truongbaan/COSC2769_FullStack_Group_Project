@@ -10,6 +10,7 @@ import { supabase, Database } from "../db/db";
 import { createProductBodySchema } from "../controllers/productController";
 
 import generateUUID from "../utils/generator";
+import { ImageService } from "./image.service";
 
 //Use "Row" to return data
 export type ProductRow = Database["public"]["Tables"]["products"]["Row"];
@@ -18,9 +19,6 @@ export type ProductRow = Database["public"]["Tables"]["products"]["Row"];
 export type ProductInsert = Database["public"]["Tables"]["products"]["Insert"];
 
 export type ProductInsertNoId = Omit<ProductInsert, "id">;
-
-export type CreateProductInput = z.infer<typeof createProductBodySchema>;
-
 
 export type ProductsFilters = {
   category?: string;
@@ -71,11 +69,13 @@ export const ProductService = {
     }
     console.log(data);
 
-    if (!data) {
-      return null; // explicitly return null to trigger 404 in route
-      // return [];
-    }
-    return data;
+    if (!data) return null;
+
+    (data as Array<{ image: string | null }>).forEach((r) => {
+      if (!r.image) { r.image = null; return; }
+      const { url } = ImageService.getPublicImageUrl(r.image, "productimages");
+      r.image = url ?? null;
+    }); return data;
   },
 
   //Get Product By Id
@@ -93,7 +93,15 @@ export const ProductService = {
       throw error;
     }
 
-    return data || null;
+    if (!data) return null;
+
+    let imageUrl: string | null = null;
+    if (data.image) {
+      const res = ImageService.getPublicImageUrl(data.image, "productimages");
+      imageUrl = res?.success ? res.url ?? null : null;
+    }
+
+    return { ...data, image: imageUrl };
   },
 
   async createProduct(product: ProductInsertNoId): Promise<ProductRow | null> {
@@ -131,17 +139,42 @@ export const ProductService = {
     }
     console.log(data);
 
-    if (!data) {
-      return null; // explicitly return null to trigger 404 in route
-      // return [];
-    }
+    if (!data) return null;
+
+    (data as Array<{ image: string | null }>).forEach((r) => {
+      if (!r.image) { r.image = null; return; }
+      const { url } = ImageService.getPublicImageUrl(r.image, "productimages");
+      r.image = url ?? null;
+    });
     return data;
   },
 
-  async updateProductStatus(vendorId: string, productId: string, instock: boolean) {
+  async updateProduct(
+    vendorId: string,
+    productId: string,
+    name?: string,
+    price?: number,
+    category?: string,
+    description?: string,
+    imagePath?: string,
+    instock?: boolean,
+  ) {
+
+    const toUpdate: Record<string, any> = {};
+
+    if (name !== undefined) toUpdate.name = name;
+    if (price !== undefined) toUpdate.price = price;
+    if (category !== undefined) toUpdate.category = category;
+    if (description !== undefined) toUpdate.description = description;
+    if (typeof instock === "boolean") toUpdate.instock = instock;
+    if (imagePath) toUpdate.image = imagePath;
+
+    // Update nothing
+    if (Object.keys(toUpdate).length === 0) return null;
+
     const query = supabase
       .from("products")
-      .update({ instock })
+      .update(toUpdate)
       .eq("vendor_id", vendorId)
       .eq("id", productId)
       .select("*")
