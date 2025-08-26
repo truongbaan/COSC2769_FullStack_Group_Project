@@ -7,7 +7,7 @@
 3. [Shopping Cart Endpoints](#shoppingcart-endpoints)
 
 ## Product Endpoints
----
+
 ### GET /products
 Retrieve all available products with optional filters & pagination.
 
