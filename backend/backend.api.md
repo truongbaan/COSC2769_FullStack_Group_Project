@@ -27,7 +27,8 @@
 ### Products Endpoints
 * [GET /products](#get-apiproducts)
 * [GET /products/:productId](#get-apiproducts:productid)
-* [POST /products/:productId](#post-apiproducts:productid)
+* [PATCH /products/:productId](#patch-apiporduct:productid)
+* [POST /products/](#post-apiproducts)
 * [POST /products/:id/addToCart](#post-porduct:idaddtocart)
 ---
 ## Authentication Endpoints
