@@ -32,13 +32,6 @@ export type Pagination = {
   size: number;
 }
 
-const toUrl = (path?: string | null) => {
-  if (!path) return null;
-  // nếu đã là full URL thì trả luôn
-  if (/^https?:\/\//i.test(path)) return path;
-  return ImageService.getPublicImageUrl(path, "productimages").url ?? null;
-};
-
 export const ProductService = {
   async getCustomerProducts(
     { page, size }: Pagination,
@@ -78,8 +71,11 @@ export const ProductService = {
 
     if (!data) return null;
 
-    data.forEach(r => (r as any).image = toUrl((r as any).image));
-    return data;
+    (data as Array<{ image: string | null }>).forEach((r) => {
+      if (!r.image) { r.image = null; return; }
+      const { url } = ImageService.getPublicImageUrl(r.image, "productimages");
+      r.image = url ?? null;
+    }); return data;
   },
 
   //Get Product By Id
@@ -99,8 +95,11 @@ export const ProductService = {
 
     if (!data) return null;
 
-    (data as any).image = toUrl((data as any).image);
-    return data;
+    (data as Array<{ image: string | null }>).forEach((r) => {
+      if (!r.image) { r.image = null; return; }
+      const { url } = ImageService.getPublicImageUrl(r.image, "productimages");
+      r.image = url ?? null;
+    }); return data;
   },
 
   async createProduct(product: ProductInsertNoId): Promise<ProductRow | null> {
@@ -140,8 +139,11 @@ export const ProductService = {
 
     if (!data) return null;
 
-    data.forEach(r => (r as any).image = toUrl((r as any).image));
-
+    (data as Array<{ image: string | null }>).forEach((r) => {
+      if (!r.image) { r.image = null; return; }
+      const { url } = ImageService.getPublicImageUrl(r.image, "productimages");
+      r.image = url ?? null;
+    });
     return data;
   },
 
