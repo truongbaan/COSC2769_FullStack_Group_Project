@@ -7,8 +7,6 @@
 3. [Shopping Cart Endpoints](#shoppingcart-endpoints)
 
 ## Product Endpoints
-- Base path: `/api/products`
-
 ---
 ### GET /products
 Retrieve all available products with optional filters & pagination.
@@ -88,7 +86,7 @@ none
             "name": "string",
             "price": number,
             "description": "string",
-            "image": "string", // public URL
+            "image": "string",
             "category": "string",
             "instock": boolean
       }
@@ -97,7 +95,6 @@ none
   }
 }
 ```
-Error Response (404):
 **Error Response:**
 ```json
 {
@@ -106,7 +103,7 @@ Error Response (404):
 }
 ```
 **Notes:**
-- Image is returned as a public URL (Supabase Storage).
+- Image is returned as a public URL.
 
 ---
 ### POST /products
