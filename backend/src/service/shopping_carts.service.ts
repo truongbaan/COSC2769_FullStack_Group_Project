@@ -118,7 +118,7 @@ export const ShoppingCartService = {
     productId: string,
     quantity = 1
   ): Promise<CartRow> {
-    // 1) Kiểm tra product còn hàng
+    // check product instock
     const { data: product, error: pErr } = await supabase
       .from("products")
       .select("id, instock")
@@ -128,7 +128,7 @@ export const ShoppingCartService = {
     if (pErr) throw new Error("DB_READ_FAILED");
     if (!product)  throw new HttpError(404, "PRODUCT_NOT_FOUND_OR_OUT_OF_STOCK");
 
-    // 2) Tìm item đã có trong giỏ
+    // 2) find the product in cart
     const { data: existing, error: shoppingError } = await supabase
       .from("shopping_carts")
       .select("*")
@@ -137,7 +137,7 @@ export const ShoppingCartService = {
       .maybeSingle();
     if (shoppingError) throw shoppingError;
 
-    // 3) Update hoặc Insert
+    // update or insert the quantity
     if (existing) {
       const { data, error } = await supabase
         .from("shopping_carts")

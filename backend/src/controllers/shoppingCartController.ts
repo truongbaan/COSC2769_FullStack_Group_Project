@@ -66,10 +66,10 @@ export async function removeCartItemByIdController(req: Request, res: Response) 
 }
 
 export const addToCartParams = z.object({
-  productId: z.string().min(1),           // hoặc .uuid() nếu product dùng uuid
+  productId: z.string().min(1),           
 }).strict();
 
-// body: có thể bỏ trống, quantity mặc định = 1
+
 export const addToCartBody = z.object({
   quantity: z.coerce.number().int().min(1).default(1),
 }).default({ quantity: 1 });
