@@ -32,7 +32,7 @@ apiRouter.use('/vendors', requireAuth(), VendorRouter)
 
 apiRouter.use('/shippers', requireAuth(), ShipperRouter)
 
-apiRouter.use("/products", requireAuth(["vendor", "customer"]), ProductRouter);
+apiRouter.use("/products", ProductRouter);
 
 apiRouter.use("/distribution-hubs", requireAuth(), DistributionHubRouter);
 

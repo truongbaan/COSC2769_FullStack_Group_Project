@@ -26,10 +26,11 @@
 ---
 ### Products Endpoints
 * [GET /products](#get-apiproducts)
+* [GET /products/vendorProducts](#get-apiproducts-vendorproducts)
 * [GET /products/:productId](#get-apiproducts:productid)
-* [PATCH /products/:productId](#patch-apiporduct:productid)
+* [PATCH /products/:productId](#patch-apiproduct:productid)
 * [POST /products/](#post-apiproducts)
-* [POST /products/:id/addToCart](#post-porduct:idaddtocart)
+* [POST /products/:id/addToCart](#post-product:idaddtocart)
 ---
 ## Authentication Endpoints
 
@@ -819,7 +820,7 @@
 Retrieve all available products with optional filters & pagination.
 
 **Authentication**: 
-- `Required`: (role: `customer`, `vendor`)
+- `Required`: (role: `none`)
   
 **Query Parameters (optional):**
 - `page`: number (default 1, min 1)
@@ -851,7 +852,60 @@ none
             "instock": boolean
         }
       ],
-      "totalCount": 2
+      "totalCount": number
+    }
+  }
+}
+```
+**Error Response:**
+```json
+{
+  "success": false,
+  "error": "string" // Error description
+}
+```
+**Notes:**
+- PriceMax needs to be larger than PriceMin.
+- Image is returned as a public URL.
+
+---
+### GET /products/vendorProducts
+Retrieve existing available products of a vendor with filters & pagination.
+
+**Authentication**: 
+- `Required`: (role: `vendor`)
+  
+**Query Parameters (optional):**
+- `page`: number (default 1, min 1)
+- `size`: number (default 10, max 30)
+- `category`: string | number (optional)
+- `priceMin`: number (optional, min 0)
+- `priceMax`: number (optional, max 100000000)
+- `name`: string (optional, search by product name)
+  
+**Request:**
+```
+none
+```
+**Response:**
+```json
+{
+  "success": true,
+  "message": {
+    "data": {
+      "products": [
+        {
+            "id": "string",
+            "vendor_id": "string",
+            "name": "string",
+            "price": number,
+            "description": "string",
+            "image": "string",
+            "category": "string",
+            "instock": boolean
+        }
+      ],
+      "totalCount": number
     }
   }
 }
@@ -872,7 +926,7 @@ none
 Retrieve a specific product by ID.
 
 **Authentication**: 
-- `Required`: (role: `customer`)
+- `Required`: (role: `customer`, `vendor`)
 
 **Path Parameters::**
 - `productId`: (string, required)
@@ -910,6 +964,7 @@ none
 ```
 **Notes:**
 - Image is returned as a public URL.
+- Vendor can only access the details of their own products.
 
 ---
 ### POST /products
@@ -921,7 +976,7 @@ Create a new product.
 **Request:** (multipart/ form-data)
 - `name`: string (required)
 - `price`: positive number (required)
-- `description`: string (required)
+- `description`: string (required) (less than 500 characters)
 - `category`: string (required)
 - `instock`: boolean (optional)
 - `image`: file (PNG/JPG) (required)
@@ -937,10 +992,10 @@ Create a new product.
             "vendor_id": "string",
             "name": "string",
             "price": number,
-            "description": "string",
+            "description": "string", //less than 500 characters
             "image": "string",
             "category": "string",
-            "instock": boolean
+            "instock": boolean //optional
       }
     }
   }
@@ -989,9 +1044,9 @@ Any subset of:
             "name": "string",
             "price": number,
             "description": "string",
-            "image": "string",
+            "image": "string", //must use form-data
             "category": "string",
-            "instock": boolean
+            "instock": boolean //must use JSON
     }
   }
 }
@@ -1004,8 +1059,10 @@ Any subset of:
 }
 ```
 **Notes:**`
+- At least 1 field must be updated.
 - Image is stored as path.
-- If updating image, `form-data` is `required`. Otherwise, either `form-data` or `JSON` works.
+- If updating an image, `form-data` is `required`. Otherwise, either `form-data` or `JSON` works.
+- If updating instock status, must use JSON.
 ---
 
 ---

@@ -78,17 +78,72 @@ export const ProductService = {
       const { url } = await ImageService.getPublicImageUrl(r.image, "productimages");
       r.image = url ?? null;
     }
-    
+
+    return data;
+  },
+
+  async getVendorProducts({ page, size }: Pagination, vendorId: string, filters?: ProductsFilters): Promise<ProductRow[] | null> {
+    const offset = (page - 1) * size;
+
+    const query = supabase
+      .from("products")
+      .select("*")
+      .eq("vendor_id", vendorId)
+      .range(offset, offset + size - 1)
+      .order("id", { ascending: false });
+
+    if (filters?.category) {
+      query.eq('category', filters?.category); // WHERE category = {category}
+    }
+
+    if (filters?.priceMin !== undefined) { //no skip 0
+      query.gte('price', filters?.priceMin); // WHERE price >= {min}
+    }
+
+    if (filters?.priceMax !== undefined) { //no skip 0
+      query.lte('price', filters?.priceMax); // WHERE price <= {max}
+    }
+
+    if (filters?.name) {
+      query.eq('name', filters?.name); // WHERE name = {name}
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error("Error fetching product:", error);
+      throw error;
+    }
+    console.log(data);
+
+    if (!data) return null;
+
+    for (const r of data as Array<{ image: string | null }>) {
+      if (!r.image) {
+        r.image = null;
+        continue;
+      }
+
+      const { url } = await ImageService.getPublicImageUrl(r.image, "productimages");
+      r.image = url ?? null;
+    }
+
     return data;
   },
 
   //Get Product By Id
-  async getProductById(id: string): Promise<ProductRow | null> {
-    const { data, error } = await supabase
+  async getProductById(id: string, opts?: { vendorId?: string }): Promise<ProductRow | null> {
+    let query = supabase
       .from("products")
       .select("*")
-      .eq("id", id)
-      .maybeSingle();
+      .eq("id", id);
+
+    if (opts?.vendorId) {
+      // Chỉ áp cho vendor: giới hạn về sản phẩm của chính họ
+      query = query.eq("vendor_id", opts.vendorId);
+    }
+
+    const { data, error } = await query.maybeSingle();
 
     console.log("data", data);
 
@@ -125,38 +180,7 @@ export const ProductService = {
     return data;
   },
 
-  async getVendorProducts({ page, size }: Pagination, vendorId: string,): Promise<ProductRow[] | null> {
-    const offset = (page - 1) * size;
 
-    const query = supabase
-      .from("products")
-      .select("*")
-      .eq("vendor_id", vendorId)
-      .range(offset, offset + size - 1)
-      .order("id", { ascending: false });
-
-    const { data, error } = await query;
-
-    if (error) {
-      console.error("Error fetching product:", error);
-      throw error;
-    }
-    console.log(data);
-
-    if (!data) return null;
-
-    for (const r of data as Array<{ image: string | null }>) {
-      if (!r.image) {
-        r.image = null;
-        continue;
-      }
-
-      const { url } = await ImageService.getPublicImageUrl(r.image, "productimages");
-      r.image = url ?? null;
-    }
-
-    return data;
-  },
 
   async updateProduct(
     vendorId: string,
@@ -178,9 +202,6 @@ export const ProductService = {
     if (typeof instock === "boolean") toUpdate.instock = instock;
     if (imagePath) toUpdate.image = imagePath;
 
-    // Update nothing
-    if (Object.keys(toUpdate).length === 0) return null;
-
     const query = supabase
       .from("products")
       .update(toUpdate)
@@ -197,10 +218,7 @@ export const ProductService = {
     }
     console.log(data);
 
-    if (!data) {
-      return null; // explicitly return null to trigger 404 in route
-      // return [];
-    }
+    if (!data) { return null; }
     return data;
   },
 };
