@@ -5,9 +5,11 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useNavigate,
 } from "react-router";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
+import { useEffect } from "react";
 
 import type { Route } from "./+types/root";
 import "./app.css";
@@ -15,6 +17,12 @@ import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
 import { Toaster } from "~/components/ui/sonner";
 import { store, persistor } from "./lib/redux/store";
+import { useAuth } from "./lib/auth";
+import {
+  setGlobalLogoutHandler,
+  clearGlobalLogoutHandler,
+  logoutApi,
+} from "./lib/api";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -48,17 +56,48 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
+// Inner component that has access to Redux store
+function AppContent() {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Set up global logout handler for automatic token expiration logout
+    const handleGlobalLogout = async () => {
+      try {
+        await logoutApi();
+      } catch (e) {
+        // Ignore API failure; still clear local state to protect UX/security
+      } finally {
+        logout();
+        navigate("/");
+      }
+    };
+
+    setGlobalLogoutHandler(handleGlobalLogout);
+
+    // Cleanup on unmount
+    return () => {
+      clearGlobalLogoutHandler();
+    };
+  }, [logout, navigate]);
+
+  return (
+    <div className='min-h-screen flex flex-col'>
+      <Header />
+      <main className='flex-1'>
+        <Outlet />
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
 export default function App() {
   return (
     <Provider store={store}>
       <PersistGate loading={<div>Loading...</div>} persistor={persistor}>
-        <div className='min-h-screen flex flex-col'>
-          <Header />
-          <main className='flex-1'>
-            <Outlet />
-          </main>
-          <Footer />
-        </div>
+        <AppContent />
       </PersistGate>
     </Provider>
   );

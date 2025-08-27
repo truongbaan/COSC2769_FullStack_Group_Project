@@ -21,6 +21,17 @@ import {
   cartSyncResponseSchema,
 } from "~/lib/validators";
 
+// Global logout handler - will be set by the app root component
+let globalLogoutHandler: (() => void) | null = null;
+
+export function setGlobalLogoutHandler(handler: () => void) {
+  globalLogoutHandler = handler;
+}
+
+export function clearGlobalLogoutHandler() {
+  globalLogoutHandler = null;
+}
+
 // Mock cart storage (in a real app, this would be in a database)
 const mockCartStorage = new Map<string, any[]>();
 
@@ -65,6 +76,13 @@ async function request<T>(
   });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
+
+    // Handle 401 Unauthorized - token expired
+    if (res.status === 401 && globalLogoutHandler) {
+      // Call the global logout handler to logout user and redirect
+      globalLogoutHandler();
+    }
+
     throw new Error(`API ${res.status}: ${text || res.statusText}`);
   }
   const data = await res.json();
