@@ -26,6 +26,7 @@
 ---
 ### Products Endpoints
 * [GET /products](#get-apiproducts)
+* [GET /products/vendorProducts](#get-apiproducts-vendorproducts)
 * [GET /products/:productId](#get-apiproducts:productid)
 * [PATCH /products/:productId](#patch-apiproduct:productid)
 * [POST /products/](#post-apiproducts)
@@ -820,6 +821,59 @@ Retrieve all available products with optional filters & pagination.
 
 **Authentication**: 
 - `Required`: (role: `customer`, `vendor`)
+  
+**Query Parameters (optional):**
+- `page`: number (default 1, min 1)
+- `size`: number (default 10, max 30)
+- `category`: string | number (optional)
+- `priceMin`: number (optional, min 0)
+- `priceMax`: number (optional, max 100000000)
+- `name`: string (optional, search by product name)
+  
+**Request:**
+```
+none
+```
+**Response:**
+```json
+{
+  "success": true,
+  "message": {
+    "data": {
+      "products": [
+        {
+            "id": "string",
+            "vendor_id": "string",
+            "name": "string",
+            "price": number,
+            "description": "string",
+            "image": "string",
+            "category": "string",
+            "instock": boolean
+        }
+      ],
+      "totalCount": 2
+    }
+  }
+}
+```
+**Error Response:**
+```json
+{
+  "success": false,
+  "error": "string" // Error description
+}
+```
+**Notes:**
+- PriceMax needs to be larger than PriceMin.
+- Image is returned as a public URL.
+
+---
+### GET /products/vendorProducts
+Retrieve existing available products of a vendor with filters & pagination.
+
+**Authentication**: 
+- `Required`: (role: `vendor`)
   
 **Query Parameters (optional):**
 - `page`: number (default 1, min 1)
