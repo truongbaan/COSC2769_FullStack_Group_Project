@@ -1005,6 +1005,7 @@ Any subset of:
 }
 ```
 **Notes:**`
+- At least 1 field must be updated.
 - Image is stored as path.
 - If updating an image, `form-data` is `required`. Otherwise, either `form-data` or `JSON` works.
 - If updating instock status, must use JSON.
