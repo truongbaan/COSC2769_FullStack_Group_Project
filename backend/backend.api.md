@@ -922,7 +922,7 @@ Create a new product.
 **Request:** (multipart/ form-data)
 - `name`: string (required)
 - `price`: positive number (required)
-- `description`: string (required)
+- `description`: string (required) (less than 500 characters)
 - `category`: string (required)
 - `instock`: boolean (optional)
 - `image`: file (PNG/JPG) (required)
@@ -938,10 +938,10 @@ Create a new product.
             "vendor_id": "string",
             "name": "string",
             "price": number,
-            "description": "string",
+            "description": "string", //less than 500 characters
             "image": "string",
             "category": "string",
-            "instock": boolean
+            "instock": boolean //optional
       }
     }
   }
@@ -990,9 +990,9 @@ Any subset of:
             "name": "string",
             "price": number,
             "description": "string",
-            "image": "string",
+            "image": "string", //must use form-data
             "category": "string",
-            "instock": boolean
+            "instock": boolean //must use JSON
     }
   }
 }
@@ -1006,7 +1006,8 @@ Any subset of:
 ```
 **Notes:**`
 - Image is stored as path.
-- If updating image, `form-data` is `required`. Otherwise, either `form-data` or `JSON` works.
+- If updating an image, `form-data` is `required`. Otherwise, either `form-data` or `JSON` works.
+- If updating instock status, must use JSON.
 ---
 
 ---
