@@ -820,7 +820,7 @@
 Retrieve all available products with optional filters & pagination.
 
 **Authentication**: 
-- `Required`: (role: `customer`, `vendor`)
+- `Required`: (role: `none`)
   
 **Query Parameters (optional):**
 - `page`: number (default 1, min 1)
@@ -852,7 +852,7 @@ none
             "instock": boolean
         }
       ],
-      "totalCount": 2
+      "totalCount": number
     }
   }
 }
@@ -905,7 +905,7 @@ none
             "instock": boolean
         }
       ],
-      "totalCount": 2
+      "totalCount": number
     }
   }
 }
