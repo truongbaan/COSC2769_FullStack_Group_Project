@@ -95,11 +95,8 @@ export const useCart = () => {
       // If user is logged in, sync to backend
       if (user) {
         try {
-          // Find the cart item to get its ID for backend deletion
-          const cartItem = items.find((item) => item.product.id === productId);
-          if (cartItem && cartItem.id) {
-            await deleteCartItemApi(cartItem.id);
-          }
+          // Backend API expects product_id, not cart item ID
+          await deleteCartItemApi(productId);
           dispatch(setSyncStatus(true));
         } catch (error) {
           console.error("Failed to remove item from backend cart:", error);
@@ -115,20 +112,94 @@ export const useCart = () => {
 
   const updateItemQuantity = useCallback(
     async (productId: string, quantity: number) => {
+      // Optimistic local update for immediate UI feedback
       dispatch(updateQuantity({ productId, quantity }));
 
-      // Note: For quantity updates, we'd need an update cart item API
-      // For now, just mark as not synced
-      dispatch(setSyncStatus(false));
+      // If not authenticated, we can only update locally
+      if (!user) {
+        dispatch(setSyncStatus(false));
+        return;
+      }
+
+      try {
+        const existing = items.find((i) => i.product.id === productId);
+        const currentQty = existing?.quantity ?? 0;
+
+        if (!existing) {
+          // Item not in backend cart yet – add with desired quantity
+          if (quantity > 0) {
+            await addToCartApi(productId, quantity);
+          }
+        } else if (quantity <= 0) {
+          // Remove item entirely - use product_id, not cart item ID
+          await deleteCartItemApi(productId);
+        } else {
+          const delta = quantity - currentQty;
+          if (delta > 0) {
+            // Increase using add endpoint (supports increments)
+            await addToCartApi(productId, delta);
+          } else if (delta < 0) {
+            // Decrease: no direct API, replace by delete + add desired quantity
+            await deleteCartItemApi(productId);
+            if (quantity > 0) {
+              await addToCartApi(productId, quantity);
+            }
+          }
+        }
+
+        // Refresh from backend to ensure IDs and amounts match
+        await dispatch(fetchCart()).unwrap();
+        dispatch(setSyncStatus(true));
+      } catch (error) {
+        console.error("Failed to update cart quantity:", error);
+        toast.error("Failed to update cart on server");
+        // Reload server state to avoid drift
+        try {
+          await dispatch(fetchCart()).unwrap();
+        } catch {}
+        dispatch(setSyncStatus(false));
+      }
     },
-    [dispatch]
+    [dispatch, user, items]
   );
 
-  const clearCartItems = useCallback(() => {
+  const clearCartItems = useCallback(async () => {
+    // Snapshot current items so we can delete from backend after clearing local state
+    const itemsSnapshot = [...items];
     dispatch(clearCart());
-    // Note: For clearing cart, the backend handles this automatically after checkout
-    dispatch(setSyncStatus(true));
-  }, [dispatch]);
+
+    if (!user) {
+      // Guest cart: only local state exists
+      dispatch(setSyncStatus(false));
+      return;
+    }
+
+    try {
+      // Best-effort delete each item on the backend using product_id
+      const deletions = itemsSnapshot.map((i) =>
+        deleteCartItemApi(i.product.id).catch((error) => {
+          // Ignore 404s (item doesn't exist on backend)
+          if (error.message.includes("404")) {
+            return null;
+          }
+          throw error;
+        })
+      );
+      if (deletions.length > 0) {
+        await Promise.allSettled(deletions);
+      }
+      // Confirm with fresh server state
+      await dispatch(fetchCart()).unwrap();
+      dispatch(setSyncStatus(true));
+    } catch (error) {
+      console.error("Failed to clear cart on server:", error);
+      // Try to refresh to reflect actual server state
+      try {
+        await dispatch(fetchCart()).unwrap();
+      } catch {}
+      dispatch(setSyncStatus(false));
+    }
+  }, [dispatch, user, items]);
 
   const forceSync = useCallback(async () => {
     if (user) {

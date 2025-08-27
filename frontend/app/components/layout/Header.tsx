@@ -8,6 +8,7 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { useAuth } from "~/lib/auth";
+import { logoutApi } from "~/lib/api";
 import { getBackendImageUrl } from "~/lib/utils";
 import { ShoppingCart, User, Package, Truck } from "~/components/ui/icons";
 
@@ -15,9 +16,15 @@ export default function Header() {
   const { user, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
-    navigate("/");
+  const handleLogout = async () => {
+    try {
+      await logoutApi();
+    } catch (e) {
+      // Ignore API failure; still clear local state to protect UX/security
+    } finally {
+      logout();
+      navigate("/");
+    }
   };
 
   const getRoleIcon = (role: string) => {

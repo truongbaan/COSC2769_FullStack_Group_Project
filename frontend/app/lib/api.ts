@@ -103,14 +103,12 @@ export async function fetchProducts(params?: {
     z.object({
       success: z.boolean(),
       message: z.object({
-        data: z.object({
-          products: ProductsSchema,
-          count: z.number(),
-        }),
+        products: ProductsSchema,
+        count: z.number(),
       }),
     })
   );
-  return response.message.data.products;
+  return response.message.products;
 }
 
 export async function fetchProduct(productId: string): Promise<ProductDto> {
@@ -119,13 +117,11 @@ export async function fetchProduct(productId: string): Promise<ProductDto> {
     z.object({
       success: z.boolean(),
       message: z.object({
-        data: z.object({
-          product: ProductSchema,
-        }),
+        product: ProductSchema,
       }),
     })
   );
-  return response.message.data.product;
+  return response.message.product;
 }
 
 // Search products is handled by fetchProducts with name parameter
@@ -524,29 +520,41 @@ export async function fetchCartApi(params?: {
 }
 
 // Delete cart item by ID - Based on backend API
-export async function deleteCartItemApi(itemId: string): Promise<{
+export async function deleteCartItemApi(productId: string): Promise<{
   success: boolean;
-  removed: boolean;
-  id: string;
+  removed?: boolean;
+  id?: string;
 }> {
   const response = await request(
-    `${API_BASE}/cart/removeItem/${itemId}`,
+    `${API_BASE}/cart/removeItem/${productId}`,
     z.object({
       success: z.boolean(),
-      message: z.object({
-        data: z.object({
-          removed: z.boolean(),
-          id: z.string(),
+      message: z.union([
+        // Success response: nested data object
+        z.object({
+          data: z.object({
+            removed: z.boolean(),
+            id: z.string(),
+          }),
         }),
-      }),
+        // Error response: string message
+        z.string(),
+      ]),
     }),
     { method: "DELETE" }
   );
-  return {
-    success: response.success,
-    removed: response.message.data.removed,
-    id: response.message.data.id,
-  };
+
+  if (response.success && typeof response.message === "object") {
+    return {
+      success: response.success,
+      removed: response.message.data.removed,
+      id: response.message.data.id,
+    };
+  } else {
+    return {
+      success: response.success,
+    };
+  }
 }
 
 // Logout API - Added to match backend
