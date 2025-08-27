@@ -6,6 +6,7 @@
 * [POST /auth/register/customer](#post-authregistercustomer)
 * [POST /auth/register/vendor](#post-authregistervendor)
 * [POST /auth/register/shipper](#post-authregistershipper)
+* [POST /auth/logout](#post-authlogout)
 ---
 ### Users Endpoints
 * [GET /users](#get-users)
@@ -27,9 +28,9 @@
 ### Products Endpoints
 * [GET /products](#get-apiproducts)
 * [GET /products/:productId](#get-apiproducts:productid)
-* [PATCH /products/:productId](#patch-apiporduct:productid)
+* [PATCH /products/:productId](#patch-apiproduct:productid)
 * [POST /products/](#post-apiproducts)
-* [POST /products/:id/addToCart](#post-porduct:idaddtocart)
+* [POST /products/:id/addToCart](#post-product:idaddtocart)
 ---
 ## Authentication Endpoints
 
@@ -214,6 +215,26 @@
     "error": "string" // Error description
   }
   ```
+
+### POST /auth/logout
+
+- **Description:** User log out from their account
+  - **Request:** None
+
+  - **Response:**
+    ```json
+    {
+    "success": true,
+    "message": "Logged out successfully"
+    }
+    ```
+  - **Error Responses:**
+    ```json
+    {
+      "success": false,
+      "error": "string" // Error description
+    }
+    ```
 
 ---
 
@@ -872,7 +893,7 @@ none
 Retrieve a specific product by ID.
 
 **Authentication**: 
-- `Required`: (role: `customer`)
+- `Required`: (role: `customer`, `vendor`)
 
 **Path Parameters::**
 - `productId`: (string, required)
@@ -910,6 +931,7 @@ none
 ```
 **Notes:**
 - Image is returned as a public URL.
+- Vendor can only access the details of their own products.
 
 ---
 ### POST /products
@@ -921,7 +943,7 @@ Create a new product.
 **Request:** (multipart/ form-data)
 - `name`: string (required)
 - `price`: positive number (required)
-- `description`: string (required)
+- `description`: string (required) (less than 500 characters)
 - `category`: string (required)
 - `instock`: boolean (optional)
 - `image`: file (PNG/JPG) (required)
@@ -937,10 +959,10 @@ Create a new product.
             "vendor_id": "string",
             "name": "string",
             "price": number,
-            "description": "string",
+            "description": "string", //less than 500 characters
             "image": "string",
             "category": "string",
-            "instock": boolean
+            "instock": boolean //optional
       }
     }
   }
@@ -989,9 +1011,9 @@ Any subset of:
             "name": "string",
             "price": number,
             "description": "string",
-            "image": "string",
+            "image": "string", //must use form-data
             "category": "string",
-            "instock": boolean
+            "instock": boolean //must use JSON
     }
   }
 }
@@ -1004,8 +1026,10 @@ Any subset of:
 }
 ```
 **Notes:**`
+- At least 1 field must be updated.
 - Image is stored as path.
-- If updating image, `form-data` is `required`. Otherwise, either `form-data` or `JSON` works.
+- If updating an image, `form-data` is `required`. Otherwise, either `form-data` or `JSON` works.
+- If updating instock status, must use JSON.
 ---
 
 ---
