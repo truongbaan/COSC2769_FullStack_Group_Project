@@ -6,6 +6,7 @@
 * [POST /auth/register/customer](#post-authregistercustomer)
 * [POST /auth/register/vendor](#post-authregistervendor)
 * [POST /auth/register/shipper](#post-authregistershipper)
+* [POST /auth/logout](#post-authlogout)
 ---
 ### Users Endpoints
 * [GET /users](#get-users)
@@ -214,6 +215,26 @@
     "error": "string" // Error description
   }
   ```
+
+### POST /auth/logout
+
+- **Description:** User log out from their account
+  - **Request:** None
+
+  - **Response:**
+    ```json
+    {
+    "success": true,
+    "message": "Logged out successfully"
+    }
+    ```
+  - **Error Responses:**
+    ```json
+    {
+      "success": false,
+      "error": "string" // Error description
+    }
+    ```
 
 ---
 
