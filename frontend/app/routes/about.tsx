@@ -89,7 +89,7 @@ export default function About() {
             </p>
           </div>
           <div className='rounded-2xl border border-gray-200 p-8'>
-            <div className='grid grid-cols-2 md:grid-cols-4 gap-6 text-sm'>
+            <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 text-sm'>
               <div>
                 <p className='font-semibold text-black'>Frontend</p>
                 <ul className='mt-2 space-y-1 text-gray-700'>
@@ -124,6 +124,25 @@ export default function About() {
                   <li>ESLint</li>
                   <li>TypeScript</li>
                   <li>Hot Reload</li>
+                </ul>
+              </div>
+              <div>
+                <p className='font-semibold text-black'>Backend (API)</p>
+                <ul className='mt-2 space-y-1 text-gray-700'>
+                  <li>Express 5</li>
+                  <li>TypeScript</li>
+                  <li>Zod</li>
+                  <li>CORS, Cookie‑Parser</li>
+                  <li>Multer, UUID</li>
+                </ul>
+              </div>
+              <div>
+                <p className='font-semibold text-black'>Data & Auth</p>
+                <ul className='mt-2 space-y-1 text-gray-700'>
+                  <li>Supabase JS v2</li>
+                  <li>Supabase Auth</li>
+                  <li>Supabase Storage</li>
+                  <li>Postgres via Supabase</li>
                 </ul>
               </div>
             </div>

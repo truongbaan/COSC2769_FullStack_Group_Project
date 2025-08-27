@@ -298,7 +298,7 @@ export default function Help() {
                 <Link to='/'>
                   <Button
                     variant='outline'
-                    className='text-lg px-8 py-4 border-2 border-white text-white hover:bg-white hover:text-black transition-all duration-300'
+                    className='text-lg px-8 py-4 border-2 bg-black border-white text-white hover:bg-white hover:text-black transition-all duration-300'
                   >
                     Go to Home
                   </Button>
