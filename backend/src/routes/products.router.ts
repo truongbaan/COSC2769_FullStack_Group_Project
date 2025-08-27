@@ -41,11 +41,12 @@ ProductRouter.get(
 // Get product details by id
 ProductRouter.get(
   "/:productId",
-  requireAuth("customer"),
+  requireAuth(["vendor", "customer"]),
   validationMiddleware(getProductByIdParamsSchema, "params"),
   getProductByIdController
 );
 
+// Create a product
 ProductRouter.post(
   "/",
   requireAuth("vendor"),
@@ -63,6 +64,7 @@ ProductRouter.post(
   addToCartController
 )
 
+// Update a product
 ProductRouter.patch(
   "/:productId",
   requireAuth("vendor"),

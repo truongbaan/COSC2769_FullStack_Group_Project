@@ -78,17 +78,23 @@ export const ProductService = {
       const { url } = await ImageService.getPublicImageUrl(r.image, "productimages");
       r.image = url ?? null;
     }
-    
+
     return data;
   },
 
   //Get Product By Id
-  async getProductById(id: string): Promise<ProductRow | null> {
-    const { data, error } = await supabase
+  async getProductById(id: string, opts?: { vendorId?: string }): Promise<ProductRow | null> {
+    let query = supabase
       .from("products")
       .select("*")
-      .eq("id", id)
-      .maybeSingle();
+      .eq("id", id);
+
+    if (opts?.vendorId) {
+      // Chỉ áp cho vendor: giới hạn về sản phẩm của chính họ
+      query = query.eq("vendor_id", opts.vendorId);
+    }
+
+    const { data, error } = await query.maybeSingle();
 
     console.log("data", data);
 
@@ -197,10 +203,7 @@ export const ProductService = {
     }
     console.log(data);
 
-    if (!data) {
-      return null; // explicitly return null to trigger 404 in route
-      // return [];
-    }
+    if (!data) { return null; }
     return data;
   },
 };
