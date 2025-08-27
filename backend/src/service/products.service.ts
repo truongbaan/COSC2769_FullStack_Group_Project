@@ -184,9 +184,6 @@ export const ProductService = {
     if (typeof instock === "boolean") toUpdate.instock = instock;
     if (imagePath) toUpdate.image = imagePath;
 
-    // Update nothing
-    if (Object.keys(toUpdate).length === 0) return null;
-
     const query = supabase
       .from("products")
       .update(toUpdate)
