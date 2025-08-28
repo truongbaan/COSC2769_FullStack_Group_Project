@@ -31,13 +31,11 @@ export type Pagination = {
 }
 
 export const ProductService = {
-  async getCustomerProducts({ page, size }: Pagination, filters?: ProductsFilters,): Promise<ProductRow[] | null> {
-    const offset = (page - 1) * size;
+  async getCustomerProducts(pagination?: Pagination, filters?: ProductsFilters,): Promise<ProductRow[] | null> {
 
     const query = supabase
       .from("products")
       .select("*")
-      .range(offset, offset + size - 1)
       .order("id", { ascending: false });
 
     if (filters?.category) {
@@ -54,6 +52,12 @@ export const ProductService = {
 
     if (filters?.name) {
       query.eq('name', filters?.name); // WHERE name = {name}
+    }
+
+    // Only paginate when there are both page & size provided
+    if (pagination?.page && pagination?.size) {
+      const offset = (pagination.page - 1) * pagination.size;
+      query.range(offset, offset + pagination.size - 1);
     }
 
     const { data, error } = await query;
@@ -79,14 +83,12 @@ export const ProductService = {
     return data;
   },
 
-  async getVendorProducts({ page, size }: Pagination, vendorId: string, filters?: ProductsFilters): Promise<ProductRow[] | null> {
-    const offset = (page - 1) * size;
+  async getVendorProducts(vendorId: string, pagination?: Pagination, filters?: ProductsFilters): Promise<ProductRow[] | null> {
 
     const query = supabase
       .from("products")
       .select("*")
       .eq("vendor_id", vendorId)
-      .range(offset, offset + size - 1)
       .order("id", { ascending: false });
 
     if (filters?.category) {
@@ -103,6 +105,12 @@ export const ProductService = {
 
     if (filters?.name) {
       query.eq('name', filters?.name); // WHERE name = {name}
+    }
+
+    // Only paginate when there are both page & size provided
+    if (pagination?.page && pagination?.size) {
+      const offset = (pagination.page - 1) * pagination.size;
+      query.range(offset, offset + pagination.size - 1);
     }
 
     const { data, error } = await query;
