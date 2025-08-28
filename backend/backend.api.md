@@ -823,8 +823,8 @@ Retrieve all available products with optional filters & pagination.
 - `Required`: (role: `none`)
   
 **Query Parameters (optional):**
-- `page`: number (default 1, min 1)
-- `size`: number (default 10, max 30)
+- `page`: number (min 1) — used together with `size` for pagination
+- `size`: number (default 10, max 30)  — used together with `page` for pagination
 - `category`: string | number (optional)
 - `priceMin`: number (optional, min 0)
 - `priceMax`: number (optional, max 100000000)
@@ -865,6 +865,8 @@ none
 }
 ```
 **Notes:**
+- If both `page` and `size` are provided → results are paginated.
+- If `page` and `size` are omitted (or only one is provided) → all products are returned.
 - PriceMax needs to be larger than PriceMin.
 - Image is returned as a public URL.
 
@@ -876,8 +878,8 @@ Retrieve existing available products of a vendor with filters & pagination.
 - `Required`: (role: `vendor`)
   
 **Query Parameters (optional):**
-- `page`: number (default 1, min 1)
-- `size`: number (default 10, max 30)
+- `page`: number (min 1) — used together with `size` for pagination
+- `size`: number (min 1, max 30) — used together with `page` for pagination
 - `category`: string | number (optional)
 - `priceMin`: number (optional, min 0)
 - `priceMax`: number (optional, max 100000000)
@@ -918,6 +920,8 @@ none
 }
 ```
 **Notes:**
+- If both `page` and `size` are provided → results are paginated.
+- If `page` and `size` are omitted (or only one is provided) → all products are returned.
 - PriceMax needs to be larger than PriceMin.
 - Image is returned as a public URL.
 
