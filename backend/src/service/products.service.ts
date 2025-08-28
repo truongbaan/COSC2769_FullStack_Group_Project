@@ -53,7 +53,7 @@ export const ProductService = {
     }
 
     if (filters?.name) {
-      query.eq('name', filters?.name); // WHERE name = {name}
+      query.ilike('name', `%${filters.name}%`); // WHERE name = {name}
     }
 
     // Only paginate when there are both page & size provided
