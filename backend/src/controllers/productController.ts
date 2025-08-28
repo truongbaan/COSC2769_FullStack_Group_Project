@@ -35,16 +35,29 @@ export const getProductsController = async (req: Request, res: Response) => {
         //To use pagination, page & size must be provided together
         const pagination = page !== undefined && size !== undefined ? { page, size } : undefined;
 
-        const products = await ProductService.getCustomerProducts(
+        const result = await ProductService.getCustomerProducts(
             pagination,
             { category, priceMax, priceMin, name }
         );
 
-        if (products === null) {
+        if (result === null) {
             return ErrorJsonResponse(res, 500, "Failed to fetch products");
         }
 
-        return SuccessJsonResponse(res, 200, { products, count: products.length });
+        const { products, totalProducts } = result;
+
+        //Count the page
+        const totalPages = pagination?.size
+            ? Math.max(1, Math.ceil(totalProducts / pagination.size))
+            : 1;
+
+        return SuccessJsonResponse(res, 200, {
+            products,
+            limit: products.length,
+            totalProducts: totalProducts,
+            totalPages,
+            currentPage: pagination?.page ?? 1, //default 1
+        });
 
     } catch (err: any) {
         if (err?.issues) {
@@ -64,17 +77,30 @@ export const getVendorProductsController = async (req: Request, res: Response) =
         //To use pagination, page & size must be provided together
         const pagination = page !== undefined && size !== undefined ? { page, size } : undefined;
 
-        const products = await ProductService.getVendorProducts(
+        const result = await ProductService.getVendorProducts(
             vendorId,
             pagination,
             { category, priceMax, priceMin, name }
         )
 
-        if (products === null) {
+        if (result === null) {
             return ErrorJsonResponse(res, 500, "Failed to fetch products");
         }
 
-        return SuccessJsonResponse(res, 200, { products, count: products.length });
+        const { products, totalProducts } = result;
+
+        //Count the page
+        const totalPages = pagination?.size
+            ? Math.max(1, Math.ceil(totalProducts / pagination.size))
+            : 1;
+
+        return SuccessJsonResponse(res, 200, {
+            products,
+            limit: products.length,
+            totalProducts: totalProducts,
+            totalPages,
+            currentPage: pagination?.page ?? 1, //default 1
+        });
 
     } catch (err: any) {
         if (err?.issues) {
