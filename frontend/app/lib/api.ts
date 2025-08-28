@@ -105,7 +105,13 @@ export async function fetchProducts(params?: {
   priceMin?: number;
   priceMax?: number;
   name?: string;
-}): Promise<ProductDto[]> {
+}): Promise<{
+  products: ProductDto[];
+  currentPage: number;
+  totalPages: number;
+  totalProducts: number;
+  limit: number;
+}> {
   const qs = new URLSearchParams();
   if (params?.page) qs.set("page", String(params.page));
   if (params?.size) qs.set("size", String(params.size));
@@ -118,7 +124,14 @@ export async function fetchProducts(params?: {
 
   const url = `${API_BASE}/products${qs.toString() ? "?" + qs.toString() : ""}`;
   const response = await request(url, ProductsApiResponseSchema);
-  return response.message.products;
+  return {
+    products: response.message.products,
+    currentPage: (response.message.currentPage ?? Number(qs.get("page"))) || 1,
+    totalPages: response.message.totalPages ?? 1,
+    totalProducts:
+      response.message.totalProducts ?? response.message.count ?? 0,
+    limit: (response.message.limit ?? Number(qs.get("size"))) || 12,
+  };
 }
 
 // Removed paginated products listing; using fetchProducts instead
@@ -163,12 +176,13 @@ export async function searchProductsApi(params: {
   category?: string;
 }): Promise<ProductDto[]> {
   // Map search params to backend format
-  return fetchProducts({
+  const result = await fetchProducts({
     name: params.q,
     priceMin: params.min,
     priceMax: params.max,
     category: params.category,
   });
+  return result.products;
 }
 
 // Orders (Shipper) - Updated to match backend API

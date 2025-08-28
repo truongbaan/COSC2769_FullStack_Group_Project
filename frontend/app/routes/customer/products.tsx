@@ -31,6 +31,15 @@ import {
 import type { z } from "zod";
 import { useAuth } from "~/lib/auth";
 import { useNavigate } from "react-router";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+  PaginationEllipsis,
+} from "~/components/ui/pagination";
 
 type FormValues = z.infer<typeof priceFilterSchema>;
 
@@ -64,6 +73,10 @@ export default function Products() {
     });
   const { addItem, getTotalItems } = useCart();
   const [filteredProducts, setFilteredProducts] = useState<ProductDto[]>([]);
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(12);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [sortBy, setSortBy] = useState<
     "relevance" | "price-asc" | "price-desc" | "rating-desc" | "name-asc"
@@ -100,7 +113,12 @@ export default function Products() {
 
   const onSubmit = async (_data: FormValues) => {};
 
-  // fetch products when filters change
+  // Reset to first page whenever filters change
+  React.useEffect(() => {
+    setPage(1);
+  }, [q, min, max, selectedCategory]);
+
+  // fetch products when filters or page changes
   React.useEffect(() => {
     let ignore = false;
     (async () => {
@@ -118,18 +136,24 @@ export default function Products() {
         return;
       }
 
-      const products = await fetchProducts({
+      const result = await fetchProducts({
         name: q || undefined,
         priceMin,
         priceMax,
         category: selectedCategory || undefined,
+        page,
+        size: pageSize,
       });
-      if (!ignore) setFilteredProducts(products);
+      if (!ignore) {
+        setFilteredProducts(result.products);
+        setTotalPages(result.totalPages);
+        setTotalProducts(result.totalProducts);
+      }
     })();
     return () => {
       ignore = true;
     };
-  }, [q, min, max, selectedCategory]);
+  }, [q, min, max, selectedCategory, page, pageSize]);
 
   const visibleProducts = React.useMemo(() => {
     const arr = [...filteredProducts];
@@ -259,8 +283,8 @@ export default function Products() {
         {/* Results Summary */}
         <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6'>
           <p className='text-gray-600'>
-            Showing {filteredProducts.length} product
-            {filteredProducts.length !== 1 ? "s" : ""}
+            Showing {filteredProducts.length} of {totalProducts} product
+            {totalProducts !== 1 ? "s" : ""}
             {(q || min || max || selectedCategory) && " matching your criteria"}
           </p>
           <div className='flex flex-wrap items-center gap-3'>
@@ -385,7 +409,116 @@ export default function Products() {
           ))}
         </div>
 
-        {/* No pagination */}
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className='mt-8'>
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href='#'
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setPage((p) => Math.max(1, p - 1));
+                    }}
+                    className={
+                      page === 1 ? "pointer-events-none opacity-50" : undefined
+                    }
+                  />
+                </PaginationItem>
+
+                {/* Page numbers with simple window */}
+                {(() => {
+                  const items: React.ReactElement[] = [];
+                  const windowSize = 5;
+                  const start = Math.max(1, page - Math.floor(windowSize / 2));
+                  const end = Math.min(totalPages, start + windowSize - 1);
+                  const realStart = Math.max(1, end - windowSize + 1);
+                  if (realStart > 1) {
+                    items.push(
+                      <PaginationItem key={1}>
+                        <PaginationLink
+                          href='#'
+                          isActive={page === 1}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setPage(1);
+                          }}
+                        >
+                          1
+                        </PaginationLink>
+                      </PaginationItem>
+                    );
+                    if (realStart > 2) {
+                      items.push(
+                        <PaginationItem key='start-ellipsis'>
+                          <PaginationEllipsis />
+                        </PaginationItem>
+                      );
+                    }
+                  }
+
+                  for (let i = realStart; i <= end; i++) {
+                    items.push(
+                      <PaginationItem key={i}>
+                        <PaginationLink
+                          href='#'
+                          isActive={page === i}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setPage(i);
+                          }}
+                        >
+                          {i}
+                        </PaginationLink>
+                      </PaginationItem>
+                    );
+                  }
+
+                  if (end < totalPages) {
+                    if (end < totalPages - 1) {
+                      items.push(
+                        <PaginationItem key='end-ellipsis'>
+                          <PaginationEllipsis />
+                        </PaginationItem>
+                      );
+                    }
+                    items.push(
+                      <PaginationItem key={totalPages}>
+                        <PaginationLink
+                          href='#'
+                          isActive={page === totalPages}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setPage(totalPages);
+                          }}
+                        >
+                          {totalPages}
+                        </PaginationLink>
+                      </PaginationItem>
+                    );
+                  }
+                  return items;
+                })()}
+
+                <PaginationItem>
+                  <PaginationNext
+                    href='#'
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setPage((p) => Math.min(totalPages, p + 1));
+                    }}
+                    className={
+                      page === totalPages
+                        ? "pointer-events-none opacity-50"
+                        : undefined
+                    }
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
 
         {filteredProducts.length === 0 && (
           <div className='text-center py-12'>

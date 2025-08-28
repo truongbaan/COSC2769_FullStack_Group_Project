@@ -45,7 +45,13 @@ export const ProductsApiResponseSchema = z.object({
   success: z.boolean(),
   message: z.object({
     products: z.array(ProductSchema),
-    count: z.number(),
+    // New paginated fields (backend update)
+    limit: z.number().optional(),
+    totalProducts: z.number().optional(),
+    totalPages: z.number().optional(),
+    currentPage: z.number().optional(),
+    // Backwards compatibility field used by some endpoints
+    count: z.number().optional(),
   }),
 });
 
