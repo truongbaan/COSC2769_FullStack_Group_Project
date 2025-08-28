@@ -1,7 +1,7 @@
 import type { Route } from "./+types/products";
 import { useAuth } from "~/lib/auth";
 import { Link, useNavigate } from "react-router";
-import { updateProductApi, fetchProducts } from "~/lib/api";
+import { updateProductApi, fetchVendorProducts } from "~/lib/api";
 import { getBackendImageUrl } from "~/lib/utils";
 import { Button } from "~/components/ui/button";
 import {
@@ -23,7 +23,6 @@ import {
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Textarea } from "~/components/ui/textarea";
-// Remove dependency on local mock data - we'll fetch from API instead
 import {
   Package,
   Plus,
@@ -64,24 +63,23 @@ export default function VendorProducts() {
   const [editPreviewImage, setEditPreviewImage] = useState<string | null>(null);
 
   // Fetch vendor products from API
-  const fetchVendorProducts = async () => {
+  const fetchVendorProductsLocal = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // The backend will filter products based on the authenticated vendor
-      const products = await fetchProducts();
+      const products = await fetchVendorProducts();
       setProducts(products || []);
     } catch (err) {
       console.error("Error fetching vendor products:", err);
       setError(err instanceof Error ? err.message : "Failed to fetch products");
-      setProducts([]); // Set empty array on error
+      setProducts([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Redirect if not authenticated or not a vendor
+  // redirect if not authenticated or not a vendor
   useEffect(() => {
     if (!isAuthenticated()) {
       navigate("/login");
@@ -92,12 +90,11 @@ export default function VendorProducts() {
       return;
     }
 
-    // Fetch vendor products from API
-    fetchVendorProducts();
-  }, [isAuthenticated, user, navigate]);
+    fetchVendorProductsLocal();
+  }, [user, navigate]);
 
   if (!user || user.role !== "vendor") {
-    return null; // Will redirect
+    return null;
   }
 
   const handleDeleteProduct = (product: any) => {
@@ -110,13 +107,12 @@ export default function VendorProducts() {
       try {
         setDeleting(true);
 
-        // Backend doesn't have delete - we'll just mark as out of stock
         const result = await updateProductApi(productToDelete.id, {
           instock: false,
         });
 
         if (result.success) {
-          // Update product in local state
+          // update product in local state
           setProducts(
             products.map((p) =>
               p.id === productToDelete.id
@@ -162,7 +158,7 @@ export default function VendorProducts() {
       try {
         setEditing(true);
 
-        // Prepare update data, excluding empty/unchanged fields
+        // prepare update data
         const updateData: any = {};
         if (editForm.name && editForm.name !== productToEdit.name) {
           updateData.name = editForm.name;
@@ -177,7 +173,7 @@ export default function VendorProducts() {
           updateData.description = editForm.description;
         }
 
-        // Add image file if user selected a new one
+        // add image file if user selected a new one
         if (editImageFile) {
           updateData.image = editImageFile;
         }
@@ -185,7 +181,7 @@ export default function VendorProducts() {
         const result = await updateProductApi(productToEdit.id, updateData);
 
         if (result.success && result.product) {
-          // Update product in local state
+          // update product in local state
           setProducts(
             products.map((p) =>
               p.id === productToEdit.id ? { ...p, ...result.product } : p
@@ -339,7 +335,9 @@ export default function VendorProducts() {
                 Failed to load products
               </h3>
               <p className='text-gray-600 mb-6'>{error}</p>
-              <Button onClick={() => fetchVendorProducts()}>Try Again</Button>
+              <Button onClick={() => fetchVendorProductsLocal()}>
+                Try Again
+              </Button>
             </CardContent>
           </Card>
         ) : products.length === 0 ? (

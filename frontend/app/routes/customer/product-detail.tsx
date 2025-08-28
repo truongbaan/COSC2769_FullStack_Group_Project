@@ -52,7 +52,7 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const [addedToCart, setAddedToCart] = useState(false);
 
-  // Redirect vendors and shippers away from product detail page
+  // redirect vendors and shippers
   useEffect(() => {
     if (user && (user.role === "vendor" || user.role === "shipper")) {
       const redirectPath =
@@ -89,6 +89,10 @@ export default function ProductDetail() {
 
   const handleAddToCart = async () => {
     if (!product) return;
+    if (!user) {
+      toast.warning("Please login to add items to your cart");
+      return;
+    }
 
     try {
       await addItem(product, quantity);
@@ -163,7 +167,7 @@ export default function ProductDetail() {
                 alt={product.name}
                 className='w-full h-full object-cover'
                 onError={(e) => {
-                  // Fallback to a placeholder image if the image fails to load
+                  // fallback to a placeholder image
                   e.currentTarget.src =
                     "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=400&fit=crop";
                 }}
@@ -255,6 +259,7 @@ export default function ProductDetail() {
                     size='lg'
                     className='w-full'
                     onClick={handleAddToCart}
+                    disabled={!user}
                   >
                     <ShoppingCart className='mr-2 h-5 w-5' />
                     Add to Cart - ${(product.price * quantity).toFixed(2)}

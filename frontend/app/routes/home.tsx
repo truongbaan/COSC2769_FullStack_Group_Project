@@ -326,7 +326,7 @@ export default function Home() {
                   Sign In
                 </Button>
               </Link>
-              {/* Only show Explore Products for customers and unauthenticated users */}
+              {/*show link according to user's role*/}
               {(!user || user.role === "customer") && (
                 <Link to='/products'>
                   <Button

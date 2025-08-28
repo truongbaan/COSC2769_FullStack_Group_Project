@@ -70,7 +70,7 @@ export default function ShipperOrders() {
     action: "delivered" | "cancelled";
   }>({ open: false, orderId: "", action: "delivered" });
 
-  // Redirect if not authenticated or not a shipper
+  // redirect if not authenticated
   useEffect(() => {
     if (!isAuthenticated()) {
       navigate("/login");
@@ -81,14 +81,12 @@ export default function ShipperOrders() {
       return;
     }
 
-    // Get orders for this shipper's hub
-    // Backend automatically determines hub from authenticated shipper
+    // get orders for this shipper's hub
     (async () => {
       try {
         const hubOrders = await fetchOrdersByHub();
         setOrders(hubOrders);
 
-        // Fetch item counts for each order
         const itemCounts: { [orderId: string]: number } = {};
         await Promise.all(
           hubOrders.map(async (order) => {
@@ -110,7 +108,7 @@ export default function ShipperOrders() {
         setOrders([]);
       }
     })();
-  }, [isAuthenticated, user, navigate]);
+  }, [user, navigate]);
 
   // Handle expanding orders to show items
   const toggleOrderExpansion = async (orderId: string) => {
@@ -120,13 +118,12 @@ export default function ShipperOrders() {
       newExpanded.delete(orderId);
       setExpandedOrders(newExpanded);
     } else {
-      // Expand and fetch items if not already loaded
+      // expand and fetch items if not already loaded
       const newExpanded = new Set(expandedOrders);
       newExpanded.add(orderId);
       setExpandedOrders(newExpanded);
 
       if (!orderItems[orderId]) {
-        // Set loading state
         setOrderItems((prev) => ({
           ...prev,
           [orderId]: {
@@ -162,7 +159,7 @@ export default function ShipperOrders() {
     }
   };
 
-  // Handle status update
+  // handle status update
   const handleStatusUpdate = (
     orderId: string,
     action: "delivered" | "cancelled"
@@ -187,7 +184,7 @@ export default function ShipperOrders() {
             : "Order cancelled"
         );
 
-        // Remove the order from the list since it's no longer active
+        // remove the order from the list
         setOrders((prev) => prev.filter((order) => order.id !== orderId));
         setOrderItems((prev) => {
           const newItems = { ...prev };
@@ -200,7 +197,7 @@ export default function ShipperOrders() {
           return newCounts;
         });
 
-        // Remove from expanded if it was expanded
+        // remove from expanded if it was expanded
         const newExpanded = new Set(expandedOrders);
         newExpanded.delete(orderId);
         setExpandedOrders(newExpanded);
@@ -222,7 +219,7 @@ export default function ShipperOrders() {
   };
 
   if (!user || user.role !== "shipper") {
-    return null; // Will redirect
+    return null;
   }
 
   const totalOrders = orders.length;
@@ -368,7 +365,7 @@ export default function ShipperOrders() {
                         </div>
                       </div>
 
-                      {/* Quick Info Section */}
+                      {/* quick info section */}
                       <div className='mb-4'>
                         <div className='text-sm text-gray-700 bg-gray-50 p-3 rounded space-y-1'>
                           <div className='flex justify-between'>
@@ -385,7 +382,7 @@ export default function ShipperOrders() {
                         </div>
                       </div>
 
-                      {/* Expandable Order Details */}
+                      {/* expandable order details */}
                       {isExpanded && (
                         <div className='mb-4 border rounded-lg p-4 bg-white'>
                           {orderData?.loading ? (
@@ -477,7 +474,7 @@ export default function ShipperOrders() {
                         </div>
                       )}
 
-                      {/* Action Buttons */}
+                      {/* action buttons */}
                       <div className='flex justify-between items-center pt-3 border-t gap-3'>
                         <div className='flex items-center gap-2'>
                           <Button
@@ -548,7 +545,7 @@ export default function ShipperOrders() {
           </div>
         )}
 
-        {/* Shipper Info */}
+        {/* shipper info */}
         <div className='mt-12 bg-gray-50 border border-gray-200 rounded-lg p-6'>
           <h3 className='font-semibold text-gray-900 mb-3'>
             📦 Delivery Guidelines
@@ -564,7 +561,7 @@ export default function ShipperOrders() {
           </ul>
         </div>
 
-        {/* Confirmation Dialog */}
+        {/* confirmation dialog */}
         <Dialog open={confirmDialog.open} onOpenChange={cancelStatusUpdate}>
           <DialogContent>
             <DialogHeader>

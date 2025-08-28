@@ -8,7 +8,7 @@ export const ProductSchema = z
     name: z.string(),
     price: z.number(),
     description: z.string(),
-    image: z.string(),
+    image: z.string().nullable(),
     category: z.string(),
     instock: z.boolean(),
     // Optional fields for frontend compatibility
@@ -44,10 +44,8 @@ export const ProductsSchema = z.array(ProductSchema);
 export const ProductsApiResponseSchema = z.object({
   success: z.boolean(),
   message: z.object({
-    data: z.object({
-      products: z.array(ProductSchema),
-      count: z.number(),
-    }),
+    products: z.array(ProductSchema),
+    count: z.number(),
   }),
 });
 
@@ -55,9 +53,7 @@ export const ProductsApiResponseSchema = z.object({
 export const ProductApiResponseSchema = z.object({
   success: z.boolean(),
   message: z.object({
-    data: z.object({
-      product: ProductSchema,
-    }),
+    product: ProductSchema,
   }),
 });
 

@@ -43,7 +43,7 @@ export default function AddProduct() {
   const description = watch("description");
   const name = watch("name");
 
-  // Redirect if not authenticated or not a vendor
+  // redirect if not authenticated
   useEffect(() => {
     if (!isAuthenticated()) {
       navigate("/login");
@@ -53,10 +53,10 @@ export default function AddProduct() {
       navigate("/");
       return;
     }
-  }, [isAuthenticated, user, navigate]);
+  }, [user, navigate]);
 
   if (!user || user.role !== "vendor") {
-    return null; // Will redirect
+    return null;
   }
 
   const onSubmit = async (data: FormValues) => {
@@ -74,7 +74,7 @@ export default function AddProduct() {
         price: Number(data.price),
         description: data.description,
         category: data.category || "General",
-        instock: true, // Default to in stock
+        instock: true,
         image: imageFile,
       });
 

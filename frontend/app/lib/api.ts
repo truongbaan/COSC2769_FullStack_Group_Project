@@ -77,7 +77,8 @@ async function request<T>(
   if (!res.ok) {
     const text = await res.text().catch(() => "");
 
-    // Handle 401 Unauthorized - token expired
+    // Handle 401 Unauthorized - only for authenticated user session expiration
+    // Note: Login/register APIs use direct fetch to avoid triggering this on auth failures
     if (res.status === 401 && globalLogoutHandler) {
       // Call the global logout handler to logout user and redirect
       globalLogoutHandler();
@@ -116,30 +117,42 @@ export async function fetchProducts(params?: {
   if (params?.name) qs.set("name", params.name);
 
   const url = `${API_BASE}/products${qs.toString() ? "?" + qs.toString() : ""}`;
-  const response = await request(
-    url,
-    z.object({
-      success: z.boolean(),
-      message: z.object({
-        products: ProductsSchema,
-        count: z.number(),
-      }),
-    })
-  );
+  const response = await request(url, ProductsApiResponseSchema);
   return response.message.products;
 }
+
+// Removed paginated products listing; using fetchProducts instead
 
 export async function fetchProduct(productId: string): Promise<ProductDto> {
   const response = await request(
     `${API_BASE}/products/${productId}`,
-    z.object({
-      success: z.boolean(),
-      message: z.object({
-        product: ProductSchema,
-      }),
-    })
+    ProductApiResponseSchema
   );
   return response.message.product;
+}
+
+// Vendor-specific products (authenticated vendor only)
+export async function fetchVendorProducts(params?: {
+  page?: number;
+  size?: number;
+  category?: string;
+  priceMin?: number;
+  priceMax?: number;
+  name?: string;
+}): Promise<ProductDto[]> {
+  const qs = new URLSearchParams();
+  if (params?.page) qs.set("page", String(params.page));
+  if (params?.size) qs.set("size", String(params.size));
+  if (params?.category) qs.set("category", params.category);
+  if (params?.priceMin !== undefined)
+    qs.set("priceMin", String(params.priceMin));
+  if (params?.priceMax !== undefined)
+    qs.set("priceMax", String(params.priceMax));
+  if (params?.name) qs.set("name", params.name);
+
+  const url = `${API_BASE}/products/vendorProducts${qs.toString() ? "?" + qs.toString() : ""}`;
+  const response = await request(url, ProductsApiResponseSchema);
+  return response.message.products;
 }
 
 // Search products is handled by fetchProducts with name parameter
@@ -210,10 +223,28 @@ export async function updateOrderStatusApi(
 export async function loginApi(
   credentials: z.infer<typeof loginSchema>
 ): Promise<LoginDto> {
-  return request(`${API_BASE}/auth/login`, LoginSchema, {
+  // Use direct fetch for login to avoid triggering global logout handler on failed login (401)
+  const res = await fetch(`${API_BASE}/auth/login`, {
     method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify(credentials),
   });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    // Don't trigger global logout handler for login failures
+    throw new Error(`API ${res.status}: ${text || res.statusText}`);
+  }
+
+  const data = await res.json();
+  const parsed = LoginSchema.safeParse(data);
+  if (!parsed.success) {
+    throw new Error(parsed.error.message);
+  }
+  return parsed.data;
 }
 // Fix customer registration
 export async function registerCustomerApi(
@@ -228,11 +259,27 @@ export async function registerCustomerApi(
     address: data.address,
   };
 
-  return request(
-    `${API_BASE}/auth/register/customer`,
-    z.object({ success: z.boolean() }),
-    { method: "POST", body: JSON.stringify(transformedData) }
-  );
+  // Use direct fetch to avoid triggering global logout handler on registration failures
+  const res = await fetch(`${API_BASE}/auth/register/customer`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(transformedData),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`API ${res.status}: ${text || res.statusText}`);
+  }
+
+  const data_response = await res.json();
+  const parsed = z.object({ success: z.boolean() }).safeParse(data_response);
+  if (!parsed.success) {
+    throw new Error(parsed.error.message);
+  }
+  return parsed.data;
 }
 
 // Fix vendor registration
@@ -248,11 +295,27 @@ export async function registerVendorApi(
     business_address: data.businessAddress, // camelCase → snake_case
   };
 
-  return request(
-    `${API_BASE}/auth/register/vendor`,
-    z.object({ success: z.boolean() }),
-    { method: "POST", body: JSON.stringify(transformedData) }
-  );
+  // Use direct fetch to avoid triggering global logout handler on registration failures
+  const res = await fetch(`${API_BASE}/auth/register/vendor`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(transformedData),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`API ${res.status}: ${text || res.statusText}`);
+  }
+
+  const data_response = await res.json();
+  const parsed = z.object({ success: z.boolean() }).safeParse(data_response);
+  if (!parsed.success) {
+    throw new Error(parsed.error.message);
+  }
+  return parsed.data;
 }
 
 // Fix shipper registration
@@ -267,11 +330,27 @@ export async function registerShipperApi(
     hub_id: data.hub, // hub → hub_id
   };
 
-  return request(
-    `${API_BASE}/auth/register/shipper`,
-    z.object({ success: z.boolean() }),
-    { method: "POST", body: JSON.stringify(transformedData) }
-  );
+  // Use direct fetch to avoid triggering global logout handler on registration failures
+  const res = await fetch(`${API_BASE}/auth/register/shipper`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(transformedData),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`API ${res.status}: ${text || res.statusText}`);
+  }
+
+  const data_response = await res.json();
+  const parsed = z.object({ success: z.boolean() }).safeParse(data_response);
+  if (!parsed.success) {
+    throw new Error(parsed.error.message);
+  }
+  return parsed.data;
 }
 
 // Vendor - create product (updated to match backend)
@@ -307,9 +386,7 @@ export async function createProductApi(data: {
     .object({
       success: z.boolean(),
       message: z.object({
-        data: z.object({
-          product: z.any(),
-        }),
+        product: z.any(),
       }),
     })
     .safeParse(responseData);
@@ -320,7 +397,7 @@ export async function createProductApi(data: {
 
   return {
     success: parsed.data.success,
-    product: parsed.data.message.data.product,
+    product: parsed.data.message.product,
   };
 }
 
@@ -580,14 +657,40 @@ export async function logoutApi(): Promise<{
   success: boolean;
   message?: string;
 }> {
-  return request(
-    `${API_BASE}/auth/logout`,
-    z.object({
+  // Use direct fetch to avoid triggering global logout handler on 401
+  const res = await fetch(`${API_BASE}/auth/logout`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!res.ok) {
+    // Don't trigger global logout handler for logout API calls
+    // Just return a basic response indicating failure
+    return {
+      success: false,
+      message: `Logout failed: ${res.status}`,
+    };
+  }
+
+  const data = await res.json();
+  const parsed = z
+    .object({
       success: z.boolean(),
       message: z.string().optional(),
-    }),
-    { method: "POST" }
-  );
+    })
+    .safeParse(data);
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      message: "Invalid logout response",
+    };
+  }
+
+  return parsed.data;
 }
 
 // Distribution Hubs API - Added to match backend

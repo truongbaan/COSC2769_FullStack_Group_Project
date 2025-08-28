@@ -10,7 +10,11 @@ import { Router } from "express";
 import multer from "multer";
 import { requireAuth } from "../middleware/requireAuth";
 import { validationMiddleware } from "../middleware/validation.middleware";
-import { addToCartBody, addToCartController, addToCartParams } from "../controllers/shoppingCartController";
+import {
+  addToCartBody,
+  addToCartController,
+  addToCartParams,
+} from "../controllers/shoppingCartController";
 
 import {
   createProductBodySchema,
@@ -50,7 +54,7 @@ ProductRouter.get(
 // Get product details by id
 ProductRouter.get(
   "/:productId",
-  requireAuth(["vendor", "customer"]),
+  // requireAuth(["vendor", "customer"]),
   validationMiddleware(getProductByIdParamsSchema, "params"),
   getProductByIdController
 );
@@ -71,7 +75,7 @@ ProductRouter.post(
   validationMiddleware(addToCartBody, "body"),
   validationMiddleware(addToCartParams, "params"),
   addToCartController
-)
+);
 
 // Update a product
 ProductRouter.patch(

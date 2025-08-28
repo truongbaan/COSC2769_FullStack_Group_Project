@@ -37,13 +37,13 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Helper function to extract error message from API response
+  // helper function to extract error message from API response
   function getErrorMessage(error: any): string {
     try {
-      // Try to parse the error message from API response
+      // try to parse the error message from API response
       const errorText = error.message || "";
 
-      // Look for JSON in the error message (format: "API 400: {...}")
+      // look for JSON in the error message (format: "API 400: {...}")
       const jsonMatch = errorText.match(/API \d+: (.+)/);
       if (jsonMatch) {
         try {
@@ -51,12 +51,9 @@ export default function Login() {
           if (parsed.message) {
             return parsed.message;
           }
-        } catch {
-          // If JSON parsing fails, fall through to default
-        }
+        } catch {}
       }
 
-      // Fallback to generic message
       return "Invalid email or password";
     } catch {
       return "Invalid email or password";
@@ -68,11 +65,11 @@ export default function Login() {
 
     try {
       const dto = await loginApi(data);
-      // Extract user data from the nested response structure
+      // extract user data from the nested response structure
       const user = dto.message.data.user;
       login(user as any);
 
-      // Redirect based on role
+      // redirect based on role
       const redirectPath =
         user.role === "vendor"
           ? "/vendor/products"

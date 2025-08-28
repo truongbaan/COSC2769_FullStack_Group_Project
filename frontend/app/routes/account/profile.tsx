@@ -59,22 +59,22 @@ export default function Profile() {
 
   const watchedFile = watch("profileImage");
 
-  // Initialize current profile picture from user data
+  // initialize current profile picture from user data
   useEffect(() => {
     if (user?.profile_picture && user.profile_picture.trim() !== "") {
       setCurrentProfilePicture(user.profile_picture);
     }
   }, [user?.profile_picture]);
 
-  // Redirect if not authenticated
+  // redirect if not authenticated
   useEffect(() => {
     if (!isAuthenticated()) {
       navigate("/login");
     }
-  }, [isAuthenticated, navigate]);
+  }, [user, navigate]);
 
   if (!user) {
-    return null; // This will briefly show while redirecting
+    return null;
   }
 
   const getRoleIcon = (role: string) => {

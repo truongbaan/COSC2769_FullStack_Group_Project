@@ -15,7 +15,7 @@ import {
 } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 import { Link } from "react-router";
-import { fetchProducts, searchProductsApi } from "~/lib/api";
+import { fetchProducts } from "~/lib/api";
 import type { ProductDto } from "~/lib/schemas";
 import { useCart } from "~/lib/cart";
 import { getBackendImageUrl } from "~/lib/utils";
@@ -48,7 +48,7 @@ export default function Products() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect vendors and shippers away from products page
+  // redirect vendors and shippers
   useEffect(() => {
     if (user && (user.role === "vendor" || user.role === "shipper")) {
       const redirectPath =
@@ -58,9 +58,10 @@ export default function Products() {
     }
   }, [user, navigate]);
 
-  const { register, handleSubmit, watch, formState } = useForm<FormValues>({
-    resolver: zodResolver(priceFilterSchema),
-  });
+  const { register, handleSubmit, watch, formState, setValue } =
+    useForm<FormValues>({
+      resolver: zodResolver(priceFilterSchema),
+    });
   const { addItem, getTotalItems } = useCart();
   const [filteredProducts, setFilteredProducts] = useState<ProductDto[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
@@ -73,45 +74,62 @@ export default function Products() {
   const min = watch("min");
   const max = watch("max");
 
+  // keep price range valid immediately
+  React.useEffect(() => {
+    const minNum = min !== undefined && min !== "" ? Number(min) : undefined;
+    const maxNum = max !== undefined && max !== "" ? Number(max) : undefined;
+    if (
+      minNum !== undefined &&
+      maxNum !== undefined &&
+      !Number.isNaN(minNum) &&
+      !Number.isNaN(maxNum) &&
+      minNum > maxNum
+    ) {
+      // Clamp by aligning max to min when user makes range invalid
+      setValue("max", String(minNum), {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+    }
+  }, [min, max, setValue]);
+
   const categories = React.useMemo(
     () => [...new Set(filteredProducts.map((p) => p.category))],
     [filteredProducts]
   );
 
-  const onSubmit = async (data: FormValues) => {
-    const results = await searchProductsApi({
-      q: data.q,
-      min: data.min ? Number(data.min) : undefined,
-      max: data.max ? Number(data.max) : undefined,
-      category: selectedCategory || undefined,
-    });
-    setFilteredProducts(results);
-  };
+  const onSubmit = async (_data: FormValues) => {};
 
-  // Real-time filtering as user types
+  // fetch products when filters change
   React.useEffect(() => {
     let ignore = false;
     (async () => {
-      const results = await searchProductsApi({
-        q,
-        min: min ? Number(min) : undefined,
-        max: max ? Number(max) : undefined,
+      const priceMin = min ? Number(min) : undefined;
+      const priceMax = max ? Number(max) : undefined;
+
+      // Skip fetching if the range is temporarily invalid
+      if (
+        priceMin !== undefined &&
+        priceMax !== undefined &&
+        !Number.isNaN(priceMin) &&
+        !Number.isNaN(priceMax) &&
+        priceMin > priceMax
+      ) {
+        return;
+      }
+
+      const products = await fetchProducts({
+        name: q || undefined,
+        priceMin,
+        priceMax,
         category: selectedCategory || undefined,
       });
-      if (!ignore) setFilteredProducts(results);
+      if (!ignore) setFilteredProducts(products);
     })();
     return () => {
       ignore = true;
     };
   }, [q, min, max, selectedCategory]);
-
-  // initial fetch
-  React.useEffect(() => {
-    (async () => {
-      const data = await fetchProducts();
-      setFilteredProducts(data);
-    })();
-  }, []);
 
   const visibleProducts = React.useMemo(() => {
     const arr = [...filteredProducts];
@@ -130,6 +148,10 @@ export default function Products() {
   }, [filteredProducts, sortBy]);
 
   const handleAddToCart = async (product: ProductDto) => {
+    if (!user) {
+      toast.warning("Please login to add items to your cart");
+      return;
+    }
     try {
       await addItem(product);
       toast.success(`${product.name} added to cart!`);
@@ -210,11 +232,13 @@ export default function Products() {
                   <Button
                     type='button'
                     variant='outline'
-                    onClick={async () => {
+                    onClick={() => {
                       (document.activeElement as HTMLElement)?.blur();
                       setSelectedCategory("");
-                      const data = await fetchProducts();
-                      setFilteredProducts(data);
+                      // reset filters
+                      setValue("q", "");
+                      setValue("min", "");
+                      setValue("max", "");
                     }}
                   >
                     Clear
@@ -280,7 +304,7 @@ export default function Products() {
             >
               <div className='relative aspect-square overflow-hidden bg-gray-100'>
                 <img
-                  src={getBackendImageUrl(product.imageUrl) || product.imageUrl}
+                  src={getBackendImageUrl(product.imageUrl) ?? undefined}
                   alt={product.name}
                   className='h-full w-full object-cover transition-transform duration-300 group-hover:scale-105'
                 />
@@ -349,7 +373,7 @@ export default function Products() {
                   <Button
                     size='sm'
                     className='w-full'
-                    disabled={!product.inStock}
+                    disabled={!product.inStock || !user}
                     onClick={() => handleAddToCart(product)}
                   >
                     <ShoppingCart className='mr-2 h-4 w-4' />
@@ -360,6 +384,8 @@ export default function Products() {
             </div>
           ))}
         </div>
+
+        {/* No pagination */}
 
         {filteredProducts.length === 0 && (
           <div className='text-center py-12'>
@@ -374,10 +400,8 @@ export default function Products() {
             </p>
             <Button
               className='mt-4'
-              onClick={async () => {
+              onClick={() => {
                 setSelectedCategory("");
-                const data = await fetchProducts();
-                setFilteredProducts(data);
               }}
             >
               Show All Products

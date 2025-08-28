@@ -55,7 +55,7 @@ export default function Cart() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [isOrdering, setIsOrdering] = useState(false);
-
+  const { user } = useAuth();
   const handleCheckout = async () => {
     if (!isAuthenticated()) {
       navigate("/login");
@@ -95,12 +95,21 @@ export default function Cart() {
             Your cart is empty
           </h1>
           <p className='text-gray-600 mb-8'>
-            Looks like you haven't added any items to your cart yet. Start
-            shopping to fill it up!
+            {user
+              ? "Looks like you haven't added any items to your cart yet. Start shopping to fill it up!"
+              : "Please login to view your cart"}
           </p>
-          <Link to='/products'>
-            <Button size='lg'>Start Shopping</Button>
-          </Link>
+
+          {user && (
+            <Link to='/products'>
+              <Button size='lg'>Start Shopping</Button>
+            </Link>
+          )}
+          {!user && (
+            <Link to='/login'>
+              <Button size='lg'>Login</Button>
+            </Link>
+          )}
         </div>
       </div>
     );
@@ -186,8 +195,9 @@ export default function Cart() {
                       <div className='w-24 h-24 rounded-lg overflow-hidden bg-gray-100'>
                         <img
                           src={
-                            getBackendImageUrl(item.product.imageUrl) ||
-                            item.product.imageUrl
+                            getBackendImageUrl(item.product.imageUrl) ??
+                            item.product.imageUrl ??
+                            undefined
                           }
                           alt={item.product.name}
                           className='w-full h-full object-cover'

@@ -102,7 +102,7 @@ export default function OrderDetail() {
         setLoadingItems(false);
       }
     })();
-  }, [orderId, isAuthenticated, user, navigate]);
+  }, [orderId, user, navigate]);
 
   if (!user || user.role !== "shipper" || !order) {
     return null; // Will redirect

@@ -11,13 +11,13 @@ const BACKEND_URL = "http://localhost:5000";
 /**
  * Converts a relative image path from the backend to a full URL
  * @param imagePath - The image path from the backend (can be relative or absolute URL)
- * @returns Full URL to the image or null if no valid path
+ * @returns Full URL to the image or undefined if no valid path
  */
 export function getBackendImageUrl(
   imagePath: string | null | undefined
-): string | null {
+): string | undefined {
   if (!imagePath || imagePath.trim() === "") {
-    return null;
+    return undefined;
   }
 
   // If it's already a full URL, return as is
