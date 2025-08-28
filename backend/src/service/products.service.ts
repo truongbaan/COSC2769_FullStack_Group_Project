@@ -30,14 +30,14 @@ export type Pagination = {
   size: number;
 }
 
+export type ProductsResult = { products: ProductRow[]; totalProducts: number };
+
 export const ProductService = {
-  async getCustomerProducts({ page, size }: Pagination, filters?: ProductsFilters,): Promise<ProductRow[] | null> {
-    const offset = (page - 1) * size;
+  async getCustomerProducts(pagination?: Pagination, filters?: ProductsFilters,): Promise<ProductsResult | null> {
 
     const query = supabase
       .from("products")
-      .select("*")
-      .range(offset, offset + size - 1)
+      .select("*", { count: "exact" })
       .order("id", { ascending: false });
 
     if (filters?.category) {
@@ -56,7 +56,13 @@ export const ProductService = {
       query.eq('name', filters?.name); // WHERE name = {name}
     }
 
-    const { data, error } = await query;
+    // Only paginate when there are both page & size provided
+    if (pagination?.page && pagination?.size) {
+      const offset = (pagination.page - 1) * pagination.size;
+      query.range(offset, offset + pagination.size - 1);
+    }
+
+    const { data, error, count } = await query;
 
     if (error) {
       console.error("Error fetching product:", error);
@@ -76,17 +82,15 @@ export const ProductService = {
       r.image = url ?? null;
     }
 
-    return data;
+    return { products: data, totalProducts: count ?? data.length };
   },
 
-  async getVendorProducts({ page, size }: Pagination, vendorId: string, filters?: ProductsFilters): Promise<ProductRow[] | null> {
-    const offset = (page - 1) * size;
+  async getVendorProducts(vendorId: string, pagination?: Pagination, filters?: ProductsFilters): Promise<ProductsResult | null> {
 
     const query = supabase
       .from("products")
-      .select("*")
+      .select("*", { count: "exact" })
       .eq("vendor_id", vendorId)
-      .range(offset, offset + size - 1)
       .order("id", { ascending: false });
 
     if (filters?.category) {
@@ -105,7 +109,13 @@ export const ProductService = {
       query.eq('name', filters?.name); // WHERE name = {name}
     }
 
-    const { data, error } = await query;
+    // Only paginate when there are both page & size provided
+    if (pagination?.page && pagination?.size) {
+      const offset = (pagination.page - 1) * pagination.size;
+      query.range(offset, offset + pagination.size - 1);
+    }
+
+    const { data, error, count } = await query;
 
     if (error) {
       console.error("Error fetching product:", error);
@@ -125,7 +135,7 @@ export const ProductService = {
       r.image = url ?? null;
     }
 
-    return data;
+    return { products: data, totalProducts: count ?? data.length };
   },
 
   //Get Product By Id

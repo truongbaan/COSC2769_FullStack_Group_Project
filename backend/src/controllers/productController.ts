@@ -13,8 +13,8 @@ import { ImageService } from "../service/image.service";
 import { supabase } from "../db/db";
 
 export const getProductsQuerySchema = z.object({
-    page: z.coerce.number().min(1).default(1),
-    size: z.coerce.number().min(1).max(30).default(10),
+    page: z.coerce.number().min(1).optional(), //return all products if there's no page
+    size: z.coerce.number().min(1).max(30).optional(), //return all products if there's no size
     category: z.string().trim().max(100).optional(),
     priceMin: z.coerce.number().min(0).optional(),
     priceMax: z.coerce.number().min(0).max(100000000).optional(),
@@ -32,16 +32,32 @@ export const getProductsController = async (req: Request, res: Response) => {
     try {
         const { page, size, category, priceMin, priceMax, name } = (req as unknown as Record<string, unknown> & { validatedquery: GetProductsQueryType }).validatedquery;
 
-        const products = await ProductService.getCustomerProducts(
-            { page, size },
+        //To use pagination, page & size must be provided together
+        const pagination = page !== undefined && size !== undefined ? { page, size } : undefined;
+
+        const result = await ProductService.getCustomerProducts(
+            pagination,
             { category, priceMax, priceMin, name }
         );
 
-        if (products === null) {
+        if (result === null) {
             return ErrorJsonResponse(res, 500, "Failed to fetch products");
         }
 
-        return SuccessJsonResponse(res, 200, { products, count: products.length });
+        const { products, totalProducts } = result;
+
+        //Count the page
+        const totalPages = pagination?.size
+            ? Math.max(1, Math.ceil(totalProducts / pagination.size))
+            : 1;
+
+        return SuccessJsonResponse(res, 200, {
+            products,
+            limit: products.length,
+            totalProducts: totalProducts,
+            totalPages,
+            currentPage: pagination?.page ?? 1, //default 1
+        });
 
     } catch (err: any) {
         if (err?.issues) {
@@ -58,17 +74,33 @@ export const getVendorProductsController = async (req: Request, res: Response) =
 
         const { page, size, category, priceMin, priceMax, name } = (req as unknown as Record<string, unknown> & { validatedquery: GetProductsQueryType }).validatedquery;
 
-        const products = await ProductService.getVendorProducts(
-            { page, size },
+        //To use pagination, page & size must be provided together
+        const pagination = page !== undefined && size !== undefined ? { page, size } : undefined;
+
+        const result = await ProductService.getVendorProducts(
             vendorId,
+            pagination,
             { category, priceMax, priceMin, name }
         )
 
-        if (products === null) {
+        if (result === null) {
             return ErrorJsonResponse(res, 500, "Failed to fetch products");
         }
 
-        return SuccessJsonResponse(res, 200, { products, count: products.length });
+        const { products, totalProducts } = result;
+
+        //Count the page
+        const totalPages = pagination?.size
+            ? Math.max(1, Math.ceil(totalProducts / pagination.size))
+            : 1;
+
+        return SuccessJsonResponse(res, 200, {
+            products,
+            limit: products.length,
+            totalProducts: totalProducts,
+            totalPages,
+            currentPage: pagination?.page ?? 1, //default 1
+        });
 
     } catch (err: any) {
         if (err?.issues) {
