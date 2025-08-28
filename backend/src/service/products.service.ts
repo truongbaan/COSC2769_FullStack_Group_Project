@@ -31,10 +31,7 @@ export type Pagination = {
 }
 
 export const ProductService = {
-  async getCustomerProducts(
-    { page, size }: Pagination,
-    filters?: ProductsFilters,
-  ): Promise<ProductRow[] | null> {
+  async getCustomerProducts({ page, size }: Pagination, filters?: ProductsFilters,): Promise<ProductRow[] | null> {
     const offset = (page - 1) * size;
 
     const query = supabase
