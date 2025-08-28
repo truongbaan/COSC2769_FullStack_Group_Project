@@ -31,15 +31,61 @@ export type Pagination = {
 }
 
 export const ProductService = {
-  async getCustomerProducts(
-    { page, size }: Pagination,
-    filters?: ProductsFilters,
-  ): Promise<ProductRow[] | null> {
+  async getCustomerProducts({ page, size }: Pagination, filters?: ProductsFilters,): Promise<ProductRow[] | null> {
     const offset = (page - 1) * size;
 
     const query = supabase
       .from("products")
       .select("*")
+      .range(offset, offset + size - 1)
+      .order("id", { ascending: false });
+
+    if (filters?.category) {
+      query.eq('category', filters?.category); // WHERE category = {category}
+    }
+
+    if (filters?.priceMin !== undefined) { //no skip 0
+      query.gte('price', filters?.priceMin); // WHERE price >= {min}
+    }
+
+    if (filters?.priceMax !== undefined) { //no skip 0
+      query.lte('price', filters?.priceMax); // WHERE price <= {max}
+    }
+
+    if (filters?.name) {
+      query.eq('name', filters?.name); // WHERE name = {name}
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error("Error fetching product:", error);
+      throw error;
+    }
+    console.log(data);
+
+    if (!data) return null;
+
+    for (const r of data as Array<{ image: string | null }>) {
+      if (!r.image) {
+        r.image = null;
+        continue;
+      }
+
+      const { url } = await ImageService.getPublicImageUrl(r.image, "productimages");
+      r.image = url ?? null;
+    }
+
+    return data;
+  },
+
+  async getVendorProducts({ page, size }: Pagination, vendorId: string, filters?: ProductsFilters): Promise<ProductRow[] | null> {
+    const offset = (page - 1) * size;
+
+    const query = supabase
+      .from("products")
+      .select("*")
+      .eq("vendor_id", vendorId)
       .range(offset, offset + size - 1)
       .order("id", { ascending: false });
 
@@ -131,38 +177,7 @@ export const ProductService = {
     return data;
   },
 
-  async getVendorProducts({ page, size }: Pagination, vendorId: string,): Promise<ProductRow[] | null> {
-    const offset = (page - 1) * size;
 
-    const query = supabase
-      .from("products")
-      .select("*")
-      .eq("vendor_id", vendorId)
-      .range(offset, offset + size - 1)
-      .order("id", { ascending: false });
-
-    const { data, error } = await query;
-
-    if (error) {
-      console.error("Error fetching product:", error);
-      throw error;
-    }
-    console.log(data);
-
-    if (!data) return null;
-
-    for (const r of data as Array<{ image: string | null }>) {
-      if (!r.image) {
-        r.image = null;
-        continue;
-      }
-
-      const { url } = await ImageService.getPublicImageUrl(r.image, "productimages");
-      r.image = url ?? null;
-    }
-
-    return data;
-  },
 
   async updateProduct(
     vendorId: string,

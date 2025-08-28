@@ -30,37 +30,45 @@ type GetProductsQueryType = z.output<typeof getProductsQuerySchema>;
 // Request < params type, response body, request body, request query
 export const getProductsController = async (req: Request, res: Response) => {
     try {
-        const userRole = req.user_role;
         const { page, size, category, priceMin, priceMax, name } = (req as unknown as Record<string, unknown> & { validatedquery: GetProductsQueryType }).validatedquery;
 
-        if (userRole === "customer") {
-            const products = await ProductService.getCustomerProducts(
-                { page, size },
-                { category, priceMax, priceMin, name }
-            );
+        const products = await ProductService.getCustomerProducts(
+            { page, size },
+            { category, priceMax, priceMin, name }
+        );
 
-            if (products === null) {
-                return ErrorJsonResponse(res, 500, "Failed to fetch products");
-            }
-
-            return SuccessJsonResponse(res, 200, { products, count: products.length });
-        }
-        else if (userRole === "vendor") {
-            const vendorId = req.user_id;
-
-            const products = await ProductService.getVendorProducts(
-                { page, size }, vendorId,
-            )
-
-            if (products === null) {
-                return ErrorJsonResponse(res, 500, "Failed to fetch products");
-            }
-
-            return SuccessJsonResponse(res, 200, { products, count: products.length });
+        if (products === null) {
+            return ErrorJsonResponse(res, 500, "Failed to fetch products");
         }
 
-        return ErrorJsonResponse(res, 403, "Forbidden: missing or invalid role");
+        return SuccessJsonResponse(res, 200, { products, count: products.length });
 
+    } catch (err: any) {
+        if (err?.issues) {
+            return ErrorJsonResponse(res, 400, err.issues[0].message);
+        }
+        console.log('getProductsController error: ', err);
+        return ErrorJsonResponse(res, 500, "Unexpected error while fetching products");
+    }
+}
+
+export const getVendorProductsController = async (req: Request, res: Response) => {
+    try {
+        const vendorId = req.user_id;
+
+        const { page, size, category, priceMin, priceMax, name } = (req as unknown as Record<string, unknown> & { validatedquery: GetProductsQueryType }).validatedquery;
+
+        const products = await ProductService.getVendorProducts(
+            { page, size },
+            vendorId,
+            { category, priceMax, priceMin, name }
+        )
+
+        if (products === null) {
+            return ErrorJsonResponse(res, 500, "Failed to fetch products");
+        }
+
+        return SuccessJsonResponse(res, 200, { products, count: products.length });
 
     } catch (err: any) {
         if (err?.issues) {

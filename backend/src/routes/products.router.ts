@@ -16,6 +16,7 @@ import {
   createProductBodySchema,
   getProductsController,
   getProductsQuerySchema,
+  getVendorProductsController,
 } from "../controllers/productController";
 
 import {
@@ -30,12 +31,20 @@ const upload = multer();
 
 const ProductRouter = Router();
 
-// Customer/ Vendor get products with pagination and fitlers
+// Customers/ Guests get products with pagination and fitlers
 ProductRouter.get(
   "/",
-  requireAuth(["vendor", "customer"]),
+  // requireAuth(["vendor", "customer"]),
   validationMiddleware(getProductsQuerySchema, "query"),
   getProductsController
+);
+
+// Customers/ Guests get products with pagination and fitlers
+ProductRouter.get(
+  "/vendorProducts",
+  requireAuth("vendor"),
+  validationMiddleware(getProductsQuerySchema, "query"),
+  getVendorProductsController
 );
 
 // Get product details by id
