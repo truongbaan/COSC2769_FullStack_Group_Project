@@ -30,12 +30,14 @@ export type Pagination = {
   size: number;
 }
 
+export type ProductsResult = { products: ProductRow[]; totalProducts: number };
+
 export const ProductService = {
-  async getCustomerProducts(pagination?: Pagination, filters?: ProductsFilters,): Promise<ProductRow[] | null> {
+  async getCustomerProducts(pagination?: Pagination, filters?: ProductsFilters,): Promise<ProductsResult | null> {
 
     const query = supabase
       .from("products")
-      .select("*")
+      .select("*", { count: "exact" })
       .order("id", { ascending: false });
 
     if (filters?.category) {
@@ -60,7 +62,7 @@ export const ProductService = {
       query.range(offset, offset + pagination.size - 1);
     }
 
-    const { data, error } = await query;
+    const { data, error, count } = await query;
 
     if (error) {
       console.error("Error fetching product:", error);
@@ -80,14 +82,14 @@ export const ProductService = {
       r.image = url ?? null;
     }
 
-    return data;
+    return { products: data, totalProducts: count ?? data.length };
   },
 
-  async getVendorProducts(vendorId: string, pagination?: Pagination, filters?: ProductsFilters): Promise<ProductRow[] | null> {
+  async getVendorProducts(vendorId: string, pagination?: Pagination, filters?: ProductsFilters): Promise<ProductsResult | null> {
 
     const query = supabase
       .from("products")
-      .select("*")
+      .select("*", { count: "exact" })
       .eq("vendor_id", vendorId)
       .order("id", { ascending: false });
 
@@ -113,7 +115,7 @@ export const ProductService = {
       query.range(offset, offset + pagination.size - 1);
     }
 
-    const { data, error } = await query;
+    const { data, error, count } = await query;
 
     if (error) {
       console.error("Error fetching product:", error);
@@ -133,7 +135,7 @@ export const ProductService = {
       r.image = url ?? null;
     }
 
-    return data;
+    return { products: data, totalProducts: count ?? data.length };
   },
 
   //Get Product By Id
