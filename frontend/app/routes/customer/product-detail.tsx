@@ -54,7 +54,12 @@ export default function ProductDetail() {
 
   // redirect vendors and shippers
   useEffect(() => {
-    if (user && (user.role === "vendor" || user.role === "shipper")) {
+    if (!user) {
+      navigate("/login");
+      toast.warning("Please login to view product details");
+      return;
+    }
+    if (user.role === "vendor" || user.role === "shipper") {
       const redirectPath =
         user.role === "vendor" ? "/vendor/products" : "/shipper/orders";
       navigate(redirectPath);
