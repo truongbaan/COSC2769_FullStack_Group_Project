@@ -50,6 +50,7 @@ export default function VendorProducts() {
     description: "",
     image: "",
     instock: true,
+    category: "",
   });
   const [editImageFile, setEditImageFile] = useState<File | null>(null);
   const [editPreviewImage, setEditPreviewImage] = useState<string | null>(null);
@@ -96,6 +97,7 @@ export default function VendorProducts() {
       price: product.price,
       description: product.description,
       image: product.image || product.imageUrl || "",
+      category: product.category,
       instock: (product.inStock ?? product.instock ?? true) as boolean,
     });
     setEditImageFile(null);
@@ -182,6 +184,7 @@ export default function VendorProducts() {
       description: "",
       image: "",
       instock: true,
+      category: "",
     });
     setEditImageFile(null);
     setEditPreviewImage(null);
@@ -470,80 +473,85 @@ export default function VendorProducts() {
               />
             </div>
 
-            <div className='grid grid-cols-4 items-start gap-4'>
-              <Label htmlFor='edit-image' className='text-right pt-2'>
-                Product Image
+            <div className='grid grid-cols-4 items-center gap-4'>
+              <Label htmlFor='edit-category' className='text-right'>
+                Category
               </Label>
-              <div className='col-span-3 space-y-3'>
-                <Input
-                  id='edit-image'
-                  type='file'
-                  accept='image/*'
-                  onChange={handleEditImageChange}
-                  className='w-full'
-                />
-                {editPreviewImage ? (
+
+              <Input
+                id='edit-category'
+                value={editForm.category}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, category: e.target.value })
+                }
+              />
+            </div>
+          </div>
+
+          <div className='grid grid-cols-4 items-start gap-4'>
+            <Label htmlFor='edit-image' className='text-right pt-2'>
+              Product Image
+            </Label>
+            <div className='col-span-3 space-y-3'>
+              <Input
+                id='edit-image'
+                type='file'
+                accept='image/*'
+                onChange={handleEditImageChange}
+                className='w-full'
+              />
+              {editPreviewImage ? (
+                <div className='border rounded-lg p-3'>
+                  <p className='text-sm font-medium mb-2'>New Image Preview:</p>
+                  <img
+                    src={editPreviewImage}
+                    alt='New product preview'
+                    className='w-24 h-24 object-cover rounded-lg'
+                  />
+                </div>
+              ) : (
+                productToEdit && (
                   <div className='border rounded-lg p-3'>
-                    <p className='text-sm font-medium mb-2'>
-                      New Image Preview:
-                    </p>
+                    <p className='text-sm font-medium mb-2'>Current Image:</p>
                     <img
-                      src={editPreviewImage}
-                      alt='New product preview'
+                      src={getBackendImageUrl(productToEdit.imageUrl)}
+                      alt={productToEdit.name}
                       className='w-24 h-24 object-cover rounded-lg'
                     />
                   </div>
-                ) : (
-                  productToEdit && (
-                    <div className='border rounded-lg p-3'>
-                      <p className='text-sm font-medium mb-2'>Current Image:</p>
-                      <img
-                        src={
-                          getBackendImageUrl(
-                            productToEdit.image || productToEdit.imageUrl
-                          ) ||
-                          productToEdit.image ||
-                          productToEdit.imageUrl ||
-                          "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=400&fit=crop"
-                        }
-                        alt={productToEdit.name}
-                        className='w-24 h-24 object-cover rounded-lg'
-                      />
-                    </div>
-                  )
-                )}
-              </div>
+                )
+              )}
             </div>
+          </div>
 
-            <div className='grid grid-cols-4 items-start gap-4'>
-              <Label htmlFor='edit-description' className='text-right pt-2'>
-                Description
-              </Label>
-              <Textarea
-                id='edit-description'
-                value={editForm.description}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, description: e.target.value })
+          <div className='grid grid-cols-4 items-start gap-4'>
+            <Label htmlFor='edit-description' className='text-right pt-2'>
+              Description
+            </Label>
+            <Textarea
+              id='edit-description'
+              value={editForm.description}
+              onChange={(e) =>
+                setEditForm({ ...editForm, description: e.target.value })
+              }
+              className='col-span-3'
+              placeholder='Product description (max 500 characters)'
+              rows={4}
+            />
+          </div>
+
+          <div className='grid grid-cols-4 items-center gap-4'>
+            <Label htmlFor='edit-instock' className='text-right'>
+              In Stock
+            </Label>
+            <div className='col-span-3'>
+              <Switch
+                id='edit-instock'
+                checked={!!editForm.instock}
+                onCheckedChange={(checked) =>
+                  setEditForm({ ...editForm, instock: Boolean(checked) })
                 }
-                className='col-span-3'
-                placeholder='Product description (max 500 characters)'
-                rows={4}
               />
-            </div>
-
-            <div className='grid grid-cols-4 items-center gap-4'>
-              <Label htmlFor='edit-instock' className='text-right'>
-                In Stock
-              </Label>
-              <div className='col-span-3'>
-                <Switch
-                  id='edit-instock'
-                  checked={!!editForm.instock}
-                  onCheckedChange={(checked) =>
-                    setEditForm({ ...editForm, instock: Boolean(checked) })
-                  }
-                />
-              </div>
             </div>
           </div>
 

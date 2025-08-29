@@ -84,7 +84,7 @@ export const profileImageUploadSchema = z.object({
     )
     .refine(
       (files) => files instanceof FileList && files[0]?.size <= 2 * 1024 * 1024,
-      "File size must be less than 2MB"
+      "File size must be less than 10MB"
     ),
 });
 

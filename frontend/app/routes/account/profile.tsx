@@ -32,6 +32,8 @@ import {
   Settings,
   ArrowRight,
   XCircle,
+  Eye,
+  EyeOff,
 } from "~/components/ui/icons";
 
 type ProfileImageFormValues = z.infer<typeof profileImageUploadSchema>;
@@ -56,6 +58,9 @@ export default function Profile() {
     string | null
   >(null);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
 
   const { register, handleSubmit, formState, watch, reset } =
     useForm<ProfileImageFormValues>({
@@ -399,7 +404,7 @@ export default function Profile() {
                     </div>
 
                     <p className='text-xs text-gray-600'>
-                      PNG or JPG up to 2MB.
+                      PNG or JPG up to 10MB.
                     </p>
 
                     {watchedFile?.[0] && (
@@ -453,12 +458,27 @@ export default function Profile() {
                     ?.message as string) || undefined
                 }
               >
-                <Input
-                  id='currentPassword'
-                  type='password'
-                  autoComplete='current-password'
-                  {...registerPassword("currentPassword")}
-                />
+                <div className='relative'>
+                  <Input
+                    id='currentPassword'
+                    type={showCurrentPassword ? "text" : "password"}
+                    autoComplete='current-password'
+                    {...registerPassword("currentPassword")}
+                  />
+                  <button
+                    type='button'
+                    aria-label='Toggle current password visibility'
+                    aria-pressed={showCurrentPassword}
+                    className='absolute inset-y-0 right-0 z-10 grid place-items-center px-3 text-gray-400 hover:text-gray-600'
+                    onClick={() => setShowCurrentPassword((v) => !v)}
+                  >
+                    {showCurrentPassword ? (
+                      <EyeOff className='h-4 w-4' />
+                    ) : (
+                      <Eye className='h-4 w-4' />
+                    )}
+                  </button>
+                </div>
               </Field>
 
               <Field
@@ -469,12 +489,27 @@ export default function Profile() {
                   undefined
                 }
               >
-                <Input
-                  id='newPassword'
-                  type='password'
-                  autoComplete='new-password'
-                  {...registerPassword("newPassword")}
-                />
+                <div className='relative'>
+                  <Input
+                    id='newPassword'
+                    type={showNewPassword ? "text" : "password"}
+                    autoComplete='new-password'
+                    {...registerPassword("newPassword")}
+                  />
+                  <button
+                    type='button'
+                    aria-label='Toggle new password visibility'
+                    aria-pressed={showNewPassword}
+                    className='absolute inset-y-0 right-0 z-10 grid place-items-center px-3 text-gray-400 hover:text-gray-600'
+                    onClick={() => setShowNewPassword((v) => !v)}
+                  >
+                    {showNewPassword ? (
+                      <EyeOff className='h-4 w-4' />
+                    ) : (
+                      <Eye className='h-4 w-4' />
+                    )}
+                  </button>
+                </div>
               </Field>
 
               <Field
@@ -485,12 +520,27 @@ export default function Profile() {
                     ?.message as string) || undefined
                 }
               >
-                <Input
-                  id='confirmNewPassword'
-                  type='password'
-                  autoComplete='new-password'
-                  {...registerPassword("confirmNewPassword")}
-                />
+                <div className='relative'>
+                  <Input
+                    id='confirmNewPassword'
+                    type={showConfirmNewPassword ? "text" : "password"}
+                    autoComplete='new-password'
+                    {...registerPassword("confirmNewPassword")}
+                  />
+                  <button
+                    type='button'
+                    aria-label='Toggle confirm new password visibility'
+                    aria-pressed={showConfirmNewPassword}
+                    className='absolute inset-y-0 right-0 z-10 grid place-items-center px-3 text-gray-400 hover:text-gray-600'
+                    onClick={() => setShowConfirmNewPassword((v) => !v)}
+                  >
+                    {showConfirmNewPassword ? (
+                      <EyeOff className='h-4 w-4' />
+                    ) : (
+                      <Eye className='h-4 w-4' />
+                    )}
+                  </button>
+                </div>
               </Field>
 
               <div className='flex gap-2'>
