@@ -19,7 +19,7 @@ import { fetchProducts } from "~/lib/api";
 import type { ProductDto } from "~/lib/schemas";
 import { useCart } from "~/lib/cart";
 import { getBackendImageUrl } from "~/lib/utils";
-import { ShoppingCart, Search, Star } from "~/components/ui/icons";
+import { ShoppingCart, Search } from "~/components/ui/icons";
 import { toast } from "sonner";
 import {
   Select,
@@ -79,7 +79,7 @@ export default function Products() {
   const [totalProducts, setTotalProducts] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [sortBy, setSortBy] = useState<
-    "relevance" | "price-asc" | "price-desc" | "rating-desc" | "name-asc"
+    "relevance" | "price-asc" | "price-desc" | "name-asc"
   >("relevance");
   const [compact, setCompact] = useState(true);
 
@@ -162,8 +162,7 @@ export default function Products() {
         return arr.sort((a, b) => a.price - b.price);
       case "price-desc":
         return arr.sort((a, b) => b.price - a.price);
-      case "rating-desc":
-        return arr.sort((a, b) => b.rating - a.rating);
+
       case "name-asc":
         return arr.sort((a, b) => a.name.localeCompare(b.name));
       default:
@@ -298,7 +297,6 @@ export default function Products() {
                   <SelectItem value='relevance'>Relevance</SelectItem>
                   <SelectItem value='price-asc'>Price: Low to High</SelectItem>
                   <SelectItem value='price-desc'>Price: High to Low</SelectItem>
-                  <SelectItem value='rating-desc'>Rating</SelectItem>
                   <SelectItem value='name-asc'>Name</SelectItem>
                 </SelectContent>
               </Select>
@@ -376,12 +374,6 @@ export default function Products() {
 
                 <div className='text-sm text-gray-600 flex items-center gap-2'>
                   <span>by {product.vendorName}</span>
-                  <span>•</span>
-                  <span className='inline-flex items-center gap-1'>
-                    <Star className='h-4 w-4' />
-                    <span>{product.rating}</span>
-                    <span>({product.reviewCount})</span>
-                  </span>
                 </div>
 
                 <div className='mt-1 text-2xl font-semibold text-gray-900'>

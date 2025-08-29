@@ -232,10 +232,6 @@ export default function VendorProducts() {
 
   const totalProducts = products.length;
   const inStockProducts = products.filter((p) => p.inStock).length;
-  const averageRating =
-    products.length > 0
-      ? products.reduce((sum, p) => sum + (p.rating || 0), 0) / products.length
-      : 0;
 
   return (
     <div className='container mx-auto px-4 py-8'>
@@ -257,7 +253,7 @@ export default function VendorProducts() {
         </div>
 
         {/* Stats Cards */}
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-6 mb-8'>
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-6 mb-8'>
           <Card>
             <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
               <CardTitle className='text-sm font-medium'>
@@ -288,23 +284,6 @@ export default function VendorProducts() {
               </div>
               <p className='text-xs text-muted-foreground'>
                 Average product price
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-              <CardTitle className='text-sm font-medium'>
-                Average Rating
-              </CardTitle>
-              <Eye className='h-4 w-4 text-muted-foreground' />
-            </CardHeader>
-            <CardContent>
-              <div className='text-2xl font-bold'>
-                {averageRating > 0 ? averageRating.toFixed(1) : "0.0"}
-              </div>
-              <p className='text-xs text-muted-foreground'>
-                Customer satisfaction
               </p>
             </CardContent>
           </Card>
@@ -425,30 +404,24 @@ export default function VendorProducts() {
 
                       <div className='text-sm text-gray-600 space-y-1'>
                         <div className='flex justify-between'>
-                          <span>Rating:</span>
+                          <span>Availability:</span>
                           <span>
-                            {product.rating}/5 ({product.reviewCount} reviews)
-                          </span>
-                        </div>
-                        <div className='flex justify-between'>
-                          <span>Mock Sales:</span>
-                          <span>
-                            {Math.floor(Math.random() * 50) + 1} units
+                            {product.inStock ? "Available" : "Unavailable"}
                           </span>
                         </div>
                       </div>
 
                       <div className='flex gap-2'>
-                        <Link to={`/products/${product.id}`} className='flex-1'>
-                          <Button
-                            variant='outline'
-                            size='sm'
-                            className='w-full'
-                          >
-                            <Eye className='mr-2 h-4 w-4' />
-                            View
-                          </Button>
-                        </Link>
+                        <Button
+                          variant='outline'
+                          size='sm'
+                          disabled
+                          className='flex-1'
+                        >
+                          <Eye className='mr-2 h-4 w-4' />
+                          View
+                        </Button>
+
                         <Button
                           variant='outline'
                           size='sm'

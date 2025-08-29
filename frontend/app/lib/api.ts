@@ -211,7 +211,7 @@ export async function fetchOrder(orderId: string): Promise<OrderDto> {
 
 export async function updateOrderStatusApi(
   orderId: string,
-  status: "delivered" | "cancelled"
+  status: "delivered" | "canceled"
 ): Promise<{ success: boolean; order?: any }> {
   const response = await request(
     `${API_BASE}/orders/${orderId}/status`,

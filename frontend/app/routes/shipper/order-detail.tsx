@@ -64,7 +64,7 @@ export default function OrderDetail() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [pendingAction, setPendingAction] = useState<
-    "delivered" | "cancelled" | null
+    "delivered" | "canceled" | null
   >(null);
 
   useEffect(() => {
@@ -108,7 +108,7 @@ export default function OrderDetail() {
     return null; // Will redirect
   }
 
-  const handleUpdateStatus = (status: "delivered" | "cancelled") => {
+  const handleUpdateStatus = (status: "delivered" | "canceled") => {
     setPendingAction(status);
     setConfirmDialogOpen(true);
   };
@@ -420,7 +420,7 @@ export default function OrderDetail() {
                 <Button
                   variant='destructive'
                   className='w-full'
-                  onClick={() => handleUpdateStatus("cancelled")}
+                  onClick={() => handleUpdateStatus("canceled")}
                   disabled={isUpdating}
                 >
                   <XCircle className='mr-2 h-5 w-5' />

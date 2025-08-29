@@ -168,7 +168,9 @@ export default function ProductDetail() {
           <div className='space-y-4'>
             <div className='aspect-square overflow-hidden rounded-lg bg-gray-100'>
               <img
-                src={getBackendImageUrl(product.imageUrl) || product.imageUrl}
+                src={
+                  getBackendImageUrl(product.imageUrl ?? undefined) ?? undefined
+                }
                 alt={product.name}
                 className='w-full h-full object-cover'
                 onError={(e) => {
@@ -191,13 +193,6 @@ export default function ProductDetail() {
               </h1>
 
               <div className='flex items-center gap-4 mb-4'>
-                <div className='flex items-center gap-1'>
-                  <Star className='h-5 w-5' />
-                  <span className='font-medium'>{product.rating}</span>
-                  <span className='text-gray-600'>
-                    ({product.reviewCount} reviews)
-                  </span>
-                </div>
                 {product.inStock ? (
                   <Badge
                     variant='default'

@@ -67,7 +67,7 @@ export default function ShipperOrders() {
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     orderId: string;
-    action: "delivered" | "cancelled";
+    action: "delivered" | "canceled";
   }>({ open: false, orderId: "", action: "delivered" });
 
   // redirect if not authenticated
@@ -162,7 +162,7 @@ export default function ShipperOrders() {
   // handle status update
   const handleStatusUpdate = (
     orderId: string,
-    action: "delivered" | "cancelled"
+    action: "delivered" | "canceled"
   ) => {
     setConfirmDialog({ open: true, orderId, action });
   };
@@ -524,7 +524,7 @@ export default function ShipperOrders() {
                             size='sm'
                             variant='destructive'
                             onClick={() =>
-                              handleStatusUpdate(order.id, "cancelled")
+                              handleStatusUpdate(order.id, "canceled")
                             }
                             disabled={isUpdating}
                           >
