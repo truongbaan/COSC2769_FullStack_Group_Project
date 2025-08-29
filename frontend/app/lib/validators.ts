@@ -140,3 +140,15 @@ export const cartSyncResponseSchema = z.object({
   lastUpdated: z.string().optional(),
   error: z.string().optional(),
 });
+
+// Password change schema for account settings
+export const passwordChangeSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Current password is required"),
+    newPassword: passwordSchema,
+    confirmNewPassword: z.string(),
+  })
+  .refine((data) => data.newPassword === data.confirmNewPassword, {
+    path: ["confirmNewPassword"],
+    message: "Passwords do not match",
+  });

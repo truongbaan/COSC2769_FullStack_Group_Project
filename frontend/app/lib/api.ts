@@ -433,8 +433,39 @@ export async function updateProductApi(
   message?: string;
   product?: any;
 }> {
-  const formData = new FormData();
+  // When no file upload is needed, send JSON body for PATCH updates
+  if (!productData.image) {
+    const jsonBody: Record<string, unknown> = {};
+    if (productData.name !== undefined) jsonBody.name = productData.name;
+    if (productData.price !== undefined) jsonBody.price = productData.price;
+    if (productData.description !== undefined)
+      jsonBody.description = productData.description;
+    if (productData.category !== undefined)
+      jsonBody.category = productData.category;
+    if (productData.instock !== undefined)
+      jsonBody.instock = productData.instock;
 
+    const response = await request(
+      `${API_BASE}/products/${productId}`,
+      z.object({
+        success: z.boolean(),
+        message: z.object({
+          message: z.string().optional(),
+          product: z.any().optional(),
+        }),
+      }),
+      { method: "PATCH", body: JSON.stringify(jsonBody) }
+    );
+
+    return {
+      success: response.success,
+      message: response.message.message,
+      product: response.message.product,
+    };
+  }
+
+  // If an image file is provided, fall back to multipart/form-data
+  const formData = new FormData();
   if (productData.name !== undefined) formData.append("name", productData.name);
   if (productData.price !== undefined)
     formData.append("price", String(productData.price));
@@ -444,7 +475,7 @@ export async function updateProductApi(
     formData.append("category", productData.category);
   if (productData.instock !== undefined)
     formData.append("instock", String(productData.instock));
-  if (productData.image) formData.append("image", productData.image);
+  formData.append("image", productData.image);
 
   const res = await fetch(`${API_BASE}/products/${productId}`, {
     method: "PATCH",

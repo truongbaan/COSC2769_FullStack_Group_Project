@@ -360,7 +360,7 @@ export default function Products() {
                   }
                 >
                   <Link
-                    to={`/products/${product.id}`}
+                    to={user ? `/products/${product.id}` : "/login"}
                     className='hover:underline'
                   >
                     {product.name}

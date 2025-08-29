@@ -25,7 +25,7 @@ import {
 import { Link, useNavigate, useParams } from "react-router";
 import { Field } from "~/components/shared/Field";
 import { UserPlus, Store, Truck, Eye, EyeOff } from "~/components/ui/icons";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { z } from "zod";
 import { toast } from "sonner";
 import {
@@ -54,7 +54,7 @@ type Role = "customer" | "vendor" | "shipper";
 
 export default function Register() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   const [loading, setLoading] = useState(false);
   const params = useParams();
@@ -65,6 +65,12 @@ export default function Register() {
   const [showCustomerPassword, setShowCustomerPassword] = useState(false);
   const [showVendorPassword, setShowVendorPassword] = useState(false);
   const [showShipperPassword, setShowShipperPassword] = useState(false);
+
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate("/account", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   function onTabChange(next: string) {
     const role = (next as Role) ?? "customer";

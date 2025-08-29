@@ -16,7 +16,7 @@ import { loginApi } from "~/lib/api";
 import { Link, useNavigate } from "react-router";
 import { Field } from "~/components/shared/Field";
 import { LogIn, Eye, EyeOff } from "~/components/ui/icons";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { z } from "zod";
 
 type FormValues = z.infer<typeof loginSchema>;
@@ -32,10 +32,16 @@ export default function Login() {
   const { register, handleSubmit, formState, setError } = useForm<FormValues>({
     resolver: zodResolver(loginSchema),
   });
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate("/account", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   // helper function to extract error message from API response
   function getErrorMessage(error: any): string {

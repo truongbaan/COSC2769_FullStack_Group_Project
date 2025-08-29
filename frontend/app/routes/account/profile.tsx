@@ -1,7 +1,10 @@
 import type { Route } from "./+types/profile";
 import { useAuth } from "~/lib/auth";
-import { uploadProfileImageApi } from "~/lib/api";
-import { profileImageUploadSchema } from "~/lib/validators";
+import { uploadProfileImageApi, updatePasswordApi } from "~/lib/api";
+import {
+  profileImageUploadSchema,
+  passwordChangeSchema,
+} from "~/lib/validators";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "~/components/ui/button";
@@ -32,6 +35,7 @@ import {
 } from "~/components/ui/icons";
 
 type ProfileImageFormValues = z.infer<typeof profileImageUploadSchema>;
+type PasswordChangeFormValues = z.infer<typeof passwordChangeSchema>;
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -51,11 +55,21 @@ export default function Profile() {
   const [currentProfilePicture, setCurrentProfilePicture] = useState<
     string | null
   >(null);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   const { register, handleSubmit, formState, watch, reset } =
     useForm<ProfileImageFormValues>({
       resolver: zodResolver(profileImageUploadSchema),
     });
+
+  const {
+    register: registerPassword,
+    handleSubmit: handleSubmitPassword,
+    formState: passwordFormState,
+    reset: resetPassword,
+  } = useForm<PasswordChangeFormValues>({
+    resolver: zodResolver(passwordChangeSchema),
+  });
 
   const watchedFile = watch("profileImage");
 
@@ -183,6 +197,27 @@ export default function Profile() {
     reset();
     setPreviewUrl(null);
     toast.info("Image selection cancelled");
+  };
+
+  const onSubmitPassword = async (data: PasswordChangeFormValues) => {
+    setIsChangingPassword(true);
+    try {
+      const res = await updatePasswordApi({
+        password: data.currentPassword,
+        newPassword: data.newPassword,
+      });
+      if (res.success) {
+        toast.success(res.message ?? "Password updated successfully");
+        resetPassword();
+      } else {
+        toast.error(res.message ?? "Failed to update password");
+      }
+    } catch (error) {
+      console.error("Update password error:", error);
+      toast.error("Failed to update password. Please try again.");
+    } finally {
+      setIsChangingPassword(false);
+    }
   };
 
   return (
@@ -391,6 +426,87 @@ export default function Profile() {
                 </Field>
               </form>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Change Password */}
+        <Card>
+          <CardHeader>
+            <CardTitle className='flex items-center gap-2'>
+              <Settings className='h-5 w-5' />
+              Change Password
+            </CardTitle>
+            <CardDescription>
+              Update your account password. Make sure to use a strong password.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form
+              onSubmit={handleSubmitPassword(onSubmitPassword)}
+              className='space-y-4'
+            >
+              <Field
+                id='currentPassword'
+                label='Current Password'
+                error={
+                  (passwordFormState.errors.currentPassword
+                    ?.message as string) || undefined
+                }
+              >
+                <Input
+                  id='currentPassword'
+                  type='password'
+                  autoComplete='current-password'
+                  {...registerPassword("currentPassword")}
+                />
+              </Field>
+
+              <Field
+                id='newPassword'
+                label='New Password'
+                error={
+                  (passwordFormState.errors.newPassword?.message as string) ||
+                  undefined
+                }
+              >
+                <Input
+                  id='newPassword'
+                  type='password'
+                  autoComplete='new-password'
+                  {...registerPassword("newPassword")}
+                />
+              </Field>
+
+              <Field
+                id='confirmNewPassword'
+                label='Confirm New Password'
+                error={
+                  (passwordFormState.errors.confirmNewPassword
+                    ?.message as string) || undefined
+                }
+              >
+                <Input
+                  id='confirmNewPassword'
+                  type='password'
+                  autoComplete='new-password'
+                  {...registerPassword("confirmNewPassword")}
+                />
+              </Field>
+
+              <div className='flex gap-2'>
+                <Button type='submit' disabled={isChangingPassword}>
+                  {isChangingPassword ? "Updating..." : "Update Password"}
+                </Button>
+                <Button
+                  type='button'
+                  variant='outline'
+                  disabled={isChangingPassword}
+                  onClick={() => resetPassword()}
+                >
+                  Clear
+                </Button>
+              </div>
+            </form>
           </CardContent>
         </Card>
 

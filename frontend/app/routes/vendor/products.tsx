@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router";
 import { updateProductApi, fetchVendorProducts } from "~/lib/api";
 import { getBackendImageUrl } from "~/lib/utils";
 import { Button } from "~/components/ui/button";
+import { Switch } from "~/components/ui/switch";
 import {
   Card,
   CardContent,
@@ -23,14 +24,7 @@ import {
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Textarea } from "~/components/ui/textarea";
-import {
-  Package,
-  Plus,
-  Edit,
-  Trash2,
-  Eye,
-  TrendingUp,
-} from "~/components/ui/icons";
+import { Package, Plus, Edit, Eye, TrendingUp } from "~/components/ui/icons";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -47,9 +41,6 @@ export default function VendorProducts() {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [productToDelete, setProductToDelete] = useState<any | null>(null);
-  const [deleting, setDeleting] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [productToEdit, setProductToEdit] = useState<any | null>(null);
   const [editing, setEditing] = useState(false);
@@ -58,6 +49,7 @@ export default function VendorProducts() {
     price: 0,
     description: "",
     image: "",
+    instock: true,
   });
   const [editImageFile, setEditImageFile] = useState<File | null>(null);
   const [editPreviewImage, setEditPreviewImage] = useState<string | null>(null);
@@ -97,49 +89,6 @@ export default function VendorProducts() {
     return null;
   }
 
-  const handleDeleteProduct = (product: any) => {
-    setProductToDelete(product);
-    setDeleteDialogOpen(true);
-  };
-
-  const confirmDeleteProduct = async () => {
-    if (productToDelete && user) {
-      try {
-        setDeleting(true);
-
-        const result = await updateProductApi(productToDelete.id, {
-          instock: false,
-        });
-
-        if (result.success) {
-          // update product in local state
-          setProducts(
-            products.map((p) =>
-              p.id === productToDelete.id
-                ? { ...p, inStock: false, instock: false }
-                : p
-            )
-          );
-          setDeleteDialogOpen(false);
-          setProductToDelete(null);
-          toast.success("Product marked as out of stock");
-        } else {
-          throw new Error("Failed to update product");
-        }
-      } catch (error) {
-        console.error("Error updating product:", error);
-        toast.error("Failed to update product. Please try again.");
-      } finally {
-        setDeleting(false);
-      }
-    }
-  };
-
-  const cancelDeleteProduct = () => {
-    setDeleteDialogOpen(false);
-    setProductToDelete(null);
-  };
-
   const handleEditProduct = (product: any) => {
     setProductToEdit(product);
     setEditForm({
@@ -147,6 +96,7 @@ export default function VendorProducts() {
       price: product.price,
       description: product.description,
       image: product.image || product.imageUrl || "",
+      instock: (product.inStock ?? product.instock ?? true) as boolean,
     });
     setEditImageFile(null);
     setEditPreviewImage(null);
@@ -178,13 +128,34 @@ export default function VendorProducts() {
           updateData.image = editImageFile;
         }
 
+        // include stock status if changed
+        const currentInStock = (productToEdit.inStock ??
+          productToEdit.instock) as boolean | undefined;
+        if (
+          typeof editForm.instock === "boolean" &&
+          editForm.instock !== currentInStock
+        ) {
+          updateData.instock = editForm.instock;
+        }
+
         const result = await updateProductApi(productToEdit.id, updateData);
 
         if (result.success && result.product) {
           // update product in local state
           setProducts(
             products.map((p) =>
-              p.id === productToEdit.id ? { ...p, ...result.product } : p
+              p.id === productToEdit.id
+                ? {
+                    ...p,
+                    ...result.product,
+                    ...(updateData.instock !== undefined
+                      ? {
+                          inStock: updateData.instock,
+                          instock: updateData.instock,
+                        }
+                      : {}),
+                  }
+                : p
             )
           );
           setEditDialogOpen(false);
@@ -210,6 +181,7 @@ export default function VendorProducts() {
       price: 0,
       description: "",
       image: "",
+      instock: true,
     });
     setEditImageFile(null);
     setEditPreviewImage(null);
@@ -359,13 +331,7 @@ export default function VendorProducts() {
                   <CardHeader className='p-0'>
                     <div className='aspect-square overflow-hidden rounded-t-lg bg-gray-100'>
                       <img
-                        src={
-                          getBackendImageUrl(
-                            product.image || product.imageUrl
-                          ) ||
-                          product.image ||
-                          product.imageUrl
-                        }
+                        src={getBackendImageUrl(product.imageUrl)}
                         alt={product.name}
                         className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-300'
                       />
@@ -430,14 +396,7 @@ export default function VendorProducts() {
                         >
                           <Edit className='h-4 w-4' />
                         </Button>
-                        <Button
-                          variant='outline'
-                          size='sm'
-                          onClick={() => handleDeleteProduct(product)}
-                          className='hover:underline'
-                        >
-                          <Trash2 className='h-4 w-4' />
-                        </Button>
+                        {/* Out-of-stock action moved into the edit form toggle */}
                       </div>
                     </div>
                   </CardContent>
@@ -463,65 +422,6 @@ export default function VendorProducts() {
           </ul>
         </div>
       </div>
-
-      {/* Delete Product Dialog */}
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Mark Product as Out of Stock</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to mark "{productToDelete?.name}" as out of
-              stock? You can update it later to bring it back in stock.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className='flex items-center space-x-4 p-4 bg-gray-50 rounded-lg'>
-            {productToDelete && (
-              <>
-                <img
-                  src={
-                    getBackendImageUrl(
-                      productToDelete.image || productToDelete.imageUrl
-                    ) ||
-                    productToDelete.image ||
-                    productToDelete.imageUrl
-                  }
-                  alt={productToDelete.name}
-                  className='w-16 h-16 object-cover rounded-lg'
-                />
-                <div>
-                  <h4 className='font-medium text-gray-900'>
-                    {productToDelete.name}
-                  </h4>
-                  <p className='text-sm text-gray-600'>
-                    ${productToDelete.price}
-                  </p>
-                  <Badge variant='secondary' className='text-xs mt-1'>
-                    {productToDelete.category}
-                  </Badge>
-                </div>
-              </>
-            )}
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant='outline'
-              onClick={cancelDeleteProduct}
-              disabled={deleting}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant='destructive'
-              onClick={confirmDeleteProduct}
-              disabled={deleting}
-            >
-              {deleting ? "Updating..." : "Mark Out of Stock"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Edit Product Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
@@ -629,6 +529,21 @@ export default function VendorProducts() {
                 placeholder='Product description (max 500 characters)'
                 rows={4}
               />
+            </div>
+
+            <div className='grid grid-cols-4 items-center gap-4'>
+              <Label htmlFor='edit-instock' className='text-right'>
+                In Stock
+              </Label>
+              <div className='col-span-3'>
+                <Switch
+                  id='edit-instock'
+                  checked={!!editForm.instock}
+                  onCheckedChange={(checked) =>
+                    setEditForm({ ...editForm, instock: Boolean(checked) })
+                  }
+                />
+              </div>
             </div>
           </div>
 
