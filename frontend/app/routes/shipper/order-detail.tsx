@@ -166,15 +166,15 @@ export default function OrderDetail() {
             Back to Active Orders
           </Link>
           <div className='flex items-center gap-3 mb-4'>
-            <div className='w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center'>
+            <div className='w-12 h-12 bg-muted rounded-full flex items-center justify-center'>
               <Truck className='h-6 w-6' />
             </div>
             <div>
-              <h1 className='text-3xl font-bold text-gray-900'>
+              <h1 className='text-3xl font-bold text-foreground'>
                 Order {order.id}
               </h1>
               <div className='flex items-center gap-2'>
-                <p className='text-gray-600'>{user.hub_id} Hub</p>
+                <p className='text-muted-foreground'>{user.hub_id} Hub</p>
                 <Badge variant='secondary'>{order.status}</Badge>
               </div>
             </div>
@@ -196,7 +196,7 @@ export default function OrderDetail() {
                 {customerInfo ? (
                   <>
                     <div>
-                      <h4 className='font-medium text-gray-900 mb-2'>
+                      <h4 className='font-medium text-foreground mb-2'>
                         Customer Name:
                       </h4>
                       <p className='text-lg font-semibold'>
@@ -205,17 +205,19 @@ export default function OrderDetail() {
                     </div>
 
                     <div>
-                      <h4 className='font-medium text-gray-900 mb-2'>
+                      <h4 className='font-medium text-foreground mb-2'>
                         Delivery Address:
                       </h4>
-                      <div className='bg-gray-50 p-4 rounded-lg'>
-                        <p className='text-gray-800'>{customerInfo.address}</p>
+                      <div className='bg-muted p-4 rounded-lg'>
+                        <p className='text-foreground'>
+                          {customerInfo.address}
+                        </p>
                       </div>
                     </div>
                   </>
                 ) : (
                   <div>
-                    <h4 className='font-medium text-gray-900 mb-2'>
+                    <h4 className='font-medium text-foreground mb-2'>
                       Customer ID:
                     </h4>
                     <p className='text-lg font-semibold'>{order.customerId}</p>
@@ -223,17 +225,17 @@ export default function OrderDetail() {
                 )}
 
                 <div>
-                  <h4 className='font-medium text-gray-900 mb-2'>Hub ID:</h4>
-                  <div className='bg-gray-50 p-4 rounded-lg'>
-                    <p className='text-gray-800'>{order.hubId}</p>
+                  <h4 className='font-medium text-foreground mb-2'>Hub ID:</h4>
+                  <div className='bg-muted p-4 rounded-lg'>
+                    <p className='text-foreground'>{order.hubId}</p>
                   </div>
                 </div>
 
                 <div>
-                  <h4 className='font-medium text-gray-900 mb-2'>
+                  <h4 className='font-medium text-foreground mb-2'>
                     Order Status:
                   </h4>
-                  <div className='bg-gray-50 p-4 rounded-lg'>
+                  <div className='bg-muted p-4 rounded-lg'>
                     <Badge
                       variant={
                         order.status === "active" ? "default" : "secondary"
@@ -245,7 +247,7 @@ export default function OrderDetail() {
                   </div>
                 </div>
 
-                <div className='flex items-center gap-4 text-sm text-gray-600'>
+                <div className='flex items-center gap-4 text-sm text-muted-foreground'>
                   <div className='flex items-center gap-1'>
                     <Clock className='h-4 w-4' />
                     <span>Order ID: {order.id}</span>
@@ -274,8 +276,10 @@ export default function OrderDetail() {
                 {loadingItems ? (
                   <div className='flex items-center justify-center py-8'>
                     <div className='text-center'>
-                      <Clock className='h-8 w-8 animate-pulse mx-auto mb-2 text-gray-400' />
-                      <p className='text-gray-600'>Loading order items...</p>
+                      <Clock className='h-8 w-8 animate-pulse mx-auto mb-2 text-muted-foreground' />
+                      <p className='text-muted-foreground'>
+                        Loading order items...
+                      </p>
                     </div>
                   </div>
                 ) : orderItems.length > 0 ? (
@@ -301,10 +305,10 @@ export default function OrderDetail() {
                           />
                         </div>
                         <div className='flex-1'>
-                          <h4 className='font-medium text-gray-900 mb-1'>
+                          <h4 className='font-medium text-foreground mb-1'>
                             {item.product_name}
                           </h4>
-                          <div className='text-sm text-gray-600 space-y-1'>
+                          <div className='text-sm text-muted-foreground space-y-1'>
                             <p>Product ID: {item.product_id}</p>
                             <p>
                               Quantity:{" "}
@@ -324,7 +328,9 @@ export default function OrderDetail() {
                           <p className='font-semibold text-lg'>
                             ${item.total.toFixed(2)}
                           </p>
-                          <p className='text-sm text-gray-600'>Subtotal</p>
+                          <p className='text-sm text-muted-foreground'>
+                            Subtotal
+                          </p>
                         </div>
                       </div>
                     ))}
@@ -332,7 +338,7 @@ export default function OrderDetail() {
                     <div className='border-t pt-4 mt-4'>
                       <div className='flex justify-between items-center font-bold text-lg'>
                         <span>Order Total:</span>
-                        <span className='text-gray-900'>
+                        <span className='text-foreground'>
                           $
                           {orderItems
                             .reduce((sum, item) => sum + item.total, 0)
@@ -342,8 +348,8 @@ export default function OrderDetail() {
                     </div>
                   </div>
                 ) : (
-                  <div className='text-center py-8 text-gray-500'>
-                    <Package className='h-12 w-12 mx-auto mb-3 text-gray-300' />
+                  <div className='text-center py-8 text-muted-foreground'>
+                    <Package className='h-12 w-12 mx-auto mb-3 text-muted-foreground/60' />
                     <p>No items found for this order</p>
                   </div>
                 )}
@@ -363,23 +369,25 @@ export default function OrderDetail() {
               </CardHeader>
               <CardContent>
                 <div className='space-y-3'>
-                  <div className='p-3 bg-gray-50 rounded-lg'>
+                  <div className='p-3 bg-muted rounded-lg'>
                     <div className='grid grid-cols-2 gap-4 text-sm'>
                       <div>
                         <span className='font-medium'>Order ID:</span>
-                        <p className='text-gray-600'>{order.id}</p>
+                        <p className='text-muted-foreground'>{order.id}</p>
                       </div>
                       <div>
                         <span className='font-medium'>Customer ID:</span>
-                        <p className='text-gray-600'>{order.customerId}</p>
+                        <p className='text-muted-foreground'>
+                          {order.customerId}
+                        </p>
                       </div>
                       <div>
                         <span className='font-medium'>Hub ID:</span>
-                        <p className='text-gray-600'>{order.hubId}</p>
+                        <p className='text-muted-foreground'>{order.hubId}</p>
                       </div>
                       <div>
                         <span className='font-medium'>Status:</span>
-                        <p className='text-gray-600'>{order.status}</p>
+                        <p className='text-muted-foreground'>{order.status}</p>
                       </div>
                     </div>
                   </div>
@@ -387,7 +395,7 @@ export default function OrderDetail() {
                   <div className='border-t pt-3'>
                     <div className='flex justify-between items-center font-bold text-lg'>
                       <span>Total Amount:</span>
-                      <span className='text-gray-900'>
+                      <span className='text-foreground'>
                         ${order.total.toFixed(2)}
                       </span>
                     </div>
@@ -472,9 +480,9 @@ export default function OrderDetail() {
 
             {/* Emergency Contact */}
             <Card>
-              <CardContent className='p-4 bg-gray-50 border-gray-200'>
-                <h4 className='font-medium text-gray-900 mb-2'>Need Help?</h4>
-                <p className='text-gray-700 text-sm mb-2'>
+              <CardContent className='p-4 bg-muted border-border'>
+                <h4 className='font-medium text-foreground mb-2'>Need Help?</h4>
+                <p className='text-muted-foreground text-sm mb-2'>
                   Contact dispatch for delivery issues
                 </p>
                 <Button variant='outline' size='sm' className='w-full'>

@@ -119,10 +119,10 @@ export default function ProductDetail() {
       <div className='container mx-auto px-4 py-8'>
         <div className='max-w-2xl mx-auto text-center'>
           <Clock className='mx-auto h-8 w-8 animate-pulse mb-4' />
-          <h1 className='text-2xl font-bold text-gray-900 mb-4'>
+          <h1 className='text-2xl font-bold text-foreground mb-4'>
             Loading Product...
           </h1>
-          <p className='text-gray-600'>
+          <p className='text-muted-foreground'>
             Please wait while we fetch the product details.
           </p>
         </div>
@@ -134,10 +134,10 @@ export default function ProductDetail() {
     return (
       <div className='container mx-auto px-4 py-8'>
         <div className='max-w-2xl mx-auto text-center'>
-          <h1 className='text-2xl font-bold text-gray-900 mb-4'>
+          <h1 className='text-2xl font-bold text-foreground mb-4'>
             Product Not Found
           </h1>
-          <p className='text-gray-600 mb-6'>
+          <p className='text-muted-foreground mb-6'>
             {error ||
               "The product you're looking for doesn't exist or has been removed."}
           </p>
@@ -166,7 +166,7 @@ export default function ProductDetail() {
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
           {/* Product Image */}
           <div className='space-y-4'>
-            <div className='aspect-square overflow-hidden rounded-lg bg-gray-100'>
+            <div className='aspect-square overflow-hidden rounded-lg bg-muted'>
               <img
                 src={
                   getBackendImageUrl(product.imageUrl ?? undefined) ?? undefined
@@ -188,16 +188,13 @@ export default function ProductDetail() {
               <Badge variant='secondary' className='mb-2'>
                 {product.category}
               </Badge>
-              <h1 className='text-3xl font-bold text-gray-900 mb-4'>
+              <h1 className='text-3xl font-bold text-foreground mb-4'>
                 {product.name}
               </h1>
 
               <div className='flex items-center gap-4 mb-4'>
                 {product.inStock ? (
-                  <Badge
-                    variant='default'
-                    className='bg-gray-100 text-gray-900'
-                  >
+                  <Badge variant='default' className='bg-muted text-foreground'>
                     In Stock
                   </Badge>
                 ) : (
@@ -205,7 +202,7 @@ export default function ProductDetail() {
                 )}
               </div>
 
-              <div className='text-3xl font-bold text-gray-900 mb-6'>
+              <div className='text-3xl font-bold text-foreground mb-6'>
                 ${product.price}
               </div>
             </div>
@@ -266,8 +263,8 @@ export default function ProductDetail() {
                   </Button>
 
                   {addedToCart && (
-                    <div className='bg-gray-50 border border-gray-200 rounded-lg p-4'>
-                      <p className='text-gray-800 font-medium'>
+                    <div className='bg-muted border border-border rounded-lg p-4'>
+                      <p className='text-foreground font-medium'>
                         ✅ Added to cart! You now have {getTotalItems()} items
                         in your cart.
                       </p>
@@ -308,7 +305,7 @@ export default function ProductDetail() {
               <CardTitle>Product Description</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className='text-gray-700 leading-relaxed'>
+              <p className='text-muted-foreground leading-relaxed'>
                 {product.description}
               </p>
             </CardContent>
@@ -317,10 +314,10 @@ export default function ProductDetail() {
 
         {/* Related Products */}
         <div className='mt-12'>
-          <h2 className='text-2xl font-bold text-gray-900 mb-6'>
+          <h2 className='text-2xl font-bold text-foreground mb-6'>
             You might also like
           </h2>
-          <div className='text-center py-8 text-gray-600'>
+          <div className='text-center py-8 text-muted-foreground'>
             <p>Related products feature would be implemented here</p>
             <Link to='/products' className='mt-4 inline-block'>
               <Button variant='outline'>Browse More Products</Button>

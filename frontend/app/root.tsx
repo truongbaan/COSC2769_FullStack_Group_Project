@@ -10,6 +10,7 @@ import {
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { useEffect } from "react";
+import { ThemeProvider } from "./lib/theme";
 
 import type { Route } from "./+types/root";
 import "./app.css";
@@ -38,11 +39,13 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const themeScript = `(() => { try { const s = localStorage.getItem('app-theme'); const t = s === 'light' || s === 'dark' ? s : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); const r = document.documentElement; if (t === 'dark') { r.classList.add('dark'); } else { r.classList.remove('dark'); } } catch (e) {} })();`;
   return (
     <html lang='en'>
       <head>
         <meta charSet='utf-8' />
         <meta name='viewport' content='width=device-width, initial-scale=1' />
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <Meta />
         <Links />
       </head>
@@ -97,7 +100,9 @@ export default function App() {
   return (
     <Provider store={store}>
       <PersistGate loading={<div>Loading...</div>} persistor={persistor}>
-        <AppContent />
+        <ThemeProvider>
+          <AppContent />
+        </ThemeProvider>
       </PersistGate>
     </Provider>
   );

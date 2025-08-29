@@ -114,25 +114,25 @@ export default function Help() {
   return (
     <div className='min-h-screen'>
       {/* Hero */}
-      <section className='bg-white border-b border-gray-200'>
+      <section className='bg-background border-b border-border'>
         <div className='container mx-auto px-4 py-16 lg:py-24'>
           <div className='max-w-4xl'>
-            <p className='text-sm font-medium tracking-wider text-gray-500 uppercase'>
+            <p className='text-sm font-medium tracking-wider text-muted-foreground uppercase'>
               Help & Support
             </p>
-            <h1 className='text-5xl lg:text-6xl font-bold text-black leading-tight mt-2'>
+            <h1 className='text-5xl lg:text-6xl font-bold text-foreground leading-tight mt-2'>
               How can we help you today?
             </h1>
-            <p className='text-lg text-gray-600 leading-relaxed max-w-2xl mt-6'>
+            <p className='text-lg text-muted-foreground leading-relaxed max-w-2xl mt-6'>
               Get answers fast. Explore FAQs by role, check quick contacts, and
               find technical notes for this educational platform.
             </p>
-            <div className='h-px w-full bg-gray-200 mt-8'></div>
-            <div className='flex items-center gap-6 text-sm text-gray-600 mt-6'>
+            <div className='h-px w-full bg-border mt-8'></div>
+            <div className='flex items-center gap-6 text-sm text-muted-foreground mt-6'>
               <span>FAQ by role</span>
-              <span className='h-3 w-px bg-gray-300' />
+              <span className='h-3 w-px bg-border' />
               <span>Quick contact</span>
-              <span className='h-3 w-px bg-gray-300' />
+              <span className='h-3 w-px bg-border' />
               <span>Technical notes</span>
             </div>
           </div>
@@ -143,16 +143,16 @@ export default function Help() {
         <div className='max-w-6xl mx-auto'>
           {/* Quick Contact */}
           <div className='grid grid-cols-1 md:grid-cols-3 gap-8 mb-16'>
-            <Card className='text-left border-2 border-gray-200 hover:border-black transition-colors'>
+            <Card className='text-left border-2 border-border hover:border-primary transition-colors'>
               <CardHeader className='space-y-2'>
-                <div className='w-12 h-12 bg-black text-white rounded-full flex items-center justify-center'>
+                <div className='w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center'>
                   <Mail className='h-6 w-6' />
                 </div>
                 <CardTitle className='text-xl'>Email Support</CardTitle>
                 <CardDescription>Get help via email</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className='text-sm text-gray-600'>
+                <p className='text-sm text-muted-foreground'>
                   For educational project questions, contact your instructor
                 </p>
                 <Badge variant='secondary' className='mt-3'>
@@ -161,16 +161,16 @@ export default function Help() {
               </CardContent>
             </Card>
 
-            <Card className='text-left border-2 border-gray-200 hover:border-black transition-colors'>
+            <Card className='text-left border-2 border-border hover:border-primary transition-colors'>
               <CardHeader className='space-y-2'>
-                <div className='w-12 h-12 bg-black text-white rounded-full flex items-center justify-center'>
+                <div className='w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center'>
                   <MessageSquare className='h-6 w-6' />
                 </div>
                 <CardTitle className='text-xl'>Documentation</CardTitle>
                 <CardDescription>Check project docs</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className='text-sm text-gray-600'>
+                <p className='text-sm text-muted-foreground'>
                   Refer to the project README and course materials
                 </p>
                 <Badge variant='secondary' className='mt-3'>
@@ -179,16 +179,16 @@ export default function Help() {
               </CardContent>
             </Card>
 
-            <Card className='text-left border-2 border-gray-200 hover:border-black transition-colors'>
+            <Card className='text-left border-2 border-border hover:border-primary transition-colors'>
               <CardHeader className='space-y-2'>
-                <div className='w-12 h-12 bg-black text-white rounded-full flex items-center justify-center'>
+                <div className='w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center'>
                   <Phone className='h-6 w-6' />
                 </div>
                 <CardTitle className='text-xl'>Office Hours</CardTitle>
                 <CardDescription>In-person assistance</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className='text-sm text-gray-600'>
+                <p className='text-sm text-muted-foreground'>
                   Visit your instructor during scheduled office hours
                 </p>
                 <Badge variant='secondary' className='mt-3'>
@@ -203,10 +203,10 @@ export default function Help() {
             {faqs.map((category, index) => (
               <div key={index}>
                 <div className='flex items-center gap-3 mb-6'>
-                  <div className='w-10 h-10 bg-black text-white rounded-full flex items-center justify-center'>
+                  <div className='w-10 h-10 bg-primary text-primary-foreground rounded-full flex items-center justify-center'>
                     {category.icon}
                   </div>
-                  <h2 className='text-2xl font-semibold text-black'>
+                  <h2 className='text-2xl font-semibold text-foreground'>
                     {category.category}
                   </h2>
                 </div>
@@ -214,14 +214,14 @@ export default function Help() {
                 <Accordion
                   type='single'
                   collapsible
-                  className='rounded-xl border-2 border-gray-200 divide-y'
+                  className='rounded-xl border-2 border-border divide-y'
                 >
                   {category.questions.map((faq, qIndex) => (
                     <AccordionItem key={qIndex} value={`${index}-${qIndex}`}>
                       <AccordionTrigger className='text-base md:text-lg py-4 px-4'>
                         {faq.q}
                       </AccordionTrigger>
-                      <AccordionContent className='text-gray-600 px-2 pb-4'>
+                      <AccordionContent className='text-muted-foreground px-2 pb-4'>
                         {faq.a}
                       </AccordionContent>
                     </AccordionItem>
@@ -232,16 +232,16 @@ export default function Help() {
           </div>
 
           {/* Technical Information */}
-          <div className='mt-20 rounded-2xl border border-gray-200 p-8'>
-            <h2 className='text-3xl font-bold text-black mb-6'>
+          <div className='mt-20 rounded-2xl border border-border p-8'>
+            <h2 className='text-3xl font-bold text-foreground mb-6'>
               Technical Information
             </h2>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
               <div>
-                <h3 className='font-semibold text-black mb-3'>
+                <h3 className='font-semibold text-foreground mb-3'>
                   System Requirements
                 </h3>
-                <ul className='text-sm text-gray-600 space-y-2'>
+                <ul className='text-sm text-muted-foreground space-y-2'>
                   <li>• Modern web browser (Chrome, Firefox, Safari, Edge)</li>
                   <li>• JavaScript enabled</li>
                   <li>• Internet connection</li>
@@ -249,10 +249,10 @@ export default function Help() {
                 </ul>
               </div>
               <div>
-                <h3 className='font-semibold text-black mb-3'>
+                <h3 className='font-semibold text-foreground mb-3'>
                   Known Limitations
                 </h3>
-                <ul className='text-sm text-gray-600 space-y-2'>
+                <ul className='text-sm text-muted-foreground space-y-2'>
                   <li>• This is a demo application for educational purposes</li>
                   <li>• No real payment processing</li>
                   <li>• Data is stored locally in browser</li>
@@ -263,11 +263,11 @@ export default function Help() {
           </div>
 
           {/* Educational Notice */}
-          <div className='mt-12 rounded-2xl border border-gray-200 p-6'>
-            <h3 className='font-semibold text-black mb-2'>
+          <div className='mt-12 rounded-2xl border border-border p-6'>
+            <h3 className='font-semibold text-foreground mb-2'>
               Educational Project
             </h3>
-            <p className='text-gray-700'>
+            <p className='text-muted-foreground'>
               This platform is created as part of a Full Stack Development
               course (2025B). It demonstrates modern web development practices
               including React Router v7, TypeScript, Tailwind CSS, and
@@ -277,28 +277,28 @@ export default function Help() {
           </div>
 
           {/* CTA */}
-          <section className='mt-16 bg-black rounded-2xl p-10'>
+          <section className='mt-16 bg-primary rounded-2xl p-10'>
             <div className='max-w-3xl'>
-              <p className='text-xs font-medium tracking-widest text-gray-400 uppercase'>
+              <p className='text-xs font-medium tracking-widest text-primary-foreground/70 uppercase'>
                 Still need help?
               </p>
-              <h2 className='text-3xl md:text-4xl font-bold text-white mt-2'>
+              <h2 className='text-3xl md:text-4xl font-bold text-primary-foreground mt-2'>
                 Reach out or explore the docs
               </h2>
-              <p className='text-gray-300 mt-4'>
+              <p className='text-primary-foreground/80 mt-4'>
                 Contact an instructor, read the docs, or jump into the app to
                 try it yourself.
               </p>
               <div className='flex flex-col sm:flex-row gap-4 mt-8'>
                 <Link to='/about'>
-                  <Button className='text-lg px-8 py-4 bg-white text-black hover:bg-gray-200 shadow-lg hover:shadow-xl transition-all duration-300'>
+                  <Button className='text-lg px-8 py-4 bg-background text-foreground hover:bg-accent shadow-lg hover:shadow-xl transition-all duration-300'>
                     Learn More
                   </Button>
                 </Link>
                 <Link to='/'>
                   <Button
                     variant='outline'
-                    className='text-lg px-8 py-4 border-2 bg-black border-white text-white hover:bg-white hover:text-black transition-all duration-300'
+                    className='text-lg px-8 py-4 border-2 bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary transition-all duration-300'
                   >
                     Go to Home
                   </Button>

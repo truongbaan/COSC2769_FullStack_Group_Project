@@ -5,13 +5,15 @@ export default function Footer() {
   const { user } = useAuth();
 
   return (
-    <footer className='border-t bg-white'>
+    <footer className='border-t bg-background'>
       <div className='container mx-auto px-4 py-8'>
         <div className='grid grid-cols-1 md:grid-cols-4 gap-8'>
           <div className='space-y-4'>
             <div className='flex items-center gap-2'>
-              <div className='h-6 w-6 bg-black rounded flex items-center justify-center'>
-                <span className='text-white font-bold text-xs'>L</span>
+              <div className='h-6 w-6 bg-primary rounded flex items-center justify-center'>
+                <span className='text-primary-foreground font-bold text-xs'>
+                  L
+                </span>
               </div>
               <span className='font-semibold'>Lazada Lite</span>
             </div>

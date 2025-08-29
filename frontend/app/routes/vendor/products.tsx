@@ -214,8 +214,8 @@ export default function VendorProducts() {
         {/* Header */}
         <div className='flex justify-between items-center mb-8'>
           <div>
-            <h1 className='text-3xl font-bold text-gray-900'>My Products</h1>
-            <p className='text-gray-600'>
+            <h1 className='text-3xl font-bold text-foreground'>My Products</h1>
+            <p className='text-muted-foreground'>
               Manage your product catalog and inventory
             </p>
           </div>
@@ -268,13 +268,13 @@ export default function VendorProducts() {
         {loading ? (
           <Card>
             <CardContent className='text-center py-12'>
-              <div className='text-gray-400 mb-4'>
+              <div className='text-muted-foreground mb-4'>
                 <Package className='h-16 w-16 mx-auto animate-pulse' />
               </div>
-              <h3 className='text-lg font-medium text-gray-900 mb-2'>
+              <h3 className='text-lg font-medium text-foreground mb-2'>
                 Loading products...
               </h3>
-              <p className='text-gray-600'>
+              <p className='text-muted-foreground'>
                 Please wait while we fetch your products.
               </p>
             </CardContent>
@@ -282,13 +282,13 @@ export default function VendorProducts() {
         ) : error ? (
           <Card>
             <CardContent className='text-center py-12'>
-              <div className='text-red-400 mb-4'>
+              <div className='text-red-500 mb-4'>
                 <Package className='h-16 w-16 mx-auto' />
               </div>
-              <h3 className='text-lg font-medium text-gray-900 mb-2'>
+              <h3 className='text-lg font-medium text-foreground mb-2'>
                 Failed to load products
               </h3>
-              <p className='text-gray-600 mb-6'>{error}</p>
+              <p className='text-muted-foreground mb-6'>{error}</p>
               <Button onClick={() => fetchVendorProductsLocal()}>
                 Try Again
               </Button>
@@ -297,13 +297,13 @@ export default function VendorProducts() {
         ) : products.length === 0 ? (
           <Card>
             <CardContent className='text-center py-12'>
-              <div className='text-gray-400 mb-4'>
+              <div className='text-muted-foreground mb-4'>
                 <Package className='h-16 w-16 mx-auto' />
               </div>
-              <h3 className='text-lg font-medium text-gray-900 mb-2'>
+              <h3 className='text-lg font-medium text-foreground mb-2'>
                 No products yet
               </h3>
-              <p className='text-gray-600 mb-6'>
+              <p className='text-muted-foreground mb-6'>
                 Start by adding your first product to begin selling on our
                 platform.
               </p>
@@ -319,7 +319,7 @@ export default function VendorProducts() {
           <div className='space-y-6'>
             <div className='flex justify-between items-center'>
               <h2 className='text-xl font-semibold'>Product Catalog</h2>
-              <div className='text-sm text-gray-600'>
+              <div className='text-sm text-muted-foreground'>
                 Showing {products.length} product
                 {products.length !== 1 ? "s" : ""}
               </div>
@@ -332,7 +332,7 @@ export default function VendorProducts() {
                   className='group hover:shadow-lg transition-shadow py-0'
                 >
                   <CardHeader className='p-0'>
-                    <div className='aspect-square overflow-hidden rounded-t-lg bg-gray-100'>
+                    <div className='aspect-square overflow-hidden rounded-t-lg bg-muted'>
                       <img
                         src={getBackendImageUrl(product.imageUrl)}
                         alt={product.name}
@@ -350,7 +350,7 @@ export default function VendorProducts() {
                           {product.inStock ? (
                             <Badge
                               variant='default'
-                              className='bg-gray-100 text-gray-900 text-xs'
+                              className='bg-muted text-foreground text-xs'
                             >
                               In Stock
                             </Badge>
@@ -366,12 +366,12 @@ export default function VendorProducts() {
                         <CardTitle className='text-lg line-clamp-2'>
                           {product.name}
                         </CardTitle>
-                        <div className='text-2xl font-bold text-gray-900 mt-2'>
+                        <div className='text-2xl font-bold text-foreground mt-2'>
                           ${product.price}
                         </div>
                       </div>
 
-                      <div className='text-sm text-gray-600 space-y-1'>
+                      <div className='text-sm text-muted-foreground space-y-1'>
                         <div className='flex justify-between'>
                           <span>Availability:</span>
                           <span>
@@ -410,11 +410,11 @@ export default function VendorProducts() {
         )}
 
         {/* Business Tips */}
-        <div className='mt-12 bg-gray-50 border border-gray-200 rounded-lg p-6'>
-          <h3 className='font-semibold text-gray-900 mb-3'>
+        <div className='mt-12 bg-muted border border-border rounded-lg p-6'>
+          <h3 className='font-semibold text-foreground mb-3'>
             💡 Tips for Success
           </h3>
-          <ul className='text-gray-700 text-sm space-y-2'>
+          <ul className='text-muted-foreground text-sm space-y-2'>
             <li>• Add high-quality product images to increase sales</li>
             <li>
               • Write detailed descriptions with key features and benefits

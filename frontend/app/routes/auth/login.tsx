@@ -97,7 +97,7 @@ export default function Login() {
       <div className='max-w-md mx-auto'>
         <Card>
           <CardHeader className='text-center'>
-            <div className='mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4'>
+            <div className='mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4'>
               <LogIn className='h-8 w-8' />
             </div>
             <CardTitle className='text-2xl'>Welcome Back</CardTitle>
@@ -136,7 +136,7 @@ export default function Login() {
                     type='button'
                     aria-label='Toggle password visibility'
                     aria-pressed={showPassword}
-                    className='absolute inset-y-0 right-0 z-10 grid place-items-center px-3 text-gray-400 hover:text-gray-600'
+                    className='absolute inset-y-0 right-0 z-10 grid place-items-center px-3 text-muted-foreground hover:text-foreground'
                     onClick={() => setShowPassword((v) => !v)}
                   >
                     {showPassword ? (
@@ -149,7 +149,7 @@ export default function Login() {
               </Field>
 
               {formState.errors.root && (
-                <p className='text-gray-900 text-sm text-center'>
+                <p className='text-foreground text-sm text-center'>
                   {formState.errors.root.message}
                 </p>
               )}
@@ -160,13 +160,13 @@ export default function Login() {
             </form>
 
             <div className='mt-6 space-y-4'>
-              <div className='text-center text-sm text-gray-600'>
+              <div className='text-center text-sm text-muted-foreground'>
                 Demo credentials: Try emails like vendor@example.com,
                 shipper@example.com, or customer@example.com
               </div>
 
               <div className='border-t pt-4'>
-                <p className='text-sm text-center text-gray-600 mb-4'>
+                <p className='text-sm text-center text-muted-foreground mb-4'>
                   Don't have an account? Choose your role:
                 </p>
                 <div className='grid grid-cols-1 gap-2'>

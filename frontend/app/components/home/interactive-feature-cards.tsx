@@ -35,9 +35,9 @@ export default function InteractiveFeatureCards() {
   return (
     <div className='hidden lg:block'>
       <div className='relative h-[420px] overflow-hidden'>
-        <div className='absolute inset-0 rounded-3xl bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 border border-gray-200 transition-all duration-1000'>
-          <div className='absolute top-4 right-4 w-32 h-32 bg-blue-100/40 rounded-full blur-xl animate-pulse'></div>
-          <div className='absolute bottom-8 left-8 w-24 h-24 bg-purple-100/40 rounded-full blur-lg animate-pulse delay-1000'></div>
+        <div className='absolute inset-0 rounded-3xl bg-gradient-to-br from-muted via-primary/10 to-accent/10 border border-border transition-all duration-1000'>
+          <div className='absolute top-4 right-4 w-32 h-32 bg-primary/20 rounded-full blur-xl animate-pulse'></div>
+          <div className='absolute bottom-8 left-8 w-24 h-24 bg-accent/20 rounded-full blur-lg animate-pulse delay-1000'></div>
         </div>
 
         {features.map((feature, index) => {
@@ -65,20 +65,20 @@ export default function InteractiveFeatureCards() {
               onMouseEnter={() => setHoveredCard(index)}
               onMouseLeave={() => setHoveredCard(null)}
             >
-              <div className=' backdrop-blur-sm border border-gray-200/80 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-00 cursor-pointer group'>
+              <div className=' backdrop-blur-sm border border-border/80 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-00 cursor-pointer group bg-card/60'>
                 <div className='flex items-start gap-4'>
                   <div
-                    className={`w-10 h-10 rounded-full bg-gradient-to-br from-black to-gray-800 text-white flex items-center justify-center transition-all duration-00 group-hover:scale-110 group-hover:rotate-12 ${
+                    className={`w-10 h-10 rounded-full bg-gradient-to-br from-primary to-foreground/80 text-primary-foreground flex items-center justify-center transition-all duration-00 group-hover:scale-110 group-hover:rotate-12 ${
                       hoveredCard === index ? "shadow-lg" : ""
                     }`}
                   >
                     <Icon className='h-5 w-5 transition-transform duration-00 group-hover:scale-110' />
                   </div>
                   <div className='space-y-1 flex-1'>
-                    <p className='text-sm font-semibold text-black transition-colors duration-00 '>
+                    <p className='text-sm font-semibold text-foreground transition-colors duration-00 '>
                       {feature.title}
                     </p>
-                    <p className='text-sm text-gray-600 transition-all duration-00 group-hover:text-gray-800 leading-relaxed'>
+                    <p className='text-sm text-muted-foreground transition-all duration-00 group-hover:text-foreground leading-relaxed'>
                       {feature.description}
                     </p>
                   </div>

@@ -230,8 +230,10 @@ export default function Profile() {
       <div className='max-w-4xl mx-auto space-y-10'>
         {/* Header */}
         <div className='text-center'>
-          <h1 className='text-3xl font-bold text-gray-900 mb-2'>My Account</h1>
-          <p className='text-gray-600'>
+          <h1 className='text-3xl font-bold text-foreground mb-2'>
+            My Account
+          </h1>
+          <p className='text-muted-foreground'>
             Manage your account settings and profile information
           </p>
         </div>
@@ -248,7 +250,7 @@ export default function Profile() {
                     className='object-cover'
                   />
                 )}
-                <AvatarFallback className='bg-gray-100 text-gray-900 text-lg font-medium'>
+                <AvatarFallback className='bg-muted text-foreground text-lg font-medium'>
                   {getUserInitials()}
                 </AvatarFallback>
               </Avatar>
@@ -258,7 +260,7 @@ export default function Profile() {
                     {user.name || user.businessName || user.username}
                   </CardTitle>
                   <Badge
-                    className={`rounded-full border bg-white ${getRoleColor(user.role)} px-2 py-0.5 text-xs`}
+                    className={`rounded-full border bg-background ${getRoleColor(user.role)} px-2 py-0.5 text-xs`}
                   >
                     {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                   </Badge>
@@ -272,33 +274,33 @@ export default function Profile() {
           <CardContent>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
               <div className='space-y-4'>
-                <h3 className='font-semibold text-gray-900'>
+                <h3 className='font-semibold text-foreground'>
                   Account Information
                 </h3>
                 <div className='space-y-3 text-sm'>
                   <div className='flex justify-between border-b pb-2'>
-                    <span className='text-gray-600'>Username:</span>
+                    <span className='text-muted-foreground'>Username:</span>
                     <span className='font-medium'>{user.username}</span>
                   </div>
                   <div className='flex justify-between border-b pb-2'>
-                    <span className='text-gray-600'>Role:</span>
+                    <span className='text-muted-foreground'>Role:</span>
                     <span className='font-medium capitalize'>{user.role}</span>
                   </div>
                   {user.name && (
                     <div className='flex justify-between border-b pb-2'>
-                      <span className='text-gray-600'>Name:</span>
+                      <span className='text-muted-foreground'>Name:</span>
                       <span className='font-medium'>{user.name}</span>
                     </div>
                   )}
                   {user.businessName && (
                     <div className='flex justify-between border-b pb-2'>
-                      <span className='text-gray-600'>Business:</span>
+                      <span className='text-muted-foreground'>Business:</span>
                       <span className='font-medium'>{user.businessName}</span>
                     </div>
                   )}
                   {user.distributionHub && (
                     <div className='flex justify-between border-b pb-2'>
-                      <span className='text-gray-600'>Hub:</span>
+                      <span className='text-muted-foreground'>Hub:</span>
                       <span className='font-medium'>
                         {user.distributionHub}
                       </span>
@@ -308,13 +310,13 @@ export default function Profile() {
               </div>
 
               <div className='space-y-4'>
-                <h3 className='font-semibold text-gray-900'>Quick Actions</h3>
+                <h3 className='font-semibold text-foreground'>Quick Actions</h3>
                 <div className='space-y-2'>
                   {getRoleLinks().map((link, index) => (
                     <button
                       key={index}
                       onClick={() => navigate(link.href)}
-                      className='group w-full inline-flex items-center justify-between rounded-lg border px-3 py-2 text-left hover:bg-gray-50'
+                      className='group w-full inline-flex items-center justify-between rounded-lg border px-3 py-2 text-left hover:bg-accent'
                     >
                       <span className='inline-flex items-center gap-2'>
                         {link.label}
@@ -344,7 +346,7 @@ export default function Profile() {
             <div className='space-y-6'>
               {/* Current Profile Picture */}
               <div className='flex items-center gap-4'>
-                <span className='text-sm font-medium text-gray-700'>
+                <span className='text-sm font-medium text-muted-foreground'>
                   Current:
                 </span>
                 <Avatar className='h-12 w-12'>
@@ -355,11 +357,11 @@ export default function Profile() {
                       className='object-cover'
                     />
                   )}
-                  <AvatarFallback className='bg-gray-100 text-gray-900 text-sm'>
+                  <AvatarFallback className='bg-muted text-foreground text-sm'>
                     {getUserInitials()}
                   </AvatarFallback>
                 </Avatar>
-                <span className='text-sm text-gray-600'>
+                <span className='text-sm text-muted-foreground'>
                   {getUserAvatarUrl()
                     ? "Custom profile picture"
                     : "Default avatar (initials)"}
@@ -403,19 +405,19 @@ export default function Profile() {
                       </div>
                     </div>
 
-                    <p className='text-xs text-gray-600'>
+                    <p className='text-xs text-muted-foreground'>
                       PNG or JPG up to 10MB.
                     </p>
 
                     {watchedFile?.[0] && (
                       <div className='space-y-2'>
-                        <p className='text-sm text-gray-600'>
+                        <p className='text-sm text-muted-foreground'>
                           Selected: {watchedFile[0].name} (
                           {(watchedFile[0].size / 1024 / 1024).toFixed(2)} MB)
                         </p>
                         {previewUrl && (
                           <div className='flex items-center gap-3'>
-                            <span className='text-sm text-gray-600'>
+                            <span className='text-sm text-muted-foreground'>
                               Preview:
                             </span>
                             <img
@@ -469,7 +471,7 @@ export default function Profile() {
                     type='button'
                     aria-label='Toggle current password visibility'
                     aria-pressed={showCurrentPassword}
-                    className='absolute inset-y-0 right-0 z-10 grid place-items-center px-3 text-gray-400 hover:text-gray-600'
+                    className='absolute inset-y-0 right-0 z-10 grid place-items-center px-3 text-muted-foreground hover:text-foreground'
                     onClick={() => setShowCurrentPassword((v) => !v)}
                   >
                     {showCurrentPassword ? (
@@ -500,7 +502,7 @@ export default function Profile() {
                     type='button'
                     aria-label='Toggle new password visibility'
                     aria-pressed={showNewPassword}
-                    className='absolute inset-y-0 right-0 z-10 grid place-items-center px-3 text-gray-400 hover:text-gray-600'
+                    className='absolute inset-y-0 right-0 z-10 grid place-items-center px-3 text-muted-foreground hover:text-foreground'
                     onClick={() => setShowNewPassword((v) => !v)}
                   >
                     {showNewPassword ? (
@@ -531,7 +533,7 @@ export default function Profile() {
                     type='button'
                     aria-label='Toggle confirm new password visibility'
                     aria-pressed={showConfirmNewPassword}
-                    className='absolute inset-y-0 right-0 z-10 grid place-items-center px-3 text-gray-400 hover:text-gray-600'
+                    className='absolute inset-y-0 right-0 z-10 grid place-items-center px-3 text-muted-foreground hover:text-foreground'
                     onClick={() => setShowConfirmNewPassword((v) => !v)}
                   >
                     {showConfirmNewPassword ? (
@@ -561,11 +563,11 @@ export default function Profile() {
         </Card>
 
         {/* Educational Notice */}
-        <div className='bg-gray-50 border border-gray-200 rounded-xl p-6'>
-          <h3 className='font-semibold text-gray-900 mb-2'>
+        <div className='bg-muted border border-border rounded-xl p-6'>
+          <h3 className='font-semibold text-foreground mb-2'>
             Educational Project
           </h3>
-          <p className='text-gray-700 text-sm'>
+          <p className='text-muted-foreground text-sm'>
             This is a demonstration account for learning purposes. All data
             shown is mock data and no real transactions or personal information
             is processed.

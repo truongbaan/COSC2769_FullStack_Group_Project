@@ -189,10 +189,10 @@ export default function Products() {
       <div className='max-w-7xl mx-auto'>
         {/* Header */}
         <div className='text-center mb-8'>
-          <h1 className='text-3xl font-bold text-gray-900 mb-4'>
+          <h1 className='text-3xl font-bold text-foreground mb-4'>
             Browse Products
           </h1>
-          <p className='text-gray-600'>
+          <p className='text-muted-foreground'>
             Discover amazing products from our verified vendors
           </p>
         </div>
@@ -271,7 +271,7 @@ export default function Products() {
               </div>
 
               {formState.errors.root && (
-                <p className='text-gray-900 text-sm'>
+                <p className='text-foreground text-sm'>
                   {formState.errors.root.message}
                 </p>
               )}
@@ -281,14 +281,14 @@ export default function Products() {
 
         {/* Results Summary */}
         <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6'>
-          <p className='text-gray-600'>
+          <p className='text-muted-foreground'>
             Showing {filteredProducts.length} of {totalProducts} product
             {totalProducts !== 1 ? "s" : ""}
             {(q || min || max || selectedCategory) && " matching your criteria"}
           </p>
           <div className='flex flex-wrap items-center gap-3'>
             <div className='flex items-center gap-2'>
-              <span className='text-sm text-gray-600'>Sort by</span>
+              <span className='text-sm text-muted-foreground'>Sort by</span>
               <Select value={sortBy} onValueChange={(v) => setSortBy(v as any)}>
                 <SelectTrigger size='sm'>
                   <SelectValue />
@@ -322,7 +322,7 @@ export default function Products() {
           {visibleProducts.map((product) => (
             <div
               key={product.id}
-              className='group flex flex-col overflow-hidden rounded-xl border bg-white transition-transform hover:-translate-y-0.5 hover:shadow-md'
+              className='group flex flex-col overflow-hidden rounded-xl border bg-card transition-transform hover:-translate-y-0.5 hover:shadow-md'
             >
               <div className='relative aspect-square overflow-hidden bg-gray-100'>
                 <img
@@ -333,13 +333,13 @@ export default function Products() {
                 <div className='absolute left-2 top-2'>
                   <Badge
                     variant='secondary'
-                    className='bg-white/80 px-2 py-0.5 text-[10px]'
+                    className='bg-background/80 px-2 py-0.5 text-[10px]'
                   >
                     {product.category}
                   </Badge>
                 </div>
                 {!product.inStock && (
-                  <div className='absolute right-2 top-2 rounded border bg-white/90 px-2 py-0.5 text-[10px] text-gray-900'>
+                  <div className='absolute right-2 top-2 rounded border bg-background/90 px-2 py-0.5 text-[10px] text-foreground'>
                     Sold out
                   </div>
                 )}
@@ -367,16 +367,16 @@ export default function Products() {
                   </Link>
                 </h3>
                 {!compact && (
-                  <p className='text-sm text-gray-600 line-clamp-2 leading-snug min-h-[2.5rem]'>
+                  <p className='text-sm text-muted-foreground line-clamp-2 leading-snug min-h-[2.5rem]'>
                     {product.description}
                   </p>
                 )}
 
-                <div className='text-sm text-gray-600 flex items-center gap-2'>
+                <div className='text-sm text-muted-foreground flex items-center gap-2'>
                   <span>by {product.vendorName}</span>
                 </div>
 
-                <div className='mt-1 text-2xl font-semibold text-gray-900'>
+                <div className='mt-1 text-2xl font-semibold text-foreground'>
                   ${product.price}
                 </div>
 

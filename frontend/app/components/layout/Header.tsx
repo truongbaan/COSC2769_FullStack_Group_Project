@@ -10,11 +10,20 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { useAuth } from "~/lib/auth";
 import { logoutApi } from "~/lib/api";
 import { getBackendImageUrl } from "~/lib/utils";
-import { ShoppingCart, User, Package, Truck } from "~/components/ui/icons";
+import {
+  ShoppingCart,
+  User,
+  Package,
+  Truck,
+  Sun,
+  Moon,
+} from "~/components/ui/icons";
+import { useTheme } from "~/lib/theme";
 
 export default function Header() {
   const { user, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
 
   const handleLogout = async () => {
     try {
@@ -84,11 +93,13 @@ export default function Header() {
   };
 
   return (
-    <header className='border-b bg-white'>
+    <header className='border-b bg-white dark:bg-gray-950'>
       <div className='container mx-auto flex items-center justify-between px-4 py-3'>
         <Link to='/' className='flex items-center gap-2'>
-          <div className='h-8 w-8 bg-black rounded flex items-center justify-center'>
-            <span className='text-white font-bold text-sm'>L</span>
+          <div className='h-8 w-8 bg-black dark:bg-white rounded flex items-center justify-center'>
+            <span className='text-white dark:text-black font-bold text-sm'>
+              L
+            </span>
           </div>
           <span className='font-semibold text-xl'>Lazada Lite</span>
         </Link>
@@ -134,6 +145,18 @@ export default function Header() {
         </nav>
 
         <div className='flex items-center gap-3'>
+          <Button
+            variant='ghost'
+            size='icon'
+            aria-label='Toggle theme'
+            onClick={toggleTheme}
+          >
+            {theme === "dark" ? (
+              <Sun className='h-5 w-5' />
+            ) : (
+              <Moon className='h-5 w-5' />
+            )}
+          </Button>
           {isAuthenticated() && user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

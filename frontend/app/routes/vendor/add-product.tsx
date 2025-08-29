@@ -116,14 +116,14 @@ export default function AddProduct() {
             Back to My Products
           </Link>
           <div className='flex items-center gap-3 mb-2'>
-            <div className='w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center'>
+            <div className='w-12 h-12 bg-muted rounded-full flex items-center justify-center'>
               <Package className='h-6 w-6' />
             </div>
             <div>
-              <h1 className='text-3xl font-bold text-gray-900'>
+              <h1 className='text-3xl font-bold text-foreground'>
                 Add New Product
               </h1>
-              <p className='text-gray-600'>
+              <p className='text-muted-foreground'>
                 Fill in the details to list your product
               </p>
             </div>
@@ -151,7 +151,7 @@ export default function AddProduct() {
                   placeholder='Enter product name (10-20 characters)'
                   {...register("name")}
                 />
-                <div className='text-xs text-gray-500 mt-1'>
+                <div className='text-xs text-muted-foreground mt-1'>
                   {name?.length || 0}/20 characters{" "}
                   {name && name.length < 10 && "(minimum 10)"}
                 </div>
@@ -215,20 +215,20 @@ export default function AddProduct() {
                   placeholder='Describe your product in detail (max 500 characters)'
                   {...register("description")}
                 />
-                <div className='text-xs text-gray-500 mt-1'>
+                <div className='text-xs text-muted-foreground mt-1'>
                   {description?.length || 0}/500 characters
                 </div>
               </Field>
 
               {/* Requirements Info */}
-              <div className='bg-gray-50 border border-gray-200 rounded-lg p-4'>
+              <div className='bg-muted border border-border rounded-lg p-4'>
                 <div className='flex items-start gap-3'>
                   <Info className='h-5 w-5 mt-0.5' />
                   <div>
-                    <h4 className='font-medium text-gray-900 mb-2'>
+                    <h4 className='font-medium text-foreground mb-2'>
                       Product Requirements
                     </h4>
-                    <ul className='text-gray-700 text-sm space-y-1'>
+                    <ul className='text-muted-foreground text-sm space-y-1'>
                       <li>• Product name must be 10-20 characters long</li>
                       <li>• Price must be a positive number</li>
                       <li>• Description should be under 500 characters</li>
@@ -267,11 +267,11 @@ export default function AddProduct() {
         </Card>
 
         {/* Tips */}
-        <div className='mt-8 bg-gray-50 border border-gray-200 rounded-lg p-6'>
-          <h3 className='font-semibold text-gray-900 mb-3'>
+        <div className='mt-8 bg-muted border border-border rounded-lg p-6'>
+          <h3 className='font-semibold text-foreground mb-3'>
             💡 Product Listing Tips
           </h3>
-          <ul className='text-gray-700 text-sm space-y-2'>
+          <ul className='text-muted-foreground text-sm space-y-2'>
             <li>• Use clear, well-lit photos from multiple angles</li>
             <li>• Include key features and benefits in the description</li>
             <li>• Research competitor pricing for similar products</li>

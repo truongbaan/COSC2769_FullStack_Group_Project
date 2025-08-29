@@ -182,7 +182,7 @@ export default function Register() {
               {/* Customer */}
               <TabsContent value='customer'>
                 <div className='text-center mb-6'>
-                  <div className='mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center'>
+                  <div className='mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center'>
                     <UserPlus className='h-8 w-8' />
                   </div>
                 </div>
@@ -229,7 +229,7 @@ export default function Register() {
                         type='button'
                         aria-label='Toggle password visibility'
                         aria-pressed={showCustomerPassword}
-                        className='absolute inset-y-0 right-0 z-10 grid place-items-center px-3 text-gray-400 hover:text-gray-600'
+                        className='absolute inset-y-0 right-0 z-10 grid place-items-center px-3 text-muted-foreground hover:text-foreground'
                         onClick={() => setShowCustomerPassword((v) => !v)}
                       >
                         {showCustomerPassword ? (
@@ -271,7 +271,7 @@ export default function Register() {
               {/* Vendor */}
               <TabsContent value='vendor'>
                 <div className='text-center mb-6'>
-                  <div className='mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center'>
+                  <div className='mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center'>
                     <Store className='h-8 w-8' />
                   </div>
                 </div>
@@ -318,7 +318,7 @@ export default function Register() {
                         type='button'
                         aria-label='Toggle password visibility'
                         aria-pressed={showVendorPassword}
-                        className='absolute inset-y-0 right-0 z-10 grid place-items-center px-3 text-gray-400 hover:text-gray-600'
+                        className='absolute inset-y-0 right-0 z-10 grid place-items-center px-3 text-muted-foreground hover:text-foreground'
                         onClick={() => setShowVendorPassword((v) => !v)}
                       >
                         {showVendorPassword ? (
@@ -360,7 +360,7 @@ export default function Register() {
               {/* Shipper */}
               <TabsContent value='shipper'>
                 <div className='text-center mb-6'>
-                  <div className='mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center'>
+                  <div className='mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center'>
                     <Truck className='h-8 w-8' />
                   </div>
                 </div>
@@ -407,7 +407,7 @@ export default function Register() {
                         type='button'
                         aria-label='Toggle password visibility'
                         aria-pressed={showShipperPassword}
-                        className='absolute inset-y-0 right-0 z-10 grid place-items-center px-3 text-gray-400 hover:text-gray-600'
+                        className='absolute inset-y-0 right-0 z-10 grid place-items-center px-3 text-muted-foreground hover:text-foreground'
                         onClick={() => setShowShipperPassword((v) => !v)}
                       >
                         {showShipperPassword ? (
@@ -450,7 +450,7 @@ export default function Register() {
               </TabsContent>
 
               <div className='mt-6 text-center'>
-                <p className='text-sm text-gray-600'>
+                <p className='text-sm text-muted-foreground'>
                   Already have an account?{" "}
                   <Link to='/login' className='underline'>
                     Sign in here

@@ -16,25 +16,25 @@ export default function About() {
   return (
     <div className='min-h-screen'>
       {/* Hero */}
-      <section className='relative overflow-hidden bg-white border-b border-gray-200'>
+      <section className='relative overflow-hidden bg-background border-b border-border'>
         <div className='container mx-auto px-4 py-16 lg:py-24'>
           <div className='max-w-4xl'>
-            <p className='text-sm font-medium tracking-wider text-gray-500 uppercase'>
+            <p className='text-sm font-medium tracking-wider text-muted-foreground uppercase'>
               About
             </p>
-            <h1 className='text-5xl lg:text-6xl font-bold text-black leading-tight mt-2'>
+            <h1 className='text-5xl lg:text-6xl font-bold text-foreground leading-tight mt-2'>
               Building a simpler way to shop, sell and ship
             </h1>
-            <p className='text-lg text-gray-600 leading-relaxed max-w-2xl mt-6'>
+            <p className='text-lg text-muted-foreground leading-relaxed max-w-2xl mt-6'>
               Lazada Lite is an educational e-commerce platform demonstrating
               modern full‑stack practices with a clean, distraction‑free UX.
             </p>
-            <div className='h-px w-full bg-gray-200 mt-8'></div>
-            <div className='flex items-center gap-6 text-sm text-gray-600 mt-6'>
+            <div className='h-px w-full bg-border mt-8'></div>
+            <div className='flex items-center gap-6 text-sm text-muted-foreground mt-6'>
               <span>Open architecture</span>
-              <span className='h-3 w-px bg-gray-300' />
+              <span className='h-3 w-px bg-border' />
               <span>Role‑based access</span>
-              <span className='h-3 w-px bg-gray-300' />
+              <span className='h-3 w-px bg-border' />
               <span>Modern tooling</span>
             </div>
           </div>
@@ -42,32 +42,32 @@ export default function About() {
       </section>
 
       {/* Highlights */}
-      <section className='py-20 bg-gray-50'>
+      <section className='py-20 bg-muted'>
         <div className='container mx-auto px-4'>
           <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
-            <div className='rounded-2xl border-2 border-gray-200 bg-white p-8 hover:border-black transition-colors'>
-              <h3 className='text-xl font-semibold text-black mb-2'>
+            <div className='rounded-2xl border-2 border-border bg-card p-8 hover:border-primary transition-colors'>
+              <h3 className='text-xl font-semibold text-foreground mb-2'>
                 Multi‑role system
               </h3>
-              <p className='text-gray-600 text-sm'>
+              <p className='text-muted-foreground text-sm'>
                 Customers, vendors and shippers each get focused tools without
                 the noise.
               </p>
             </div>
-            <div className='rounded-2xl border-2 border-gray-200 bg-white p-8 hover:border-black transition-colors'>
-              <h3 className='text-xl font-semibold text-black mb-2'>
+            <div className='rounded-2xl border-2 border-border bg-card p-8 hover:border-primary transition-colors'>
+              <h3 className='text-xl font-semibold text-foreground mb-2'>
                 Modern stack
               </h3>
-              <p className='text-gray-600 text-sm'>
+              <p className='text-muted-foreground text-sm'>
                 React 19, TypeScript, React Router v7 and Tailwind v4 with
                 shadcn/ui.
               </p>
             </div>
-            <div className='rounded-2xl border-2 border-gray-200 bg-white p-8 hover:border-black transition-colors'>
-              <h3 className='text-xl font-semibold text-black mb-2'>
+            <div className='rounded-2xl border-2 border-border bg-card p-8 hover:border-primary transition-colors'>
+              <h3 className='text-xl font-semibold text-foreground mb-2'>
                 Responsive by default
               </h3>
-              <p className='text-gray-600 text-sm'>
+              <p className='text-muted-foreground text-sm'>
                 Thoughtful layouts that scale from mobile to desktop with
                 clarity.
               </p>
@@ -77,22 +77,22 @@ export default function About() {
       </section>
 
       {/* Technical Stack */}
-      <section className='py-20 bg-white'>
+      <section className='py-20 bg-background'>
         <div className='container mx-auto px-4'>
           <div className='max-w-4xl mb-8'>
-            <h2 className='text-3xl lg:text-4xl font-bold text-black mb-3'>
+            <h2 className='text-3xl lg:text-4xl font-bold text-foreground mb-3'>
               Technical stack
             </h2>
-            <p className='text-gray-600'>
+            <p className='text-muted-foreground'>
               Curated tools for a delightful developer experience and robust,
               type‑safe code.
             </p>
           </div>
-          <div className='rounded-2xl border border-gray-200 p-8'>
+          <div className='rounded-2xl border border-border p-8'>
             <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 text-sm'>
               <div>
-                <p className='font-semibold text-black'>Frontend</p>
-                <ul className='mt-2 space-y-1 text-gray-700'>
+                <p className='font-semibold text-foreground'>Frontend</p>
+                <ul className='mt-2 space-y-1 text-muted-foreground'>
                   <li>React 19</li>
                   <li>TypeScript</li>
                   <li>React Router v7</li>
@@ -100,8 +100,8 @@ export default function About() {
                 </ul>
               </div>
               <div>
-                <p className='font-semibold text-black'>UI Components</p>
-                <ul className='mt-2 space-y-1 text-gray-700'>
+                <p className='font-semibold text-foreground'>UI Components</p>
+                <ul className='mt-2 space-y-1 text-muted-foreground'>
                   <li>shadcn/ui</li>
                   <li>Radix UI</li>
                   <li>Lucide Icons</li>
@@ -109,8 +109,8 @@ export default function About() {
                 </ul>
               </div>
               <div>
-                <p className='font-semibold text-black'>State & Forms</p>
-                <ul className='mt-2 space-y-1 text-gray-700'>
+                <p className='font-semibold text-foreground'>State & Forms</p>
+                <ul className='mt-2 space-y-1 text-muted-foreground'>
                   <li>Redux Toolkit</li>
                   <li>React Hook Form</li>
                   <li>Zod Validation</li>
@@ -118,8 +118,8 @@ export default function About() {
                 </ul>
               </div>
               <div>
-                <p className='font-semibold text-black'>Development</p>
-                <ul className='mt-2 space-y-1 text-gray-700'>
+                <p className='font-semibold text-foreground'>Development</p>
+                <ul className='mt-2 space-y-1 text-muted-foreground'>
                   <li>Vite</li>
                   <li>ESLint</li>
                   <li>TypeScript</li>
@@ -127,8 +127,8 @@ export default function About() {
                 </ul>
               </div>
               <div>
-                <p className='font-semibold text-black'>Backend (API)</p>
-                <ul className='mt-2 space-y-1 text-gray-700'>
+                <p className='font-semibold text-foreground'>Backend (API)</p>
+                <ul className='mt-2 space-y-1 text-muted-foreground'>
                   <li>Express 5</li>
                   <li>TypeScript</li>
                   <li>Zod</li>
@@ -137,8 +137,8 @@ export default function About() {
                 </ul>
               </div>
               <div>
-                <p className='font-semibold text-black'>Data & Auth</p>
-                <ul className='mt-2 space-y-1 text-gray-700'>
+                <p className='font-semibold text-foreground'>Data & Auth</p>
+                <ul className='mt-2 space-y-1 text-muted-foreground'>
                   <li>Supabase JS v2</li>
                   <li>Supabase Auth</li>
                   <li>Supabase Storage</li>
@@ -151,17 +151,17 @@ export default function About() {
       </section>
 
       {/* Educational Purpose */}
-      <section className='py-20 bg-white'>
+      <section className='py-20 bg-background'>
         <div className='container mx-auto px-4'>
           <div className='max-w-4xl'>
-            <h2 className='text-3xl lg:text-4xl font-bold text-black mb-4'>
+            <h2 className='text-3xl lg:text-4xl font-bold text-foreground mb-4'>
               Educational purpose
             </h2>
-            <p className='text-gray-600 mb-6'>
+            <p className='text-muted-foreground mb-6'>
               This project showcases practical full‑stack concepts used in real
               apps:
             </p>
-            <ul className='grid grid-cols-1 md:grid-cols-2 gap-3 text-gray-700'>
+            <ul className='grid grid-cols-1 md:grid-cols-2 gap-3 text-muted-foreground'>
               <li>Component‑based architecture</li>
               <li>Type‑safe development</li>
               <li>Modern routing</li>
@@ -176,29 +176,29 @@ export default function About() {
       </section>
 
       {/* CTA */}
-      <section className='py-20 bg-black'>
+      <section className='py-20 bg-primary'>
         <div className='container mx-auto px-4'>
           <div className='max-w-3xl'>
-            <p className='text-xs font-medium tracking-widest text-gray-400 uppercase'>
+            <p className='text-xs font-medium tracking-widest text-primary-foreground/70 uppercase'>
               Explore
             </p>
-            <h3 className='text-4xl font-bold text-white mt-2'>
+            <h3 className='text-4xl font-bold text-primary-foreground mt-2'>
               Ready to dive deeper?
             </h3>
-            <p className='text-gray-300 mt-4 max-w-2xl'>
+            <p className='text-primary-foreground/80 mt-4 max-w-2xl'>
               Browse products, create a vendor account, or explore shipper tools
               — all within a clean, focused experience.
             </p>
             <div className='flex flex-col sm:flex-row gap-4 mt-8'>
               <Link to='/products'>
-                <Button className='text-lg px-8 py-4 bg-white text-black hover:bg-gray-200 shadow-lg hover:shadow-xl transition-all duration-300'>
+                <Button className='text-lg px-8 py-4 bg-background text-foreground hover:bg-accent shadow-lg hover:shadow-xl transition-all duration-300'>
                   Explore Products
                 </Button>
               </Link>
               <Link to='/register/vendor'>
                 <Button
                   variant='outline'
-                  className='text-lg px-8 py-4 border-2 bg-black border-white text-white hover:bg-white hover:text-black transition-all duration-300'
+                  className='text-lg px-8 py-4 border-2 bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary transition-all duration-300'
                 >
                   Start Selling
                 </Button>

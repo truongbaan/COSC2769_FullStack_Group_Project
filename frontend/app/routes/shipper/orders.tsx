@@ -237,14 +237,16 @@ export default function ShipperOrders() {
         {/* Header */}
         <div className='mb-8'>
           <div className='flex items-center gap-3 mb-4'>
-            <div className='w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center'>
+            <div className='w-12 h-12 bg-muted rounded-full flex items-center justify-center'>
               <Truck className='h-6 w-6' />
             </div>
             <div>
-              <h1 className='text-3xl font-bold text-gray-900'>
+              <h1 className='text-3xl font-bold text-foreground'>
                 Active Orders
               </h1>
-              <p className='text-gray-600'>{user.hub_id} Distribution Hub</p>
+              <p className='text-muted-foreground'>
+                {user.hub_id} Distribution Hub
+              </p>
             </div>
           </div>
         </div>
@@ -295,13 +297,13 @@ export default function ShipperOrders() {
         {orders.length === 0 ? (
           <Card>
             <CardContent className='text-center py-12'>
-              <div className='text-gray-400 mb-4'>
+              <div className='text-muted-foreground mb-4'>
                 <Truck className='h-16 w-16 mx-auto' />
               </div>
-              <h3 className='text-lg font-medium text-gray-900 mb-2'>
+              <h3 className='text-lg font-medium text-foreground mb-2'>
                 No active orders
               </h3>
-              <p className='text-gray-600 mb-6'>
+              <p className='text-muted-foreground mb-6'>
                 There are currently no orders waiting for delivery in your hub (
                 {user.hub_id}). Check back later for new orders.
               </p>
@@ -314,7 +316,7 @@ export default function ShipperOrders() {
           <div className='space-y-6'>
             <div className='flex justify-between items-center'>
               <h2 className='text-xl font-semibold'>Delivery Queue</h2>
-              <div className='text-sm text-gray-600'>
+              <div className='text-sm text-muted-foreground'>
                 {orders.length} order{orders.length !== 1 ? "s" : ""} pending
                 delivery
               </div>
@@ -348,16 +350,16 @@ export default function ShipperOrders() {
                               {order.status.toUpperCase()}
                             </Badge>
                           </div>
-                          <p className='text-gray-600 flex items-center gap-2'>
+                          <p className='text-muted-foreground flex items-center gap-2'>
                             <MapPin className='h-4 w-4' />
                             Customer ID: {order.customerId} • {user.hub_id} Hub
                           </p>
                         </div>
                         <div className='text-right'>
-                          <div className='text-xl font-bold text-gray-900'>
+                          <div className='text-xl font-bold text-foreground'>
                             ${order.total.toFixed(2)}
                           </div>
-                          <div className='text-sm text-gray-600'>
+                          <div className='text-sm text-muted-foreground'>
                             {orderItemCounts[order.id] !== undefined
                               ? `${orderItemCounts[order.id]} item${orderItemCounts[order.id] !== 1 ? "s" : ""}`
                               : "Loading items..."}
@@ -367,7 +369,7 @@ export default function ShipperOrders() {
 
                       {/* quick info section */}
                       <div className='mb-4'>
-                        <div className='text-sm text-gray-700 bg-gray-50 p-3 rounded space-y-1'>
+                        <div className='text-sm text-muted-foreground bg-muted p-3 rounded space-y-1'>
                           <div className='flex justify-between'>
                             <span>Customer ID: {order.customerId}</span>
                             <span>Hub: {order.hubId}</span>
@@ -384,12 +386,12 @@ export default function ShipperOrders() {
 
                       {/* expandable order details */}
                       {isExpanded && (
-                        <div className='mb-4 border rounded-lg p-4 bg-white'>
+                        <div className='mb-4 border rounded-lg p-4 bg-card'>
                           {orderData?.loading ? (
                             <div className='flex items-center justify-center py-8'>
                               <div className='text-center'>
-                                <Clock className='h-8 w-8 animate-pulse mx-auto mb-2 text-gray-400' />
-                                <p className='text-gray-600'>
+                                <Clock className='h-8 w-8 animate-pulse mx-auto mb-2 text-muted-foreground' />
+                                <p className='text-muted-foreground'>
                                   Loading order items...
                                 </p>
                               </div>
@@ -399,10 +401,10 @@ export default function ShipperOrders() {
                               {/* Customer Info */}
                               {orderData.customer.name && (
                                 <div className='border-b pb-3 mb-3'>
-                                  <h4 className='font-medium text-gray-900 mb-1'>
+                                  <h4 className='font-medium text-foreground mb-1'>
                                     Customer Information
                                   </h4>
-                                  <div className='text-sm text-gray-600'>
+                                  <div className='text-sm text-muted-foreground'>
                                     <p>
                                       <strong>Name:</strong>{" "}
                                       {orderData.customer.name}
@@ -417,7 +419,7 @@ export default function ShipperOrders() {
 
                               {/* Order Items */}
                               <div>
-                                <h4 className='font-medium text-gray-900 mb-3'>
+                                <h4 className='font-medium text-foreground mb-3'>
                                   Items to Deliver
                                 </h4>
                                 <div className='space-y-3'>
@@ -442,10 +444,10 @@ export default function ShipperOrders() {
                                         />
                                       </div>
                                       <div className='flex-1 min-w-0'>
-                                        <h5 className='font-medium text-sm text-gray-900 truncate'>
+                                        <h5 className='font-medium text-sm text-foreground truncate'>
                                           {item.product_name}
                                         </h5>
-                                        <div className='text-xs text-gray-600 space-y-1'>
+                                        <div className='text-xs text-muted-foreground space-y-1'>
                                           <p>
                                             Qty: {item.quantity} • $
                                             {item.price_at_order_time.toFixed(
@@ -466,8 +468,8 @@ export default function ShipperOrders() {
                               </div>
                             </div>
                           ) : (
-                            <div className='text-center py-4 text-gray-500'>
-                              <Package className='h-8 w-8 mx-auto mb-2 text-gray-300' />
+                            <div className='text-center py-4 text-muted-foreground'>
+                              <Package className='h-8 w-8 mx-auto mb-2 text-muted-foreground/60' />
                               <p>No items found for this order</p>
                             </div>
                           )}
