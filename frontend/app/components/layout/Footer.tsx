@@ -70,18 +70,15 @@ export default function Footer() {
           <div className='space-y-4'>
             <h3 className='font-semibold'>Legal</h3>
             <div className='space-y-2 text-sm'>
-              <Link
-                to='/privacy'
-                className='block hover:underline transition-colors'
-              >
+              <a href='#' className='block hover:underline transition-colors'>
                 Privacy Policy
-              </Link>
-              <Link
-                to='/terms'
+              </a>
+              <a
+                href='#terms'
                 className='block hover:underline transition-colors'
               >
                 Terms of Service
-              </Link>
+              </a>
             </div>
           </div>
         </div>

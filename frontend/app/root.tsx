@@ -46,7 +46,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta charSet='utf-8' />
         <meta name='viewport' content='width=device-width, initial-scale=1' />
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
-        <Meta />
         <Links />
       </head>
       <body>
@@ -86,13 +85,16 @@ function AppContent() {
   }, [logout, navigate]);
 
   return (
-    <div className='min-h-screen flex flex-col'>
-      <Header />
-      <main className='flex-1'>
-        <Outlet />
-      </main>
-      <Footer />
-    </div>
+    <>
+      <Meta />
+      <div className='min-h-screen flex flex-col'>
+        <Header />
+        <main className='flex-1'>
+          <Outlet />
+        </main>
+        <Footer />
+      </div>
+    </>
   );
 }
 
