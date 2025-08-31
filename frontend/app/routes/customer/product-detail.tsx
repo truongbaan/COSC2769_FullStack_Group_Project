@@ -66,9 +66,10 @@ export default function ProductDetail() {
       toast.warning("Please login to view product details");
       return;
     }
-    if (user.role === "vendor" || user.role === "shipper") {
+
+    if (user.role === "shipper") {
       const redirectPath =
-        user.role === "vendor" ? "/vendor/products" : "/shipper/orders";
+        user.role === "shipper" ? "/shipper/orders" : "/shipper/orders";
       navigate(redirectPath);
       toast.success(`Redirected to your ${user.role} dashboard`);
       return;

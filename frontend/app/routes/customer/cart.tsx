@@ -30,7 +30,7 @@ import {
   Clock,
   AlertCircle,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { checkoutCartApi } from "~/lib/api";
 import { getBackendImageUrl } from "~/lib/utils";
@@ -63,6 +63,24 @@ export default function Cart() {
   const navigate = useNavigate();
   const [isOrdering, setIsOrdering] = useState(false);
   const { user } = useAuth();
+
+  // redirect vendors and shippers
+  useEffect(() => {
+    if (!user) {
+      navigate("/login");
+      toast.warning("Please login to view cart");
+      return;
+    }
+
+    if (user.role === "vendor" || user.role === "shipper") {
+      const redirectPath =
+        user.role === "vendor" ? "/vendor/products" : "/shipper/orders";
+      navigate(redirectPath);
+      toast.success(`Redirected to your ${user.role} dashboard`);
+      return;
+    }
+  }, [user, navigate]);
+
   const handleCheckout = async () => {
     if (!isAuthenticated()) {
       navigate("/login");

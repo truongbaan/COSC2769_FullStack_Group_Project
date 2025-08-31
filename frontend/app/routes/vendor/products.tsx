@@ -396,16 +396,16 @@ export default function VendorProducts() {
                       </div>
 
                       <div className='flex gap-2'>
-                        <Button
-                          variant='outline'
-                          size='sm'
-                          disabled
-                          className='flex-1'
-                        >
-                          <Eye className='mr-2 h-4 w-4' />
-                          View
-                        </Button>
-
+                        <Link to={`/products/${product.id}`} className='w-full'>
+                          <Button
+                            variant='outline'
+                            size='sm'
+                            className='flex-1 w-full'
+                          >
+                            <Eye className='mr-2 h-4 w-4' />
+                            View
+                          </Button>
+                        </Link>
                         <Button
                           variant='outline'
                           size='sm'
