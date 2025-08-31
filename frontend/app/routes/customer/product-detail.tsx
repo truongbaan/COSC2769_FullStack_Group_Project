@@ -207,25 +207,6 @@ export default function ProductDetail() {
               </div>
             </div>
 
-            {/* Vendor Info */}
-            <Card>
-              <CardHeader className='pb-3'>
-                <div className='flex items-center gap-3'>
-                  <Avatar>
-                    <AvatarFallback>
-                      <Store className='h-4 w-4' />
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <CardTitle className='text-lg'>
-                      {product.vendorName}
-                    </CardTitle>
-                    <CardDescription>Verified Vendor</CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-            </Card>
-
             {/* Quantity and Add to Cart */}
             {product.inStock && (
               <div className='space-y-4'>
