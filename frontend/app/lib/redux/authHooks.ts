@@ -1,3 +1,10 @@
+/* RMIT University Vietnam 
+# Course: COSC2769 - Full Stack Development 
+# Semester: 2025B 
+# Assessment: Assignment 02 
+# Author: Tran Hoang Linh
+# ID: s4043097 */
+
 import { useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "./hooks";
 import {
@@ -23,7 +30,6 @@ export const useAuth = () => {
 
   const logoutUser = useCallback(() => {
     dispatch(logout());
-    // Clear any locally persisted cart when logging out to avoid showing stale counts
     dispatch(clearCart());
     dispatch(setSyncStatus(false));
   }, [dispatch]);

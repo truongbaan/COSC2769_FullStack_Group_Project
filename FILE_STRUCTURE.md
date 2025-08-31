@@ -127,6 +127,25 @@ React + Vite application with Redux Toolkit and redux-persist.
       - `authHooks.ts`: `useAuth` domain hook (login/logout, session effects).
       - `cartHooks.ts`: `useCart` domain hook (optimistic updates, syncing).
 
+### Frontend routes: role-based access
+
+| Path                       | Page                 | Guest | Customer | Vendor   | Shipper  | Notes                                                         |
+| -------------------------- | -------------------- | ----- | -------- | -------- | -------- | ------------------------------------------------------------- |
+| `/`                        | Home                 | Yes   | Yes      | Yes      | Yes      | Role-specific CTAs shown                                      |
+| `/about`                   | About                | Yes   | Yes      | Yes      | Yes      | Public                                                        |
+| `/help`                    | Help                 | Yes   | Yes      | Yes      | Yes      | Public                                                        |
+| `/privacy`                 | Privacy              | Yes   | Yes      | Yes      | Yes      | Public                                                        |
+| `/login`                   | Login                | Yes   | Redirect | Redirect | Redirect | Authenticated users are redirected to `/account`              |
+| `/register/:role?`         | Register             | Yes   | Redirect | Redirect | Redirect | Authenticated users are redirected to `/account`              |
+| `/account`                 | Profile              | No    | Yes      | Yes      | Yes      | Requires authentication                                       |
+| `/products`                | Product list         | Yes   | Yes      | Redirect | Redirect | Logged-in vendors/shippers are redirected to their dashboards |
+| `/products/:productId`     | Product detail       | No    | Yes      | No       | No       | Requires login; vendors/shippers are redirected               |
+| `/cart`                    | Cart                 | Yes   | Yes      | (Yes)    | (Yes)    | Checkout requires login; designed for customers               |
+| `/vendor/products`         | Vendor products      | No    | No       | Yes      | No       | Requires vendor role                                          |
+| `/vendor/products/new`     | Add product          | No    | No       | Yes      | No       | Requires vendor role                                          |
+| `/shipper/orders`          | Shipper orders       | No    | No       | No       | Yes      | Requires shipper role                                         |
+| `/shipper/orders/:orderId` | Shipper order detail | No    | No       | No       | Yes      | Requires shipper role; hub is validated in page               |
+
 ---
 
 ## How the pieces fit

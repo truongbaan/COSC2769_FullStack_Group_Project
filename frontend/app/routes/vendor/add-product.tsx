@@ -1,3 +1,10 @@
+/* RMIT University Vietnam 
+# Course: COSC2769 - Full Stack Development 
+# Semester: 2025B 
+# Assessment: Assignment 02 
+# Author: Tran Hoang Linh
+# ID: s4043097 */
+
 import type { Route } from "./+types/add-product";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,6 +27,14 @@ import { useState, useEffect } from "react";
 import type { z } from "zod";
 import { toast } from "sonner";
 import { createProductApi } from "~/lib/api";
+import { PRODUCT_CATEGORIES } from "~/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 
 type FormValues = z.infer<typeof productSchema>;
 
@@ -176,11 +191,29 @@ export default function AddProduct() {
                 label='Category'
                 error={formState.errors.category?.message}
               >
-                <Input
-                  id='category'
-                  placeholder='e.g., Electronics, Clothing, Home & Garden'
-                  {...register("category")}
-                />
+                <Select
+                  value={watch("category") as string | undefined}
+                  onValueChange={(v) =>
+                    setValue("category", v as any, {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    })
+                  }
+                >
+                  <SelectTrigger id='category'>
+                    <SelectValue
+                      placeholder='Select a category'
+                      className='w-full'
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PRODUCT_CATEGORIES.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </Field>
 
               <Field id='image' label='Product Image'>

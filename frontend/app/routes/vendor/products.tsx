@@ -1,3 +1,10 @@
+/* RMIT University Vietnam 
+# Course: COSC2769 - Full Stack Development 
+# Semester: 2025B 
+# Assessment: Assignment 02 
+# Author: Tran Hoang Linh
+# ID: s4043097 */
+
 import type { Route } from "./+types/products";
 import { useAuth } from "~/lib/auth";
 import { Link, useNavigate } from "react-router";
@@ -27,6 +34,14 @@ import { Textarea } from "~/components/ui/textarea";
 import { Package, Plus, Edit, Eye, TrendingUp } from "~/components/ui/icons";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { PRODUCT_CATEGORIES } from "~/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -478,13 +493,25 @@ export default function VendorProducts() {
                 Category
               </Label>
 
-              <Input
-                id='edit-category'
-                value={editForm.category}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, category: e.target.value })
-                }
-              />
+              <div className='col-span-3'>
+                <Select
+                  value={editForm.category}
+                  onValueChange={(v) =>
+                    setEditForm({ ...editForm, category: v })
+                  }
+                >
+                  <SelectTrigger id='edit-category'>
+                    <SelectValue placeholder='Select a category' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PRODUCT_CATEGORIES.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 

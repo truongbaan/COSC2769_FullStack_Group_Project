@@ -1,3 +1,10 @@
+/* RMIT University Vietnam 
+# Course: COSC2769 - Full Stack Development 
+# Semester: 2025B 
+# Assessment: Assignment 02 
+# Author: Tran Hoang Linh
+# ID: s4043097 */
+
 import type { Route } from "./+types/products";
 import { useState, useEffect } from "react";
 import * as React from "react";
@@ -18,7 +25,7 @@ import { Link } from "react-router";
 import { fetchProducts } from "~/lib/api";
 import type { ProductDto } from "~/lib/schemas";
 import { useCart } from "~/lib/cart";
-import { getBackendImageUrl } from "~/lib/utils";
+import { getBackendImageUrl, PRODUCT_CATEGORIES } from "~/lib/utils";
 import { ShoppingCart, Search } from "~/components/ui/icons";
 import { toast } from "sonner";
 import {
@@ -106,10 +113,7 @@ export default function Products() {
     }
   }, [min, max, setValue]);
 
-  const categories = React.useMemo(
-    () => [...new Set(filteredProducts.map((p) => p.category))],
-    [filteredProducts]
-  );
+  const categories = PRODUCT_CATEGORIES;
 
   const onSubmit = async (_data: FormValues) => {};
 

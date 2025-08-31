@@ -1,4 +1,13 @@
+/* RMIT University Vietnam 
+# Course: COSC2769 - Full Stack Development 
+# Semester: 2025B 
+# Assessment: Assignment 02 
+# Author: Tran Hoang Linh
+# ID: s4043097 */
+
 import { z } from "zod";
+import type { ProductCategory } from "./utils";
+import { PRODUCT_CATEGORIES } from "./utils";
 
 const usernameRegex = /^[A-Za-z0-9]{8,15}$/;
 const passwordRegex =
@@ -22,7 +31,13 @@ export const productSchema = z.object({
   price: z.coerce.number().positive(),
   image: z.any().optional(),
   description: z.string().max(500),
-  category: z.string().min(1, "Category is required").max(100),
+  category: z.enum(
+    PRODUCT_CATEGORIES as unknown as [ProductCategory, ...ProductCategory[]],
+    {
+      required_error: "Category is required",
+      invalid_type_error: "Invalid category",
+    }
+  ),
 });
 
 export const priceFilterSchema = z

@@ -1,3 +1,9 @@
+/* RMIT University Vietnam 
+# Course: COSC2769 - Full Stack Development 
+# Semester: 2025B 
+# Assessment: Assignment 02 
+# Author: Tran Hoang Linh
+# ID: s4043097 */
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import type { ProductDto } from "../../schemas";
@@ -6,7 +12,7 @@ import { fetchCartApi } from "../../api";
 export interface CartItem {
   product: ProductDto;
   quantity: number;
-  id?: string; // Backend cart item ID for deletion
+  id?: string; 
 }
 
 interface CartState {

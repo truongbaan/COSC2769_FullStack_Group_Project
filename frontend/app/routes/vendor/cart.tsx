@@ -1,3 +1,10 @@
+/* RMIT University Vietnam 
+# Course: COSC2769 - Full Stack Development 
+# Semester: 2025B 
+# Assessment: Assignment 02 
+# Author: Tran Hoang Linh
+# ID: s4043097 */
+
 import type { Route } from "./+types/cart";
 import { Link, useNavigate } from "react-router";
 import { Button } from "~/components/ui/button";

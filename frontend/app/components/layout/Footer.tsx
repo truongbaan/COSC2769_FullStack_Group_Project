@@ -1,3 +1,10 @@
+/* RMIT University Vietnam 
+# Course: COSC2769 - Full Stack Development 
+# Semester: 2025B 
+# Assessment: Assignment 02 
+# Author: Tran Hoang Linh
+# ID: s4043097 */
+
 import { Link } from "react-router";
 import { useAuth } from "~/lib/auth";
 
@@ -50,7 +57,7 @@ export default function Footer() {
           </div>
 
           <div className='space-y-4'>
-            <h3 className='font-semibold'>For Sellers</h3>
+            <h3 className='font-semibold'>For Partners</h3>
             <div className='space-y-2 text-sm'>
               <Link
                 to='/register/vendor'
