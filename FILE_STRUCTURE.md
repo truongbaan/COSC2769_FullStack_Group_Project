@@ -140,11 +140,11 @@ React + Vite application with Redux Toolkit and redux-persist.
 | `/account`                 | Profile              | No    | Yes      | Yes      | Yes      | Requires authentication                                       |
 | `/products`                | Product list         | Yes   | Yes      | Redirect | Redirect | Logged-in vendors/shippers are redirected to their dashboards |
 | `/products/:productId`     | Product detail       | No    | Yes      | No       | No       | Requires login; vendors/shippers are redirected               |
-| `/cart`                    | Cart                 | Yes   | Yes      | (Yes)    | (Yes)    | Checkout requires login; designed for customers               |
+| `/cart`                    | Cart                 | No   | Yes      | No    | No    | Checkout requires login; designed for customers               |
 | `/vendor/products`         | Vendor products      | No    | No       | Yes      | No       | Requires vendor role                                          |
 | `/vendor/products/new`     | Add product          | No    | No       | Yes      | No       | Requires vendor role                                          |
 | `/shipper/orders`          | Shipper orders       | No    | No       | No       | Yes      | Requires shipper role                                         |
-| `/shipper/orders/:orderId` | Shipper order detail | No    | No       | No       | Yes      | Requires shipper role; hub is validated in page               |
+
 
 ---
 
