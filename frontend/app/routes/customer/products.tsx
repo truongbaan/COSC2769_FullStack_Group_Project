@@ -376,10 +376,6 @@ export default function Products() {
                   </p>
                 )}
 
-                <div className='text-sm text-muted-foreground flex items-center gap-2'>
-                  <span>by {product.vendorName}</span>
-                </div>
-
                 <div className='mt-1 text-2xl font-semibold text-foreground'>
                   ${product.price}
                 </div>

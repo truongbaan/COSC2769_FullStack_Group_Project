@@ -156,8 +156,15 @@ export default function Home() {
                     Order tracking
                   </li>
                 </ul>
-                <Link to='/register/customer'>
-                  <Button className='w-full py-3 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300'>
+                <Link
+                  to='/register/customer'
+                  tabIndex={user ? -1 : 0}
+                  aria-disabled={!!user}
+                >
+                  <Button
+                    className='w-full py-3 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300'
+                    disabled={!!user}
+                  >
                     Sign Up as Customer
                   </Button>
                 </Link>
@@ -197,8 +204,15 @@ export default function Home() {
                     Analytics and insights
                   </li>
                 </ul>
-                <Link to='/register/vendor'>
-                  <Button className='w-full py-3 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300'>
+                <Link
+                  to='/register/vendor'
+                  tabIndex={user ? -1 : 0}
+                  aria-disabled={!!user}
+                >
+                  <Button
+                    className='w-full py-3 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300'
+                    disabled={!!user}
+                  >
                     Sign Up as Vendor
                   </Button>
                 </Link>
@@ -240,7 +254,10 @@ export default function Home() {
                   </li>
                 </ul>
                 <Link to='/register/shipper'>
-                  <Button className='w-full py-3 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300'>
+                  <Button
+                    disabled={!!user}
+                    className='w-full py-3 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300'
+                  >
                     Sign Up as Shipper
                   </Button>
                 </Link>

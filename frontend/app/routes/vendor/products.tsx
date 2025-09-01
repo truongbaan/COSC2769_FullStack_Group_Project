@@ -139,6 +139,9 @@ export default function VendorProducts() {
         ) {
           updateData.description = editForm.description;
         }
+        if (editForm.category && editForm.category !== productToEdit.category) {
+          updateData.category = editForm.category;
+        }
 
         // add image file if user selected a new one
         if (editImageFile) {

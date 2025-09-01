@@ -225,7 +225,9 @@ export default function ProductDetail() {
                       variant='ghost'
                       size='sm'
                       onClick={() => updateQuantity(-1)}
-                      disabled={quantity <= 1}
+                      disabled={
+                        quantity <= 1 || !user || user?.role === "vendor"
+                      }
                     >
                       <Minus className='h-4 w-4' />
                     </Button>
@@ -234,38 +236,48 @@ export default function ProductDetail() {
                       variant='ghost'
                       size='sm'
                       onClick={() => updateQuantity(1)}
+                      disabled={!user || user?.role === "vendor"}
                     >
                       <Plus className='h-4 w-4' />
                     </Button>
                   </div>
                 </div>
 
-                <div className='space-y-3'>
-                  <Button
-                    size='lg'
-                    className='w-full'
-                    onClick={handleAddToCart}
-                    disabled={!user}
-                  >
-                    <ShoppingCart className='mr-2 h-5 w-5' />
-                    Add to Cart - ${(product.price * quantity).toFixed(2)}
-                  </Button>
-
-                  {addedToCart && (
-                    <div className='bg-muted border border-border rounded-lg p-4'>
-                      <p className='text-foreground font-medium'>
-                        ✅ Added to cart! You now have {getTotalItems()} items
-                        in your cart.
-                      </p>
-                    </div>
-                  )}
-
-                  <Link to='/cart' className='w-full'>
-                    <Button variant='outline' size='lg' className='w-full'>
-                      View Cart ({getTotalItems()} items)
+                {user && user?.role === "vendor" && (
+                  <Link to={`/vendor/product`}>
+                    <Button size='lg' className='w-full'>
+                      Edit Product
                     </Button>
                   </Link>
-                </div>
+                )}
+                {user && user?.role === "customer" && (
+                  <div className='space-y-3'>
+                    <Button
+                      size='lg'
+                      className='w-full'
+                      onClick={handleAddToCart}
+                      disabled={!user}
+                    >
+                      <ShoppingCart className='mr-2 h-5 w-5' />
+                      Add to Cart - ${(product.price * quantity).toFixed(2)}
+                    </Button>
+
+                    {addedToCart && (
+                      <div className='bg-muted border border-border rounded-lg p-4'>
+                        <p className='text-foreground font-medium'>
+                          ✅ Added to cart! You now have {getTotalItems()} items
+                          in your cart.
+                        </p>
+                      </div>
+                    )}
+
+                    <Link to='/cart' className='w-full'>
+                      <Button variant='outline' size='lg' className='w-full'>
+                        View Cart ({getTotalItems()} items)
+                      </Button>
+                    </Link>
+                  </div>
+                )}
               </div>
             )}
 

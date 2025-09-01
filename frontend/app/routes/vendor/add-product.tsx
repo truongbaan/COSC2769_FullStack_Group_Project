@@ -96,8 +96,29 @@ export default function AddProduct() {
       toast.success("Product added");
       navigate("/vendor/products");
     } catch (error) {
-      toast.error("Failed to add product. Please try again.");
       console.error("Error adding product:", error);
+
+      // Extract specific error message from API response
+      let errorMessage = "Failed to add product. Please try again.";
+      if (error instanceof Error) {
+        const errorText = error.message;
+        // Check if it's an API error with JSON response
+        if (errorText.includes("API") && errorText.includes("{")) {
+          try {
+            const jsonStart = errorText.indexOf("{");
+            const jsonPart = errorText.substring(jsonStart);
+            const parsed = JSON.parse(jsonPart);
+            if (parsed.message) {
+              errorMessage = parsed.message;
+            }
+          } catch (parseError) {
+            // If parsing fails, keep the default message
+            console.error("Error parsing API error:", parseError);
+          }
+        }
+      }
+
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -221,7 +242,7 @@ export default function AddProduct() {
                   <Input
                     id='image'
                     type='file'
-                    accept='image/*'
+                    accept='image/png,image/jpeg'
                     onChange={handleImageChange}
                   />
                   {previewImage && (
@@ -265,6 +286,7 @@ export default function AddProduct() {
                       <li>• Product name must be 10-20 characters long</li>
                       <li>• Price must be a positive number</li>
                       <li>• Description should be under 500 characters</li>
+                      <li>• Image must be PNG or JPEG format only</li>
                       <li>• High-quality product image is recommended</li>
                     </ul>
                   </div>
