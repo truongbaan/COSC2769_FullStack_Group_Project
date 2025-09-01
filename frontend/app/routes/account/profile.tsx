@@ -30,7 +30,7 @@ import { useNavigate } from "react-router";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import type { z } from "zod";
-import { getBackendImageUrl } from "~/lib/utils";
+import { getBackendImageUrl, getApiErrorMessage } from "~/lib/utils";
 import {
   User,
   Package,
@@ -199,7 +199,11 @@ export default function Profile() {
       }
     } catch (error) {
       console.error("Upload error:", error);
-      toast.error("Upload failed. Please try again.");
+      const errorMessage = getApiErrorMessage(
+        error,
+        "Upload failed. Please try again."
+      );
+      toast.error(errorMessage);
     } finally {
       setIsUploading(false);
     }
@@ -226,7 +230,11 @@ export default function Profile() {
       }
     } catch (error) {
       console.error("Update password error:", error);
-      toast.error("Failed to update password. Please try again.");
+      const errorMessage = getApiErrorMessage(
+        error,
+        "Failed to update password. Please try again."
+      );
+      toast.error(errorMessage);
     } finally {
       setIsChangingPassword(false);
     }

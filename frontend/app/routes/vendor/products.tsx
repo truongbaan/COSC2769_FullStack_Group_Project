@@ -9,7 +9,7 @@ import type { Route } from "./+types/products";
 import { useAuth } from "~/lib/auth";
 import { Link, useNavigate } from "react-router";
 import { updateProductApi, fetchVendorProducts } from "~/lib/api";
-import { getBackendImageUrl } from "~/lib/utils";
+import { getBackendImageUrl, getApiErrorMessage } from "~/lib/utils";
 import { Button } from "~/components/ui/button";
 import { Switch } from "~/components/ui/switch";
 import {
@@ -187,26 +187,10 @@ export default function VendorProducts() {
       } catch (error) {
         console.error("Error updating product:", error);
 
-        // Extract specific error message from API response
-        let errorMessage = "Failed to update product. Please try again.";
-        if (error instanceof Error) {
-          const errorText = error.message;
-          // Check if it's an API error with JSON response
-          if (errorText.includes("API") && errorText.includes("{")) {
-            try {
-              const jsonStart = errorText.indexOf("{");
-              const jsonPart = errorText.substring(jsonStart);
-              const parsed = JSON.parse(jsonPart);
-              if (parsed.message) {
-                errorMessage = parsed.message;
-              }
-            } catch (parseError) {
-              // If parsing fails, keep the default message
-              console.error("Error parsing API error:", parseError);
-            }
-          }
-        }
-
+        const errorMessage = getApiErrorMessage(
+          error,
+          "Failed to update product. Please try again."
+        );
         toast.error(errorMessage);
       } finally {
         setEditing(false);

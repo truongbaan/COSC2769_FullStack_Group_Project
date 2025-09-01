@@ -27,7 +27,7 @@ import { useState, useEffect } from "react";
 import type { z } from "zod";
 import { toast } from "sonner";
 import { createProductApi } from "~/lib/api";
-import { PRODUCT_CATEGORIES } from "~/lib/utils";
+import { PRODUCT_CATEGORIES, getApiErrorMessage } from "~/lib/utils";
 import {
   Select,
   SelectContent,
@@ -98,26 +98,10 @@ export default function AddProduct() {
     } catch (error) {
       console.error("Error adding product:", error);
 
-      // Extract specific error message from API response
-      let errorMessage = "Failed to add product. Please try again.";
-      if (error instanceof Error) {
-        const errorText = error.message;
-        // Check if it's an API error with JSON response
-        if (errorText.includes("API") && errorText.includes("{")) {
-          try {
-            const jsonStart = errorText.indexOf("{");
-            const jsonPart = errorText.substring(jsonStart);
-            const parsed = JSON.parse(jsonPart);
-            if (parsed.message) {
-              errorMessage = parsed.message;
-            }
-          } catch (parseError) {
-            // If parsing fails, keep the default message
-            console.error("Error parsing API error:", parseError);
-          }
-        }
-      }
-
+      const errorMessage = getApiErrorMessage(
+        error,
+        "Failed to add product. Please try again."
+      );
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);

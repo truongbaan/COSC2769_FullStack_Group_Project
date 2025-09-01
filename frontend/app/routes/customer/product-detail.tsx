@@ -22,7 +22,7 @@ import { Avatar, AvatarFallback } from "~/components/ui/avatar";
 import { fetchProduct } from "~/lib/api";
 import type { ProductDto } from "~/lib/schemas";
 import { useCart } from "~/lib/cart";
-import { getBackendImageUrl } from "~/lib/utils";
+import { getBackendImageUrl, getApiErrorMessage } from "~/lib/utils";
 import {
   ShoppingCart,
   Star,
@@ -114,7 +114,11 @@ export default function ProductDetail() {
       toast.success("Added to cart!");
     } catch (err) {
       console.error("Failed to add to cart:", err);
-      toast.error("Failed to add to cart. Please try again.");
+      const errorMessage = getApiErrorMessage(
+        err,
+        "Failed to add to cart. Please try again."
+      );
+      toast.error(errorMessage);
     }
   };
 

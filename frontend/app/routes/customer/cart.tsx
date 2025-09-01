@@ -33,7 +33,7 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { checkoutCartApi } from "~/lib/api";
-import { getBackendImageUrl } from "~/lib/utils";
+import { getBackendImageUrl, getApiErrorMessage } from "~/lib/utils";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -103,7 +103,11 @@ export default function Cart() {
       }
     } catch (error) {
       console.error("Checkout error:", error);
-      toast.error("Failed to place order. Please try again.");
+      const errorMessage = getApiErrorMessage(
+        error,
+        "Failed to place order. Please try again."
+      );
+      toast.error(errorMessage);
     } finally {
       setIsOrdering(false);
     }

@@ -25,7 +25,11 @@ import { Link } from "react-router";
 import { fetchProducts } from "~/lib/api";
 import type { ProductDto } from "~/lib/schemas";
 import { useCart } from "~/lib/cart";
-import { getBackendImageUrl, PRODUCT_CATEGORIES } from "~/lib/utils";
+import {
+  getBackendImageUrl,
+  PRODUCT_CATEGORIES,
+  getApiErrorMessage,
+} from "~/lib/utils";
 import { ShoppingCart, Search } from "~/components/ui/icons";
 import { toast } from "sonner";
 import {
@@ -184,7 +188,11 @@ export default function Products() {
       toast.success(`${product.name} added to cart!`);
     } catch (error) {
       console.error("Failed to add to cart:", error);
-      toast.error("Failed to add to cart. Please try again.");
+      const errorMessage = getApiErrorMessage(
+        error,
+        "Failed to add to cart. Please try again."
+      );
+      toast.error(errorMessage);
     }
   };
 
