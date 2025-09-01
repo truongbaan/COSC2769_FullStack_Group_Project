@@ -1,8 +1,17 @@
+/* RMIT University Vietnam 
+# Course: COSC2769 - Full Stack Development 
+# Semester: 2025B 
+# Assessment: Assignment 02 
+# Author: Tran Hoang Linh
+# ID: s4043097 */
+
 import type { Route } from "./+types/products";
 import { useAuth } from "~/lib/auth";
 import { Link, useNavigate } from "react-router";
-import { deleteVendorProductApi, editVendorProductApi } from "~/lib/api";
+import { updateProductApi, fetchVendorProducts } from "~/lib/api";
+import { getBackendImageUrl } from "~/lib/utils";
 import { Button } from "~/components/ui/button";
+import { Switch } from "~/components/ui/switch";
 import {
   Card,
   CardContent,
@@ -22,17 +31,17 @@ import {
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Textarea } from "~/components/ui/textarea";
-// Remove dependency on local mock data - we'll fetch from API instead
-import {
-  Package,
-  Plus,
-  Edit,
-  Trash2,
-  Eye,
-  TrendingUp,
-} from "~/components/ui/icons";
+import { Package, Plus, Edit, Eye, TrendingUp } from "~/components/ui/icons";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { PRODUCT_CATEGORIES } from "~/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -47,9 +56,6 @@ export default function VendorProducts() {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [productToDelete, setProductToDelete] = useState<any | null>(null);
-  const [deleting, setDeleting] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [productToEdit, setProductToEdit] = useState<any | null>(null);
   const [editing, setEditing] = useState(false);
@@ -58,39 +64,30 @@ export default function VendorProducts() {
     price: 0,
     description: "",
     image: "",
+    instock: true,
+    category: "",
   });
+  const [editImageFile, setEditImageFile] = useState<File | null>(null);
+  const [editPreviewImage, setEditPreviewImage] = useState<string | null>(null);
 
   // Fetch vendor products from API
-  const fetchVendorProducts = async (vendorId: string) => {
+  const fetchVendorProductsLocal = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(
-        `/api-test/vendor/products?vendorId=${encodeURIComponent(vendorId)}`
-      );
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch products: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        setProducts(data.products || []);
-      } else {
-        throw new Error(data.error || "Failed to fetch products");
-      }
+      const products = await fetchVendorProducts();
+      setProducts(products || []);
     } catch (err) {
       console.error("Error fetching vendor products:", err);
       setError(err instanceof Error ? err.message : "Failed to fetch products");
-      setProducts([]); // Set empty array on error
+      setProducts([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Redirect if not authenticated or not a vendor
+  // redirect if not authenticated or not a vendor
   useEffect(() => {
     if (!isAuthenticated()) {
       navigate("/login");
@@ -101,54 +98,12 @@ export default function VendorProducts() {
       return;
     }
 
-    // Fetch vendor products from API
-    fetchVendorProducts(user.id);
-  }, [isAuthenticated, user, navigate]);
+    fetchVendorProductsLocal();
+  }, [user, navigate]);
 
   if (!user || user.role !== "vendor") {
-    return null; // Will redirect
+    return null;
   }
-
-  const handleDeleteProduct = (product: any) => {
-    setProductToDelete(product);
-    setDeleteDialogOpen(true);
-  };
-
-  const confirmDeleteProduct = async () => {
-    if (productToDelete && user) {
-      try {
-        setDeleting(true);
-
-        // Call the delete API
-        const result = await deleteVendorProductApi(
-          productToDelete.id,
-          user.id
-        );
-
-        if (result.success) {
-          // Remove product from local state
-          setProducts(products.filter((p) => p.id !== productToDelete.id));
-          setDeleteDialogOpen(false);
-          setProductToDelete(null);
-
-          // Optional: Show success message
-          console.log("Product deleted successfully:", result.message);
-        } else {
-          throw new Error("Failed to delete product");
-        }
-      } catch (error) {
-        console.error("Error deleting product:", error);
-        toast.error("Failed to delete product. Please try again.");
-      } finally {
-        setDeleting(false);
-      }
-    }
-  };
-
-  const cancelDeleteProduct = () => {
-    setDeleteDialogOpen(false);
-    setProductToDelete(null);
-  };
 
   const handleEditProduct = (product: any) => {
     setProductToEdit(product);
@@ -157,7 +112,11 @@ export default function VendorProducts() {
       price: product.price,
       description: product.description,
       image: product.image || product.imageUrl || "",
+      category: product.category,
+      instock: (product.inStock ?? product.instock ?? true) as boolean,
     });
+    setEditImageFile(null);
+    setEditPreviewImage(null);
     setEditDialogOpen(true);
   };
 
@@ -166,25 +125,59 @@ export default function VendorProducts() {
       try {
         setEditing(true);
 
-        // Call the edit API
-        const result = await editVendorProductApi(
-          productToEdit.id,
-          user.id,
-          editForm
-        );
+        // prepare update data
+        const updateData: any = {};
+        if (editForm.name && editForm.name !== productToEdit.name) {
+          updateData.name = editForm.name;
+        }
+        if (editForm.price && editForm.price !== productToEdit.price) {
+          updateData.price = editForm.price;
+        }
+        if (
+          editForm.description &&
+          editForm.description !== productToEdit.description
+        ) {
+          updateData.description = editForm.description;
+        }
 
-        if (result.success && result.updatedProduct) {
-          // Update product in local state
+        // add image file if user selected a new one
+        if (editImageFile) {
+          updateData.image = editImageFile;
+        }
+
+        // include stock status if changed
+        const currentInStock = (productToEdit.inStock ??
+          productToEdit.instock) as boolean | undefined;
+        if (
+          typeof editForm.instock === "boolean" &&
+          editForm.instock !== currentInStock
+        ) {
+          updateData.instock = editForm.instock;
+        }
+
+        const result = await updateProductApi(productToEdit.id, updateData);
+
+        if (result.success && result.product) {
+          // update product in local state
           setProducts(
             products.map((p) =>
-              p.id === productToEdit.id ? result.updatedProduct : p
+              p.id === productToEdit.id
+                ? {
+                    ...p,
+                    ...result.product,
+                    ...(updateData.instock !== undefined
+                      ? {
+                          inStock: updateData.instock,
+                          instock: updateData.instock,
+                        }
+                      : {}),
+                  }
+                : p
             )
           );
           setEditDialogOpen(false);
           setProductToEdit(null);
-
-          // Optional: Show success message
-          console.log("Product updated successfully:", result.message);
+          toast.success("Product updated successfully");
         } else {
           throw new Error("Failed to update product");
         }
@@ -205,15 +198,30 @@ export default function VendorProducts() {
       price: 0,
       description: "",
       image: "",
+      instock: true,
+      category: "",
     });
+    setEditImageFile(null);
+    setEditPreviewImage(null);
+  };
+
+  const handleEditImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    setEditImageFile(file || null);
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setEditPreviewImage(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setEditPreviewImage(null);
+    }
   };
 
   const totalProducts = products.length;
   const inStockProducts = products.filter((p) => p.inStock).length;
-  const averageRating =
-    products.length > 0
-      ? products.reduce((sum, p) => sum + (p.rating || 0), 0) / products.length
-      : 0;
 
   return (
     <div className='container mx-auto px-4 py-8'>
@@ -221,8 +229,8 @@ export default function VendorProducts() {
         {/* Header */}
         <div className='flex justify-between items-center mb-8'>
           <div>
-            <h1 className='text-3xl font-bold text-gray-900'>My Products</h1>
-            <p className='text-gray-600'>
+            <h1 className='text-3xl font-bold text-foreground'>My Products</h1>
+            <p className='text-muted-foreground'>
               Manage your product catalog and inventory
             </p>
           </div>
@@ -235,7 +243,7 @@ export default function VendorProducts() {
         </div>
 
         {/* Stats Cards */}
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-6 mb-8'>
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-6 mb-8'>
           <Card>
             <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
               <CardTitle className='text-sm font-medium'>
@@ -269,36 +277,19 @@ export default function VendorProducts() {
               </p>
             </CardContent>
           </Card>
-
-          <Card>
-            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-              <CardTitle className='text-sm font-medium'>
-                Average Rating
-              </CardTitle>
-              <Eye className='h-4 w-4 text-muted-foreground' />
-            </CardHeader>
-            <CardContent>
-              <div className='text-2xl font-bold'>
-                {averageRating > 0 ? averageRating.toFixed(1) : "0.0"}
-              </div>
-              <p className='text-xs text-muted-foreground'>
-                Customer satisfaction
-              </p>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Products List */}
         {loading ? (
           <Card>
             <CardContent className='text-center py-12'>
-              <div className='text-gray-400 mb-4'>
+              <div className='text-muted-foreground mb-4'>
                 <Package className='h-16 w-16 mx-auto animate-pulse' />
               </div>
-              <h3 className='text-lg font-medium text-gray-900 mb-2'>
+              <h3 className='text-lg font-medium text-foreground mb-2'>
                 Loading products...
               </h3>
-              <p className='text-gray-600'>
+              <p className='text-muted-foreground'>
                 Please wait while we fetch your products.
               </p>
             </CardContent>
@@ -306,14 +297,14 @@ export default function VendorProducts() {
         ) : error ? (
           <Card>
             <CardContent className='text-center py-12'>
-              <div className='text-red-400 mb-4'>
+              <div className='text-red-500 mb-4'>
                 <Package className='h-16 w-16 mx-auto' />
               </div>
-              <h3 className='text-lg font-medium text-gray-900 mb-2'>
+              <h3 className='text-lg font-medium text-foreground mb-2'>
                 Failed to load products
               </h3>
-              <p className='text-gray-600 mb-6'>{error}</p>
-              <Button onClick={() => fetchVendorProducts(user?.id || "")}>
+              <p className='text-muted-foreground mb-6'>{error}</p>
+              <Button onClick={() => fetchVendorProductsLocal()}>
                 Try Again
               </Button>
             </CardContent>
@@ -321,13 +312,13 @@ export default function VendorProducts() {
         ) : products.length === 0 ? (
           <Card>
             <CardContent className='text-center py-12'>
-              <div className='text-gray-400 mb-4'>
+              <div className='text-muted-foreground mb-4'>
                 <Package className='h-16 w-16 mx-auto' />
               </div>
-              <h3 className='text-lg font-medium text-gray-900 mb-2'>
+              <h3 className='text-lg font-medium text-foreground mb-2'>
                 No products yet
               </h3>
-              <p className='text-gray-600 mb-6'>
+              <p className='text-muted-foreground mb-6'>
                 Start by adding your first product to begin selling on our
                 platform.
               </p>
@@ -343,7 +334,7 @@ export default function VendorProducts() {
           <div className='space-y-6'>
             <div className='flex justify-between items-center'>
               <h2 className='text-xl font-semibold'>Product Catalog</h2>
-              <div className='text-sm text-gray-600'>
+              <div className='text-sm text-muted-foreground'>
                 Showing {products.length} product
                 {products.length !== 1 ? "s" : ""}
               </div>
@@ -356,9 +347,9 @@ export default function VendorProducts() {
                   className='group hover:shadow-lg transition-shadow py-0'
                 >
                   <CardHeader className='p-0'>
-                    <div className='aspect-square overflow-hidden rounded-t-lg bg-gray-100'>
+                    <div className='aspect-square overflow-hidden rounded-t-lg bg-muted'>
                       <img
-                        src={product.image || product.imageUrl}
+                        src={getBackendImageUrl(product.imageUrl)}
                         alt={product.name}
                         className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-300'
                       />
@@ -374,7 +365,7 @@ export default function VendorProducts() {
                           {product.inStock ? (
                             <Badge
                               variant='default'
-                              className='bg-gray-100 text-gray-900 text-xs'
+                              className='bg-muted text-foreground text-xs'
                             >
                               In Stock
                             </Badge>
@@ -390,32 +381,26 @@ export default function VendorProducts() {
                         <CardTitle className='text-lg line-clamp-2'>
                           {product.name}
                         </CardTitle>
-                        <div className='text-2xl font-bold text-gray-900 mt-2'>
+                        <div className='text-2xl font-bold text-foreground mt-2'>
                           ${product.price}
                         </div>
                       </div>
 
-                      <div className='text-sm text-gray-600 space-y-1'>
+                      <div className='text-sm text-muted-foreground space-y-1'>
                         <div className='flex justify-between'>
-                          <span>Rating:</span>
+                          <span>Availability:</span>
                           <span>
-                            {product.rating}/5 ({product.reviewCount} reviews)
-                          </span>
-                        </div>
-                        <div className='flex justify-between'>
-                          <span>Mock Sales:</span>
-                          <span>
-                            {Math.floor(Math.random() * 50) + 1} units
+                            {product.inStock ? "Available" : "Unavailable"}
                           </span>
                         </div>
                       </div>
 
                       <div className='flex gap-2'>
-                        <Link to={`/products/${product.id}`} className='flex-1'>
+                        <Link to={`/products/${product.id}`} className='w-full'>
                           <Button
                             variant='outline'
                             size='sm'
-                            className='w-full'
+                            className='flex-1 w-full'
                           >
                             <Eye className='mr-2 h-4 w-4' />
                             View
@@ -429,14 +414,7 @@ export default function VendorProducts() {
                         >
                           <Edit className='h-4 w-4' />
                         </Button>
-                        <Button
-                          variant='outline'
-                          size='sm'
-                          onClick={() => handleDeleteProduct(product)}
-                          className='hover:underline'
-                        >
-                          <Trash2 className='h-4 w-4' />
-                        </Button>
+                        {/* Out-of-stock action moved into the edit form toggle */}
                       </div>
                     </div>
                   </CardContent>
@@ -447,11 +425,11 @@ export default function VendorProducts() {
         )}
 
         {/* Business Tips */}
-        <div className='mt-12 bg-gray-50 border border-gray-200 rounded-lg p-6'>
-          <h3 className='font-semibold text-gray-900 mb-3'>
+        <div className='mt-12 bg-muted border border-border rounded-lg p-6'>
+          <h3 className='font-semibold text-foreground mb-3'>
             💡 Tips for Success
           </h3>
-          <ul className='text-gray-700 text-sm space-y-2'>
+          <ul className='text-muted-foreground text-sm space-y-2'>
             <li>• Add high-quality product images to increase sales</li>
             <li>
               • Write detailed descriptions with key features and benefits
@@ -462,59 +440,6 @@ export default function VendorProducts() {
           </ul>
         </div>
       </div>
-
-      {/* Delete Product Dialog */}
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Product</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete "{productToDelete?.name}"? This
-              action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className='flex items-center space-x-4 p-4 bg-gray-50 rounded-lg'>
-            {productToDelete && (
-              <>
-                <img
-                  src={productToDelete.image || productToDelete.imageUrl}
-                  alt={productToDelete.name}
-                  className='w-16 h-16 object-cover rounded-lg'
-                />
-                <div>
-                  <h4 className='font-medium text-gray-900'>
-                    {productToDelete.name}
-                  </h4>
-                  <p className='text-sm text-gray-600'>
-                    ${productToDelete.price}
-                  </p>
-                  <Badge variant='secondary' className='text-xs mt-1'>
-                    {productToDelete.category}
-                  </Badge>
-                </div>
-              </>
-            )}
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant='outline'
-              onClick={cancelDeleteProduct}
-              disabled={deleting}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant='destructive'
-              onClick={confirmDeleteProduct}
-              disabled={deleting}
-            >
-              {deleting ? "Deleting..." : "Delete Product"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Edit Product Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
@@ -564,33 +489,95 @@ export default function VendorProducts() {
             </div>
 
             <div className='grid grid-cols-4 items-center gap-4'>
-              <Label htmlFor='edit-image' className='text-right'>
-                Image URL
+              <Label htmlFor='edit-category' className='text-right'>
+                Category
               </Label>
+
+              <div className='col-span-3'>
+                <Select
+                  value={editForm.category}
+                  onValueChange={(v) =>
+                    setEditForm({ ...editForm, category: v })
+                  }
+                >
+                  <SelectTrigger id='edit-category'>
+                    <SelectValue placeholder='Select a category' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PRODUCT_CATEGORIES.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+
+          <div className='grid grid-cols-4 items-start gap-4'>
+            <Label htmlFor='edit-image' className='text-right pt-2'>
+              Product Image
+            </Label>
+            <div className='col-span-3 space-y-3'>
               <Input
                 id='edit-image'
-                value={editForm.image}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, image: e.target.value })
-                }
-                className='col-span-3'
-                placeholder='https://example.com/image.jpg'
+                type='file'
+                accept='image/*'
+                onChange={handleEditImageChange}
+                className='w-full'
               />
+              {editPreviewImage ? (
+                <div className='border rounded-lg p-3'>
+                  <p className='text-sm font-medium mb-2'>New Image Preview:</p>
+                  <img
+                    src={editPreviewImage}
+                    alt='New product preview'
+                    className='w-24 h-24 object-cover rounded-lg'
+                  />
+                </div>
+              ) : (
+                productToEdit && (
+                  <div className='border rounded-lg p-3'>
+                    <p className='text-sm font-medium mb-2'>Current Image:</p>
+                    <img
+                      src={getBackendImageUrl(productToEdit.imageUrl)}
+                      alt={productToEdit.name}
+                      className='w-24 h-24 object-cover rounded-lg'
+                    />
+                  </div>
+                )
+              )}
             </div>
+          </div>
 
-            <div className='grid grid-cols-4 items-start gap-4'>
-              <Label htmlFor='edit-description' className='text-right pt-2'>
-                Description
-              </Label>
-              <Textarea
-                id='edit-description'
-                value={editForm.description}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, description: e.target.value })
+          <div className='grid grid-cols-4 items-start gap-4'>
+            <Label htmlFor='edit-description' className='text-right pt-2'>
+              Description
+            </Label>
+            <Textarea
+              id='edit-description'
+              value={editForm.description}
+              onChange={(e) =>
+                setEditForm({ ...editForm, description: e.target.value })
+              }
+              className='col-span-3'
+              placeholder='Product description (max 500 characters)'
+              rows={4}
+            />
+          </div>
+
+          <div className='grid grid-cols-4 items-center gap-4'>
+            <Label htmlFor='edit-instock' className='text-right'>
+              In Stock
+            </Label>
+            <div className='col-span-3'>
+              <Switch
+                id='edit-instock'
+                checked={!!editForm.instock}
+                onCheckedChange={(checked) =>
+                  setEditForm({ ...editForm, instock: Boolean(checked) })
                 }
-                className='col-span-3'
-                placeholder='Product description (max 500 characters)'
-                rows={4}
               />
             </div>
           </div>

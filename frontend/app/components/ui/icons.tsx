@@ -36,6 +36,8 @@ import {
   HiOutlineArrowRight,
   HiOutlineUserPlus,
   HiOutlineCreditCard,
+  HiOutlineSun,
+  HiOutlineMoon,
 } from "react-icons/hi2";
 
 // App-wide icon aliases (monochrome, outline style)
@@ -63,6 +65,8 @@ export const MapPin = HiOutlineMapPin;
 export const Clock = HiOutlineClock;
 export const CheckCircle = HiOutlineCheckCircle;
 export const XCircle = HiOutlineXCircle;
+export const ChevronDown = HiOutlineChevronDown;
+export const ChevronUp = HiOutlineChevronUp;
 export const LogIn = HiOutlineArrowRightOnRectangle;
 export const EyeOff = HiOutlineEyeSlash;
 export const Upload = HiOutlineArrowUpTray;
@@ -71,6 +75,8 @@ export const Settings = HiOutlineCog6Tooth;
 export const ArrowRight = HiOutlineArrowRight;
 export const UserPlus = HiOutlineUserPlus;
 export const CreditCard = HiOutlineCreditCard;
+export const Sun = HiOutlineSun;
+export const Moon = HiOutlineMoon;
 
 // shadcn ui helper icon names
 export const CheckIcon = HiOutlineCheck;

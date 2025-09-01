@@ -1,3 +1,10 @@
+/* RMIT University Vietnam 
+# Course: COSC2769 - Full Stack Development 
+# Semester: 2025B 
+# Assessment: Assignment 02 
+# Author: Tran Hoang Linh
+# ID: s4043097 */
+
 import {
   isRouteErrorResponse,
   Links,
@@ -5,9 +12,12 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useNavigate,
 } from "react-router";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
+import { useEffect } from "react";
+import { ThemeProvider } from "./lib/theme";
 
 import type { Route } from "./+types/root";
 import "./app.css";
@@ -15,6 +25,12 @@ import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
 import { Toaster } from "~/components/ui/sonner";
 import { store, persistor } from "./lib/redux/store";
+import { useAuth } from "./lib/auth";
+import {
+  setGlobalLogoutHandler,
+  clearGlobalLogoutHandler,
+  logoutApi,
+} from "./lib/api";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -30,12 +46,13 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const themeScript = `(() => { try { const s = localStorage.getItem('app-theme'); const t = s === 'light' || s === 'dark' ? s : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); const r = document.documentElement; if (t === 'dark') { r.classList.add('dark'); } else { r.classList.remove('dark'); } } catch (e) {} })();`;
   return (
     <html lang='en'>
       <head>
         <meta charSet='utf-8' />
         <meta name='viewport' content='width=device-width, initial-scale=1' />
-        <Meta />
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <Links />
       </head>
       <body>
@@ -48,17 +65,53 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
+// Inner component that has access to Redux store
+function AppContent() {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Set up global logout handler for automatic token expiration logout
+    const handleGlobalLogout = async () => {
+      try {
+        await logoutApi();
+      } catch (e) {
+        // Ignore API failure; still clear local state to protect UX/security
+      } finally {
+        logout();
+        navigate("/");
+      }
+    };
+
+    setGlobalLogoutHandler(handleGlobalLogout);
+
+    // Cleanup on unmount
+    return () => {
+      clearGlobalLogoutHandler();
+    };
+  }, [logout, navigate]);
+
+  return (
+    <>
+      <Meta />
+      <div className='min-h-screen flex flex-col'>
+        <Header />
+        <main className='flex-1'>
+          <Outlet />
+        </main>
+        <Footer />
+      </div>
+    </>
+  );
+}
+
 export default function App() {
   return (
     <Provider store={store}>
       <PersistGate loading={<div>Loading...</div>} persistor={persistor}>
-        <div className='min-h-screen flex flex-col'>
-          <Header />
-          <main className='flex-1'>
-            <Outlet />
-          </main>
-          <Footer />
-        </div>
+        <ThemeProvider>
+          <AppContent />
+        </ThemeProvider>
       </PersistGate>
     </Provider>
   );

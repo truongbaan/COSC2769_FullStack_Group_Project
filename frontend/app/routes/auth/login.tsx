@@ -1,3 +1,10 @@
+/* RMIT University Vietnam 
+# Course: COSC2769 - Full Stack Development 
+# Semester: 2025B 
+# Assessment: Assignment 02 
+# Author: Tran Hoang Linh
+# ID: s4043097 */
+
 import type { Route } from "./+types/login";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,7 +23,7 @@ import { loginApi } from "~/lib/api";
 import { Link, useNavigate } from "react-router";
 import { Field } from "~/components/shared/Field";
 import { LogIn, Eye, EyeOff } from "~/components/ui/icons";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { z } from "zod";
 
 type FormValues = z.infer<typeof loginSchema>;
@@ -32,21 +39,50 @@ export default function Login() {
   const { register, handleSubmit, formState, setError } = useForm<FormValues>({
     resolver: zodResolver(loginSchema),
   });
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate("/account", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+
+  // helper function to extract error message from API response
+  function getErrorMessage(error: any): string {
+    try {
+      // try to parse the error message from API response
+      const errorText = error.message || "";
+
+      // look for JSON in the error message (format: "API 400: {...}")
+      const jsonMatch = errorText.match(/API \d+: (.+)/);
+      if (jsonMatch) {
+        try {
+          const parsed = JSON.parse(jsonMatch[1]);
+          if (parsed.message) {
+            return parsed.message;
+          }
+        } catch {}
+      }
+
+      return "Invalid email or password";
+    } catch {
+      return "Invalid email or password";
+    }
+  }
 
   const onSubmit = async (data: FormValues) => {
     setIsLoading(true);
 
     try {
       const dto = await loginApi(data);
-      // Extract user data from the nested response structure
+      // extract user data from the nested response structure
       const user = dto.message.data.user;
       login(user as any);
 
-      // Redirect based on role
+      // redirect based on role
       const redirectPath =
         user.role === "vendor"
           ? "/vendor/products"
@@ -56,7 +92,8 @@ export default function Login() {
 
       navigate(redirectPath);
     } catch (error) {
-      setError("root", { message: "Invalid email or password" });
+      const errorMessage = getErrorMessage(error);
+      setError("root", { message: errorMessage });
     } finally {
       setIsLoading(false);
     }
@@ -67,7 +104,7 @@ export default function Login() {
       <div className='max-w-md mx-auto'>
         <Card>
           <CardHeader className='text-center'>
-            <div className='mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4'>
+            <div className='mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4'>
               <LogIn className='h-8 w-8' />
             </div>
             <CardTitle className='text-2xl'>Welcome Back</CardTitle>
@@ -106,7 +143,7 @@ export default function Login() {
                     type='button'
                     aria-label='Toggle password visibility'
                     aria-pressed={showPassword}
-                    className='absolute inset-y-0 right-0 z-10 grid place-items-center px-3 text-gray-400 hover:text-gray-600'
+                    className='absolute inset-y-0 right-0 z-10 grid place-items-center px-3 text-muted-foreground hover:text-foreground'
                     onClick={() => setShowPassword((v) => !v)}
                   >
                     {showPassword ? (
@@ -119,7 +156,7 @@ export default function Login() {
               </Field>
 
               {formState.errors.root && (
-                <p className='text-gray-900 text-sm text-center'>
+                <p className='text-foreground text-sm text-center'>
                   {formState.errors.root.message}
                 </p>
               )}
@@ -130,13 +167,13 @@ export default function Login() {
             </form>
 
             <div className='mt-6 space-y-4'>
-              <div className='text-center text-sm text-gray-600'>
+              <div className='text-center text-sm text-muted-foreground'>
                 Demo credentials: Try emails like vendor@example.com,
                 shipper@example.com, or customer@example.com
               </div>
 
               <div className='border-t pt-4'>
-                <p className='text-sm text-center text-gray-600 mb-4'>
+                <p className='text-sm text-center text-muted-foreground mb-4'>
                   Don't have an account? Choose your role:
                 </p>
                 <div className='grid grid-cols-1 gap-2'>

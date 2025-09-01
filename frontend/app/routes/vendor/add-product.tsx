@@ -1,3 +1,10 @@
+/* RMIT University Vietnam 
+# Course: COSC2769 - Full Stack Development 
+# Semester: 2025B 
+# Assessment: Assignment 02 
+# Author: Tran Hoang Linh
+# ID: s4043097 */
+
 import type { Route } from "./+types/add-product";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,6 +27,14 @@ import { useState, useEffect } from "react";
 import type { z } from "zod";
 import { toast } from "sonner";
 import { createProductApi } from "~/lib/api";
+import { PRODUCT_CATEGORIES } from "~/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 
 type FormValues = z.infer<typeof productSchema>;
 
@@ -43,7 +58,7 @@ export default function AddProduct() {
   const description = watch("description");
   const name = watch("name");
 
-  // Redirect if not authenticated or not a vendor
+  // redirect if not authenticated
   useEffect(() => {
     if (!isAuthenticated()) {
       navigate("/login");
@@ -53,21 +68,29 @@ export default function AddProduct() {
       navigate("/");
       return;
     }
-  }, [isAuthenticated, user, navigate]);
+  }, [user, navigate]);
 
   if (!user || user.role !== "vendor") {
-    return null; // Will redirect
+    return null;
   }
 
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
 
     try {
+      const imageFile = (data as any).image;
+      if (!imageFile) {
+        toast.error("Please select an image for your product");
+        return;
+      }
+
       await createProductApi({
         name: data.name,
         price: Number(data.price),
         description: data.description,
-        image: (data as any).image ?? null,
+        category: data.category || "General",
+        instock: true,
+        image: imageFile,
       });
 
       toast.success("Product added");
@@ -108,14 +131,14 @@ export default function AddProduct() {
             Back to My Products
           </Link>
           <div className='flex items-center gap-3 mb-2'>
-            <div className='w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center'>
+            <div className='w-12 h-12 bg-muted rounded-full flex items-center justify-center'>
               <Package className='h-6 w-6' />
             </div>
             <div>
-              <h1 className='text-3xl font-bold text-gray-900'>
+              <h1 className='text-3xl font-bold text-foreground'>
                 Add New Product
               </h1>
-              <p className='text-gray-600'>
+              <p className='text-muted-foreground'>
                 Fill in the details to list your product
               </p>
             </div>
@@ -143,7 +166,7 @@ export default function AddProduct() {
                   placeholder='Enter product name (10-20 characters)'
                   {...register("name")}
                 />
-                <div className='text-xs text-gray-500 mt-1'>
+                <div className='text-xs text-muted-foreground mt-1'>
                   {name?.length || 0}/20 characters{" "}
                   {name && name.length < 10 && "(minimum 10)"}
                 </div>
@@ -161,6 +184,36 @@ export default function AddProduct() {
                   placeholder='0.00'
                   {...register("price")}
                 />
+              </Field>
+
+              <Field
+                id='category'
+                label='Category'
+                error={formState.errors.category?.message}
+              >
+                <Select
+                  value={watch("category") as string | undefined}
+                  onValueChange={(v) =>
+                    setValue("category", v as any, {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    })
+                  }
+                >
+                  <SelectTrigger id='category'>
+                    <SelectValue
+                      placeholder='Select a category'
+                      className='w-full'
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PRODUCT_CATEGORIES.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </Field>
 
               <Field id='image' label='Product Image'>
@@ -195,20 +248,20 @@ export default function AddProduct() {
                   placeholder='Describe your product in detail (max 500 characters)'
                   {...register("description")}
                 />
-                <div className='text-xs text-gray-500 mt-1'>
+                <div className='text-xs text-muted-foreground mt-1'>
                   {description?.length || 0}/500 characters
                 </div>
               </Field>
 
               {/* Requirements Info */}
-              <div className='bg-gray-50 border border-gray-200 rounded-lg p-4'>
+              <div className='bg-muted border border-border rounded-lg p-4'>
                 <div className='flex items-start gap-3'>
                   <Info className='h-5 w-5 mt-0.5' />
                   <div>
-                    <h4 className='font-medium text-gray-900 mb-2'>
+                    <h4 className='font-medium text-foreground mb-2'>
                       Product Requirements
                     </h4>
-                    <ul className='text-gray-700 text-sm space-y-1'>
+                    <ul className='text-muted-foreground text-sm space-y-1'>
                       <li>• Product name must be 10-20 characters long</li>
                       <li>• Price must be a positive number</li>
                       <li>• Description should be under 500 characters</li>
@@ -247,11 +300,11 @@ export default function AddProduct() {
         </Card>
 
         {/* Tips */}
-        <div className='mt-8 bg-gray-50 border border-gray-200 rounded-lg p-6'>
-          <h3 className='font-semibold text-gray-900 mb-3'>
+        <div className='mt-8 bg-muted border border-border rounded-lg p-6'>
+          <h3 className='font-semibold text-foreground mb-3'>
             💡 Product Listing Tips
           </h3>
-          <ul className='text-gray-700 text-sm space-y-2'>
+          <ul className='text-muted-foreground text-sm space-y-2'>
             <li>• Use clear, well-lit photos from multiple angles</li>
             <li>• Include key features and benefits in the description</li>
             <li>• Research competitor pricing for similar products</li>

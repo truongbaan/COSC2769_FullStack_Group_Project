@@ -1,5 +1,12 @@
+/* RMIT University Vietnam 
+# Course: COSC2769 - Full Stack Development 
+# Semester: 2025B 
+# Assessment: Assignment 02 
+# Author: Tran Hoang Linh
+# ID: s4043097 */
+
 import type { Route } from "./+types/products";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,10 +22,11 @@ import {
 } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 import { Link } from "react-router";
-import { type Product } from "~/lib/data/products";
-import { fetchProducts, searchProductsApi } from "~/lib/api";
+import { fetchProducts } from "~/lib/api";
+import type { ProductDto } from "~/lib/schemas";
 import { useCart } from "~/lib/cart";
-import { ShoppingCart, Search, Star } from "~/components/ui/icons";
+import { getBackendImageUrl, PRODUCT_CATEGORIES } from "~/lib/utils";
+import { ShoppingCart, Search } from "~/components/ui/icons";
 import { toast } from "sonner";
 import {
   Select,
@@ -28,6 +36,17 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import type { z } from "zod";
+import { useAuth } from "~/lib/auth";
+import { useNavigate } from "react-router";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+  PaginationEllipsis,
+} from "~/components/ui/pagination";
 
 type FormValues = z.infer<typeof priceFilterSchema>;
 
@@ -42,14 +61,32 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Products() {
-  const { register, handleSubmit, watch, formState } = useForm<FormValues>({
-    resolver: zodResolver(priceFilterSchema),
-  });
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  // redirect vendors and shippers
+  useEffect(() => {
+    if (user && (user.role === "vendor" || user.role === "shipper")) {
+      const redirectPath =
+        user.role === "vendor" ? "/vendor/products" : "/shipper/orders";
+      navigate(redirectPath);
+      toast.info(`Redirected to your ${user.role} dashboard`);
+    }
+  }, [user, navigate]);
+
+  const { register, handleSubmit, watch, formState, setValue } =
+    useForm<FormValues>({
+      resolver: zodResolver(priceFilterSchema),
+    });
   const { addItem, getTotalItems } = useCart();
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<ProductDto[]>([]);
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(12);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [sortBy, setSortBy] = useState<
-    "relevance" | "price-asc" | "price-desc" | "rating-desc" | "name-asc"
+    "relevance" | "price-asc" | "price-desc" | "name-asc"
   >("relevance");
   const [compact, setCompact] = useState(true);
 
@@ -57,45 +94,70 @@ export default function Products() {
   const min = watch("min");
   const max = watch("max");
 
-  const categories = React.useMemo(
-    () => [...new Set(filteredProducts.map((p) => p.category))],
-    [filteredProducts]
-  );
+  // keep price range valid immediately
+  React.useEffect(() => {
+    const minNum = min !== undefined && min !== "" ? Number(min) : undefined;
+    const maxNum = max !== undefined && max !== "" ? Number(max) : undefined;
+    if (
+      minNum !== undefined &&
+      maxNum !== undefined &&
+      !Number.isNaN(minNum) &&
+      !Number.isNaN(maxNum) &&
+      minNum > maxNum
+    ) {
+      // Clamp by aligning max to min when user makes range invalid
+      setValue("max", String(minNum), {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+    }
+  }, [min, max, setValue]);
 
-  const onSubmit = async (data: FormValues) => {
-    const results = await searchProductsApi({
-      q: data.q,
-      min: data.min ? Number(data.min) : undefined,
-      max: data.max ? Number(data.max) : undefined,
-      category: selectedCategory || undefined,
-    });
-    setFilteredProducts(results);
-  };
+  const categories = PRODUCT_CATEGORIES;
 
-  // Real-time filtering as user types
+  const onSubmit = async (_data: FormValues) => {};
+
+  // Reset to first page whenever filters change
+  React.useEffect(() => {
+    setPage(1);
+  }, [q, min, max, selectedCategory]);
+
+  // fetch products when filters or page changes
   React.useEffect(() => {
     let ignore = false;
     (async () => {
-      const results = await searchProductsApi({
-        q,
-        min: min ? Number(min) : undefined,
-        max: max ? Number(max) : undefined,
+      const priceMin = min ? Number(min) : undefined;
+      const priceMax = max ? Number(max) : undefined;
+
+      // Skip fetching if the range is temporarily invalid
+      if (
+        priceMin !== undefined &&
+        priceMax !== undefined &&
+        !Number.isNaN(priceMin) &&
+        !Number.isNaN(priceMax) &&
+        priceMin > priceMax
+      ) {
+        return;
+      }
+
+      const result = await fetchProducts({
+        name: q || undefined,
+        priceMin,
+        priceMax,
         category: selectedCategory || undefined,
+        page,
+        size: pageSize,
       });
-      if (!ignore) setFilteredProducts(results);
+      if (!ignore) {
+        setFilteredProducts(result.products);
+        setTotalPages(result.totalPages);
+        setTotalProducts(result.totalProducts);
+      }
     })();
     return () => {
       ignore = true;
     };
-  }, [q, min, max, selectedCategory]);
-
-  // initial fetch
-  React.useEffect(() => {
-    (async () => {
-      const data = await fetchProducts();
-      setFilteredProducts(data);
-    })();
-  }, []);
+  }, [q, min, max, selectedCategory, page, pageSize]);
 
   const visibleProducts = React.useMemo(() => {
     const arr = [...filteredProducts];
@@ -104,8 +166,7 @@ export default function Products() {
         return arr.sort((a, b) => a.price - b.price);
       case "price-desc":
         return arr.sort((a, b) => b.price - a.price);
-      case "rating-desc":
-        return arr.sort((a, b) => b.rating - a.rating);
+
       case "name-asc":
         return arr.sort((a, b) => a.name.localeCompare(b.name));
       default:
@@ -113,9 +174,18 @@ export default function Products() {
     }
   }, [filteredProducts, sortBy]);
 
-  const handleAddToCart = (product: Product) => {
-    addItem(product);
-    toast.success(`${product.name} added to cart!`);
+  const handleAddToCart = async (product: ProductDto) => {
+    if (!user) {
+      toast.warning("Please login to add items to your cart");
+      return;
+    }
+    try {
+      await addItem(product);
+      toast.success(`${product.name} added to cart!`);
+    } catch (error) {
+      console.error("Failed to add to cart:", error);
+      toast.error("Failed to add to cart. Please try again.");
+    }
   };
 
   return (
@@ -123,10 +193,10 @@ export default function Products() {
       <div className='max-w-7xl mx-auto'>
         {/* Header */}
         <div className='text-center mb-8'>
-          <h1 className='text-3xl font-bold text-gray-900 mb-4'>
+          <h1 className='text-3xl font-bold text-foreground mb-4'>
             Browse Products
           </h1>
-          <p className='text-gray-600'>
+          <p className='text-muted-foreground'>
             Discover amazing products from our verified vendors
           </p>
         </div>
@@ -189,11 +259,13 @@ export default function Products() {
                   <Button
                     type='button'
                     variant='outline'
-                    onClick={async () => {
+                    onClick={() => {
                       (document.activeElement as HTMLElement)?.blur();
                       setSelectedCategory("");
-                      const data = await fetchProducts();
-                      setFilteredProducts(data);
+                      // reset filters
+                      setValue("q", "");
+                      setValue("min", "");
+                      setValue("max", "");
                     }}
                   >
                     Clear
@@ -203,7 +275,7 @@ export default function Products() {
               </div>
 
               {formState.errors.root && (
-                <p className='text-gray-900 text-sm'>
+                <p className='text-foreground text-sm'>
                   {formState.errors.root.message}
                 </p>
               )}
@@ -213,14 +285,14 @@ export default function Products() {
 
         {/* Results Summary */}
         <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6'>
-          <p className='text-gray-600'>
-            Showing {filteredProducts.length} product
-            {filteredProducts.length !== 1 ? "s" : ""}
+          <p className='text-muted-foreground'>
+            Showing {filteredProducts.length} of {totalProducts} product
+            {totalProducts !== 1 ? "s" : ""}
             {(q || min || max || selectedCategory) && " matching your criteria"}
           </p>
           <div className='flex flex-wrap items-center gap-3'>
             <div className='flex items-center gap-2'>
-              <span className='text-sm text-gray-600'>Sort by</span>
+              <span className='text-sm text-muted-foreground'>Sort by</span>
               <Select value={sortBy} onValueChange={(v) => setSortBy(v as any)}>
                 <SelectTrigger size='sm'>
                   <SelectValue />
@@ -229,7 +301,6 @@ export default function Products() {
                   <SelectItem value='relevance'>Relevance</SelectItem>
                   <SelectItem value='price-asc'>Price: Low to High</SelectItem>
                   <SelectItem value='price-desc'>Price: High to Low</SelectItem>
-                  <SelectItem value='rating-desc'>Rating</SelectItem>
                   <SelectItem value='name-asc'>Name</SelectItem>
                 </SelectContent>
               </Select>
@@ -255,24 +326,24 @@ export default function Products() {
           {visibleProducts.map((product) => (
             <div
               key={product.id}
-              className='group flex flex-col overflow-hidden rounded-xl border bg-white transition-transform hover:-translate-y-0.5 hover:shadow-md'
+              className='group flex flex-col overflow-hidden rounded-xl border bg-card transition-transform hover:-translate-y-0.5 hover:shadow-md'
             >
               <div className='relative aspect-square overflow-hidden bg-gray-100'>
                 <img
-                  src={product.imageUrl}
+                  src={getBackendImageUrl(product.imageUrl) ?? undefined}
                   alt={product.name}
                   className='h-full w-full object-cover transition-transform duration-300 group-hover:scale-105'
                 />
                 <div className='absolute left-2 top-2'>
                   <Badge
                     variant='secondary'
-                    className='bg-white/80 px-2 py-0.5 text-[10px]'
+                    className='bg-background/80 px-2 py-0.5 text-[10px]'
                   >
                     {product.category}
                   </Badge>
                 </div>
                 {!product.inStock && (
-                  <div className='absolute right-2 top-2 rounded border bg-white/90 px-2 py-0.5 text-[10px] text-gray-900'>
+                  <div className='absolute right-2 top-2 rounded border bg-background/90 px-2 py-0.5 text-[10px] text-foreground'>
                     Sold out
                   </div>
                 )}
@@ -293,29 +364,23 @@ export default function Products() {
                   }
                 >
                   <Link
-                    to={`/products/${product.id}`}
+                    to={user ? `/products/${product.id}` : "/login"}
                     className='hover:underline'
                   >
                     {product.name}
                   </Link>
                 </h3>
                 {!compact && (
-                  <p className='text-sm text-gray-600 line-clamp-2 leading-snug min-h-[2.5rem]'>
+                  <p className='text-sm text-muted-foreground line-clamp-2 leading-snug min-h-[2.5rem]'>
                     {product.description}
                   </p>
                 )}
 
-                <div className='text-sm text-gray-600 flex items-center gap-2'>
+                <div className='text-sm text-muted-foreground flex items-center gap-2'>
                   <span>by {product.vendorName}</span>
-                  <span>•</span>
-                  <span className='inline-flex items-center gap-1'>
-                    <Star className='h-4 w-4' />
-                    <span>{product.rating}</span>
-                    <span>({product.reviewCount})</span>
-                  </span>
                 </div>
 
-                <div className='mt-1 text-2xl font-semibold text-gray-900'>
+                <div className='mt-1 text-2xl font-semibold text-foreground'>
                   ${product.price}
                 </div>
 
@@ -328,7 +393,7 @@ export default function Products() {
                   <Button
                     size='sm'
                     className='w-full'
-                    disabled={!product.inStock}
+                    disabled={!product.inStock || !user}
                     onClick={() => handleAddToCart(product)}
                   >
                     <ShoppingCart className='mr-2 h-4 w-4' />
@@ -339,6 +404,117 @@ export default function Products() {
             </div>
           ))}
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className='mt-8'>
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href='#'
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setPage((p) => Math.max(1, p - 1));
+                    }}
+                    className={
+                      page === 1 ? "pointer-events-none opacity-50" : undefined
+                    }
+                  />
+                </PaginationItem>
+
+                {/* Page numbers with simple window */}
+                {(() => {
+                  const items: React.ReactElement[] = [];
+                  const windowSize = 5;
+                  const start = Math.max(1, page - Math.floor(windowSize / 2));
+                  const end = Math.min(totalPages, start + windowSize - 1);
+                  const realStart = Math.max(1, end - windowSize + 1);
+                  if (realStart > 1) {
+                    items.push(
+                      <PaginationItem key={1}>
+                        <PaginationLink
+                          href='#'
+                          isActive={page === 1}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setPage(1);
+                          }}
+                        >
+                          1
+                        </PaginationLink>
+                      </PaginationItem>
+                    );
+                    if (realStart > 2) {
+                      items.push(
+                        <PaginationItem key='start-ellipsis'>
+                          <PaginationEllipsis />
+                        </PaginationItem>
+                      );
+                    }
+                  }
+
+                  for (let i = realStart; i <= end; i++) {
+                    items.push(
+                      <PaginationItem key={i}>
+                        <PaginationLink
+                          href='#'
+                          isActive={page === i}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setPage(i);
+                          }}
+                        >
+                          {i}
+                        </PaginationLink>
+                      </PaginationItem>
+                    );
+                  }
+
+                  if (end < totalPages) {
+                    if (end < totalPages - 1) {
+                      items.push(
+                        <PaginationItem key='end-ellipsis'>
+                          <PaginationEllipsis />
+                        </PaginationItem>
+                      );
+                    }
+                    items.push(
+                      <PaginationItem key={totalPages}>
+                        <PaginationLink
+                          href='#'
+                          isActive={page === totalPages}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setPage(totalPages);
+                          }}
+                        >
+                          {totalPages}
+                        </PaginationLink>
+                      </PaginationItem>
+                    );
+                  }
+                  return items;
+                })()}
+
+                <PaginationItem>
+                  <PaginationNext
+                    href='#'
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setPage((p) => Math.min(totalPages, p + 1));
+                    }}
+                    className={
+                      page === totalPages
+                        ? "pointer-events-none opacity-50"
+                        : undefined
+                    }
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
 
         {filteredProducts.length === 0 && (
           <div className='text-center py-12'>
@@ -353,10 +529,8 @@ export default function Products() {
             </p>
             <Button
               className='mt-4'
-              onClick={async () => {
+              onClick={() => {
                 setSelectedCategory("");
-                const data = await fetchProducts();
-                setFilteredProducts(data);
               }}
             >
               Show All Products

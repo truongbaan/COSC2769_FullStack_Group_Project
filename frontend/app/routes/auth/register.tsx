@@ -1,3 +1,10 @@
+/* RMIT University Vietnam 
+# Course: COSC2769 - Full Stack Development 
+# Semester: 2025B 
+# Assessment: Assignment 02 
+# Author: Tran Hoang Linh
+# ID: s4043097 */
+
 import type { Route } from "./+types/register";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,7 +32,7 @@ import {
 import { Link, useNavigate, useParams } from "react-router";
 import { Field } from "~/components/shared/Field";
 import { UserPlus, Store, Truck, Eye, EyeOff } from "~/components/ui/icons";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { z } from "zod";
 import { toast } from "sonner";
 import {
@@ -54,7 +61,7 @@ type Role = "customer" | "vendor" | "shipper";
 
 export default function Register() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   const [loading, setLoading] = useState(false);
   const params = useParams();
@@ -65,6 +72,12 @@ export default function Register() {
   const [showCustomerPassword, setShowCustomerPassword] = useState(false);
   const [showVendorPassword, setShowVendorPassword] = useState(false);
   const [showShipperPassword, setShowShipperPassword] = useState(false);
+
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate("/account", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   function onTabChange(next: string) {
     const role = (next as Role) ?? "customer";
@@ -87,6 +100,32 @@ export default function Register() {
     resolver: zodResolver(shipperRegistrationSchema),
   });
 
+  // Helper function to extract error message from API response
+  function getErrorMessage(error: any): string {
+    try {
+      // Try to parse the error message from API response
+      const errorText = error.message || "";
+
+      // Look for JSON in the error message (format: "API 400: {...}")
+      const jsonMatch = errorText.match(/API \d+: (.+)/);
+      if (jsonMatch) {
+        try {
+          const parsed = JSON.parse(jsonMatch[1]);
+          if (parsed.message) {
+            return parsed.message;
+          }
+        } catch {
+          // If JSON parsing fails, fall through to default
+        }
+      }
+
+      // Fallback to generic message
+      return "Registration failed. Please try again.";
+    } catch {
+      return "Registration failed. Please try again.";
+    }
+  }
+
   async function onCustomerSubmit(data: CustomerForm) {
     setLoading(true);
     try {
@@ -94,7 +133,8 @@ export default function Register() {
       toast.success("Customer account created successfully! Please log in.");
       navigate("/login");
     } catch (error) {
-      toast.error("Failed to create customer account. Please try again.");
+      const errorMessage = getErrorMessage(error);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -107,7 +147,8 @@ export default function Register() {
       toast.success("Vendor account created successfully! Please log in.");
       navigate("/login");
     } catch (error) {
-      toast.error("Failed to create vendor account. Please try again.");
+      const errorMessage = getErrorMessage(error);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -120,7 +161,8 @@ export default function Register() {
       toast.success("Shipper account created successfully! Please log in.");
       navigate("/login");
     } catch (error) {
-      toast.error("Failed to create shipper account. Please try again.");
+      const errorMessage = getErrorMessage(error);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -147,7 +189,7 @@ export default function Register() {
               {/* Customer */}
               <TabsContent value='customer'>
                 <div className='text-center mb-6'>
-                  <div className='mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center'>
+                  <div className='mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center'>
                     <UserPlus className='h-8 w-8' />
                   </div>
                 </div>
@@ -194,7 +236,7 @@ export default function Register() {
                         type='button'
                         aria-label='Toggle password visibility'
                         aria-pressed={showCustomerPassword}
-                        className='absolute inset-y-0 right-0 z-10 grid place-items-center px-3 text-gray-400 hover:text-gray-600'
+                        className='absolute inset-y-0 right-0 z-10 grid place-items-center px-3 text-muted-foreground hover:text-foreground'
                         onClick={() => setShowCustomerPassword((v) => !v)}
                       >
                         {showCustomerPassword ? (
@@ -236,7 +278,7 @@ export default function Register() {
               {/* Vendor */}
               <TabsContent value='vendor'>
                 <div className='text-center mb-6'>
-                  <div className='mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center'>
+                  <div className='mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center'>
                     <Store className='h-8 w-8' />
                   </div>
                 </div>
@@ -283,7 +325,7 @@ export default function Register() {
                         type='button'
                         aria-label='Toggle password visibility'
                         aria-pressed={showVendorPassword}
-                        className='absolute inset-y-0 right-0 z-10 grid place-items-center px-3 text-gray-400 hover:text-gray-600'
+                        className='absolute inset-y-0 right-0 z-10 grid place-items-center px-3 text-muted-foreground hover:text-foreground'
                         onClick={() => setShowVendorPassword((v) => !v)}
                       >
                         {showVendorPassword ? (
@@ -325,7 +367,7 @@ export default function Register() {
               {/* Shipper */}
               <TabsContent value='shipper'>
                 <div className='text-center mb-6'>
-                  <div className='mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center'>
+                  <div className='mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center'>
                     <Truck className='h-8 w-8' />
                   </div>
                 </div>
@@ -372,7 +414,7 @@ export default function Register() {
                         type='button'
                         aria-label='Toggle password visibility'
                         aria-pressed={showShipperPassword}
-                        className='absolute inset-y-0 right-0 z-10 grid place-items-center px-3 text-gray-400 hover:text-gray-600'
+                        className='absolute inset-y-0 right-0 z-10 grid place-items-center px-3 text-muted-foreground hover:text-foreground'
                         onClick={() => setShowShipperPassword((v) => !v)}
                       >
                         {showShipperPassword ? (
@@ -415,7 +457,7 @@ export default function Register() {
               </TabsContent>
 
               <div className='mt-6 text-center'>
-                <p className='text-sm text-gray-600'>
+                <p className='text-sm text-muted-foreground'>
                   Already have an account?{" "}
                   <Link to='/login' className='underline'>
                     Sign in here

@@ -9,6 +9,7 @@ import { Request, Response } from "express"
 import { UserService } from "../service/user.service"
 import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes"
 import { passwordSchema } from "../types/general.type";
+import { signOutUser } from "../db/db";
 
 export const getUsersQuerySchema = z.object({
     page: z.string().default("-1").transform((val) => parseInt(val, 10)),
@@ -68,7 +69,6 @@ export const getUserByIdController = async (req: Request, res: Response) => {
     }
 }
 
-//use req.param
 export const deleteUserController = async (req: Request, res: Response) => {
     try {
         const id = req.user_id;
@@ -76,6 +76,8 @@ export const deleteUserController = async (req: Request, res: Response) => {
         if (!deleted) {
             return ErrorJsonResponse(res, 500, "Failed to delete user")
         }
+        res.clearCookie('access_token', { path: '/' })
+        res.clearCookie('refresh_token', { path: '/' })
         return SuccessJsonResponse(res, 200, { message: "User account deleted successfully." })
     } catch (err: any) {
         if (err?.issues) {

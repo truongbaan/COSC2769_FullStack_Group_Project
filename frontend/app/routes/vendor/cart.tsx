@@ -30,7 +30,7 @@ import {
   Clock,
   AlertCircle,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { checkoutCartApi } from "~/lib/api";
 import { getBackendImageUrl } from "~/lib/utils";
@@ -63,24 +63,6 @@ export default function Cart() {
   const navigate = useNavigate();
   const [isOrdering, setIsOrdering] = useState(false);
   const { user } = useAuth();
-
-  // redirect vendors and shippers
-  useEffect(() => {
-    if (!user) {
-      navigate("/login");
-      toast.warning("Please login to view cart");
-      return;
-    }
-
-    if (user.role === "vendor" || user.role === "shipper") {
-      const redirectPath =
-        user.role === "vendor" ? "/vendor/products" : "/shipper/orders";
-      navigate(redirectPath);
-      toast.success(`Redirected to your ${user.role} dashboard`);
-      return;
-    }
-  }, [user, navigate]);
-
   const handleCheckout = async () => {
     if (!isAuthenticated()) {
       navigate("/login");
@@ -113,13 +95,13 @@ export default function Cart() {
     return (
       <div className='container mx-auto px-4 py-8'>
         <div className='max-w-2xl mx-auto text-center'>
-          <div className='text-muted-foreground mb-6'>
+          <div className='text-gray-400 mb-6'>
             <ShoppingCart className='h-24 w-24 mx-auto' />
           </div>
-          <h1 className='text-2xl font-bold text-foreground mb-4'>
+          <h1 className='text-2xl font-bold text-gray-900 mb-4'>
             Your cart is empty
           </h1>
-          <p className='text-muted-foreground mb-8'>
+          <p className='text-gray-600 mb-8'>
             {user
               ? "Looks like you haven't added any items to your cart yet. Start shopping to fill it up!"
               : "Please login to view your cart"}
@@ -153,13 +135,11 @@ export default function Cart() {
             Continue Shopping
           </Link>
           <div className='flex items-center justify-between mb-2'>
-            <h1 className='text-3xl font-bold text-foreground'>
-              Shopping Cart
-            </h1>
+            <h1 className='text-3xl font-bold text-gray-900'>Shopping Cart</h1>
             {isAuthenticated() && (
               <div className='flex items-center gap-2'>
                 {isLoading && (
-                  <div className='flex items-center text-sm text-muted-foreground'>
+                  <div className='flex items-center text-sm text-gray-500'>
                     <RefreshCw className='h-4 w-4 mr-1 animate-spin' />
                     Syncing...
                   </div>
@@ -192,12 +172,12 @@ export default function Cart() {
             )}
           </div>
           <div className='flex items-center justify-between'>
-            <p className='text-muted-foreground'>
+            <p className='text-gray-600'>
               {getTotalItems()} item{getTotalItems() !== 1 ? "s" : ""} in your
               cart
             </p>
             {lastSynced && isAuthenticated() && (
-              <p className='text-xs text-muted-foreground'>
+              <p className='text-xs text-gray-400'>
                 Last synced: {new Date(lastSynced).toLocaleTimeString()}
               </p>
             )}
@@ -219,7 +199,7 @@ export default function Cart() {
                   <div className='flex flex-col sm:flex-row gap-4'>
                     {/* Product Image */}
                     <div className='flex-shrink-0'>
-                      <div className='w-24 h-24 rounded-lg overflow-hidden bg-muted'>
+                      <div className='w-24 h-24 rounded-lg overflow-hidden bg-gray-100'>
                         <img
                           src={
                             getBackendImageUrl(item.product.imageUrl) ??
@@ -244,7 +224,7 @@ export default function Cart() {
                               {item.product.name}
                             </Link>
                           </h3>
-                          <p className='text-muted-foreground text-sm'>
+                          <p className='text-gray-600 text-sm'>
                             by {item.product.vendorName}
                           </p>
                         </div>
@@ -295,10 +275,10 @@ export default function Cart() {
                         </div>
 
                         <div className='text-right'>
-                          <div className='text-lg font-bold text-foreground'>
+                          <div className='text-lg font-bold text-gray-900'>
                             ${(item.product.price * item.quantity).toFixed(2)}
                           </div>
-                          <div className='text-sm text-muted-foreground'>
+                          <div className='text-sm text-gray-600'>
                             ${item.product.price} each
                           </div>
                         </div>
@@ -325,7 +305,7 @@ export default function Cart() {
                   </div>
                   <div className='flex justify-between text-sm'>
                     <span>Shipping</span>
-                    <span className='text-foreground'>Free</span>
+                    <span className='text-gray-900'>Free</span>
                   </div>
                   <div className='flex justify-between text-sm'>
                     <span>Tax</span>
@@ -334,7 +314,7 @@ export default function Cart() {
                   <div className='border-t pt-2'>
                     <div className='flex justify-between font-bold text-lg'>
                       <span>Total</span>
-                      <span className='text-foreground'>
+                      <span className='text-gray-900'>
                         ${(getTotalPrice() * 1.1).toFixed(2)}
                       </span>
                     </div>
@@ -362,12 +342,12 @@ export default function Cart() {
                   </Button>
                 </div>
 
-                <div className='text-xs text-muted-foreground space-y-1'>
+                <div className='text-xs text-gray-600 space-y-1'>
                   <p>• Free shipping on all orders</p>
                   <p>• Secure payment processing</p>
                   <p>• 30-day return policy</p>
                   {!isAuthenticated() && (
-                    <p className='text-foreground'>
+                    <p className='text-gray-900'>
                       • Please sign in to complete your order
                     </p>
                   )}
@@ -380,7 +360,7 @@ export default function Cart() {
               <CardContent className='p-4'>
                 <div className='text-center space-y-2'>
                   <h4 className='font-medium text-sm'>Secure Shopping</h4>
-                  <div className='flex justify-center items-center gap-2 text-xs text-muted-foreground'>
+                  <div className='flex justify-center items-center gap-2 text-xs text-gray-600'>
                     <span>🔒 SSL Encrypted</span>
                     <span>•</span>
                     <span>✅ Verified Vendors</span>
@@ -392,9 +372,9 @@ export default function Cart() {
         </div>
 
         {/* Educational Notice */}
-        <div className='mt-12 bg-muted border border-border rounded-lg p-6'>
-          <h3 className='font-semibold text-foreground mb-2'>Demo Notice</h3>
-          <p className='text-muted-foreground text-sm'>
+        <div className='mt-12 bg-gray-50 border border-gray-200 rounded-lg p-6'>
+          <h3 className='font-semibold text-gray-900 mb-2'>Demo Notice</h3>
+          <p className='text-gray-700 text-sm'>
             This is a demonstration shopping cart. No real payment will be
             processed, and no actual products will be shipped. This is for
             educational purposes only.

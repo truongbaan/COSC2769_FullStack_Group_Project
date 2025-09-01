@@ -1,3 +1,10 @@
+/* RMIT University Vietnam 
+# Course: COSC2769 - Full Stack Development 
+# Semester: 2025B 
+# Assessment: Assignment 02 
+# Author: Tran Hoang Linh
+# ID: s4043097 */
+
 import { z } from "zod";
 
 // Product schemas - Updated to match backend response
@@ -8,7 +15,7 @@ export const ProductSchema = z
     name: z.string(),
     price: z.number(),
     description: z.string(),
-    image: z.string(),
+    image: z.string().nullable(),
     category: z.string(),
     instock: z.boolean(),
     // Optional fields for frontend compatibility
@@ -44,10 +51,14 @@ export const ProductsSchema = z.array(ProductSchema);
 export const ProductsApiResponseSchema = z.object({
   success: z.boolean(),
   message: z.object({
-    data: z.object({
-      products: z.array(ProductSchema),
-      count: z.number(),
-    }),
+    products: z.array(ProductSchema),
+    // New paginated fields (backend update)
+    limit: z.number().optional(),
+    totalProducts: z.number().optional(),
+    totalPages: z.number().optional(),
+    currentPage: z.number().optional(),
+    // Backwards compatibility field used by some endpoints
+    count: z.number().optional(),
   }),
 });
 
@@ -55,33 +66,46 @@ export const ProductsApiResponseSchema = z.object({
 export const ProductApiResponseSchema = z.object({
   success: z.boolean(),
   message: z.object({
-    data: z.object({
-      product: ProductSchema,
-    }),
+    product: ProductSchema,
   }),
 });
 
-// Order schemas
+// Order schemas - Updated to match actual backend response
 const OrderItemSchema = z.object({
   productId: z.string(),
   productName: z.string(),
   quantity: z.number(),
   price: z.number(),
 });
-export const OrderSchema = z.object({
-  id: z.string(),
-  customerId: z.string(),
-  customerName: z.string(),
-  customerAddress: z.string(),
-  items: z.array(OrderItemSchema),
-  total: z.number(),
-  status: z.enum(["pending", "active", "delivered", "cancelled"]),
-  hubId: z.string(),
-  hubName: z.string(),
-  orderDate: z.string(),
-  deliveryDate: z.string().optional(),
-  shipperId: z.string().optional(),
-});
+
+// Backend only returns basic order data from database
+export const OrderSchema = z
+  .object({
+    id: z.string(),
+    customer_id: z.string(),
+    hub_id: z.string(),
+    status: z.string(), // Backend returns string, not enum
+    total_price: z.number(),
+  })
+  .transform((data) => ({
+    // Keep original backend fields
+    id: data.id,
+    customer_id: data.customer_id,
+    hub_id: data.hub_id,
+    status: data.status,
+    total_price: data.total_price,
+    // Add frontend compatibility fields with defaults
+    customerId: data.customer_id,
+    customerName: "Unknown Customer", // Backend doesn't provide this
+    customerAddress: "Address not available", // Backend doesn't provide this
+    items: [] as any[], // Backend doesn't provide order items
+    total: data.total_price,
+    hubId: data.hub_id,
+    hubName: data.hub_id, // Use hub_id as fallback for display
+    orderDate: new Date().toISOString(), // Backend doesn't provide this
+    deliveryDate: undefined,
+    shipperId: undefined,
+  }));
 export type OrderDto = z.infer<typeof OrderSchema>;
 export const OrdersSchema = z.array(OrderSchema);
 
@@ -90,7 +114,7 @@ export const UserSchema = z.object({
   id: z.string(),
   username: z.string(),
   email: z.string(),
-  password: z.string(),
+  password: z.string().optional(), // Password is never returned in API responses
   profile_picture: z.string().nullable(),
   role: z.enum(["customer", "vendor", "shipper"]),
   // Customer-specific fields

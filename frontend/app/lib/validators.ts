@@ -1,4 +1,13 @@
+/* RMIT University Vietnam 
+# Course: COSC2769 - Full Stack Development 
+# Semester: 2025B 
+# Assessment: Assignment 02 
+# Author: Tran Hoang Linh
+# ID: s4043097 */
+
 import { z } from "zod";
+import type { ProductCategory } from "./utils";
+import { PRODUCT_CATEGORIES } from "./utils";
 
 const usernameRegex = /^[A-Za-z0-9]{8,15}$/;
 const passwordRegex =
@@ -22,6 +31,13 @@ export const productSchema = z.object({
   price: z.coerce.number().positive(),
   image: z.any().optional(),
   description: z.string().max(500),
+  category: z.enum(
+    PRODUCT_CATEGORIES as unknown as [ProductCategory, ...ProductCategory[]],
+    {
+      required_error: "Category is required",
+      invalid_type_error: "Invalid category",
+    }
+  ),
 });
 
 export const priceFilterSchema = z
@@ -83,7 +99,7 @@ export const profileImageUploadSchema = z.object({
     )
     .refine(
       (files) => files instanceof FileList && files[0]?.size <= 2 * 1024 * 1024,
-      "File size must be less than 2MB"
+      "File size must be less than 10MB"
     ),
 });
 
@@ -139,3 +155,15 @@ export const cartSyncResponseSchema = z.object({
   lastUpdated: z.string().optional(),
   error: z.string().optional(),
 });
+
+// Password change schema for account settings
+export const passwordChangeSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Current password is required"),
+    newPassword: passwordSchema,
+    confirmNewPassword: z.string(),
+  })
+  .refine((data) => data.newPassword === data.confirmNewPassword, {
+    path: ["confirmNewPassword"],
+    message: "Passwords do not match",
+  });

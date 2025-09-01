@@ -1,6 +1,14 @@
+/* RMIT University Vietnam 
+# Course: COSC2769 - Full Stack Development 
+# Semester: 2025B 
+# Assessment: Assignment 02 
+# Author: Tran Hoang Linh
+# ID: s4043097 */
+
 import type { Route } from "./+types/product-detail";
-import { useState } from "react";
-import { useParams, Link } from "react-router";
+import { useState, useEffect } from "react";
+import { useParams, Link, useNavigate } from "react-router";
+import { useAuth } from "~/lib/auth";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -11,8 +19,10 @@ import {
 } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 import { Avatar, AvatarFallback } from "~/components/ui/avatar";
-import { getProductById } from "~/lib/data/products";
+import { fetchProduct } from "~/lib/api";
+import type { ProductDto } from "~/lib/schemas";
 import { useCart } from "~/lib/cart";
+import { getBackendImageUrl } from "~/lib/utils";
 import {
   ShoppingCart,
   Star,
@@ -22,39 +32,122 @@ import {
   Store,
   Truck,
   Shield,
+  Clock,
 } from "~/components/ui/icons";
+import { toast } from "sonner";
 
-export function meta({ params }: Route.MetaArgs) {
-  const product = getProductById(params.productId);
+export function meta({}: Route.MetaArgs) {
   return [
     {
-      title: product
-        ? `${product.name} - Lazada Lite`
-        : "Product Not Found - Lazada Lite",
+      title: "Product Details - Lazada Lite",
     },
     {
       name: "description",
-      content: product?.description || "Product details on Lazada Lite",
+      content: "Product details on Lazada Lite",
     },
   ];
 }
 
 export default function ProductDetail() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const { productId } = useParams();
-  const product = getProductById(productId!);
+  const [product, setProduct] = useState<ProductDto | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { addItem, getTotalItems } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [addedToCart, setAddedToCart] = useState(false);
 
-  if (!product) {
+  // redirect vendors and shippers
+  useEffect(() => {
+    if (!user) {
+      navigate("/login");
+      toast.warning("Please login to view product details");
+      return;
+    }
+
+    if (user.role === "shipper") {
+      const redirectPath =
+        user.role === "shipper" ? "/shipper/orders" : "/shipper/orders";
+      navigate(redirectPath);
+      toast.success(`Redirected to your ${user.role} dashboard`);
+      return;
+    }
+  }, [user, navigate]);
+
+  useEffect(() => {
+    async function loadProduct() {
+      if (!productId) {
+        setError("No product ID provided");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+        const fetchedProduct = await fetchProduct(productId);
+        setProduct(fetchedProduct);
+      } catch (err) {
+        console.error("Failed to fetch product:", err);
+        setError(err instanceof Error ? err.message : "Failed to load product");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadProduct();
+  }, [productId]);
+
+  const handleAddToCart = async () => {
+    if (!product) return;
+    if (!user) {
+      toast.warning("Please login to add items to your cart");
+      return;
+    }
+
+    try {
+      await addItem(product, quantity);
+      setAddedToCart(true);
+      setTimeout(() => setAddedToCart(false), 3000);
+      toast.success("Added to cart!");
+    } catch (err) {
+      console.error("Failed to add to cart:", err);
+      toast.error("Failed to add to cart. Please try again.");
+    }
+  };
+
+  const updateQuantity = (delta: number) => {
+    setQuantity(Math.max(1, quantity + delta));
+  };
+
+  if (loading) {
     return (
       <div className='container mx-auto px-4 py-8'>
         <div className='max-w-2xl mx-auto text-center'>
-          <h1 className='text-2xl font-bold text-gray-900 mb-4'>
+          <Clock className='mx-auto h-8 w-8 animate-pulse mb-4' />
+          <h1 className='text-2xl font-bold text-foreground mb-4'>
+            Loading Product...
+          </h1>
+          <p className='text-muted-foreground'>
+            Please wait while we fetch the product details.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !product) {
+    return (
+      <div className='container mx-auto px-4 py-8'>
+        <div className='max-w-2xl mx-auto text-center'>
+          <h1 className='text-2xl font-bold text-foreground mb-4'>
             Product Not Found
           </h1>
-          <p className='text-gray-600 mb-6'>
-            The product you're looking for doesn't exist or has been removed.
+          <p className='text-muted-foreground mb-6'>
+            {error ||
+              "The product you're looking for doesn't exist or has been removed."}
           </p>
           <Link to='/products'>
             <Button>
@@ -66,16 +159,6 @@ export default function ProductDetail() {
       </div>
     );
   }
-
-  const handleAddToCart = () => {
-    addItem(product, quantity);
-    setAddedToCart(true);
-    setTimeout(() => setAddedToCart(false), 3000); // Reset after 3 seconds
-  };
-
-  const updateQuantity = (delta: number) => {
-    setQuantity(Math.max(1, quantity + delta));
-  };
 
   return (
     <div className='container mx-auto px-4 py-8'>
@@ -91,11 +174,18 @@ export default function ProductDetail() {
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
           {/* Product Image */}
           <div className='space-y-4'>
-            <div className='aspect-square overflow-hidden rounded-lg bg-gray-100'>
+            <div className='aspect-square overflow-hidden rounded-lg bg-muted'>
               <img
-                src={product.imageUrl}
+                src={
+                  getBackendImageUrl(product.imageUrl ?? undefined) ?? undefined
+                }
                 alt={product.name}
                 className='w-full h-full object-cover'
+                onError={(e) => {
+                  // fallback to a placeholder image
+                  e.currentTarget.src =
+                    "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=400&fit=crop";
+                }}
               />
             </div>
           </div>
@@ -106,23 +196,13 @@ export default function ProductDetail() {
               <Badge variant='secondary' className='mb-2'>
                 {product.category}
               </Badge>
-              <h1 className='text-3xl font-bold text-gray-900 mb-4'>
+              <h1 className='text-3xl font-bold text-foreground mb-4'>
                 {product.name}
               </h1>
 
               <div className='flex items-center gap-4 mb-4'>
-                <div className='flex items-center gap-1'>
-                  <Star className='h-5 w-5' />
-                  <span className='font-medium'>{product.rating}</span>
-                  <span className='text-gray-600'>
-                    ({product.reviewCount} reviews)
-                  </span>
-                </div>
                 {product.inStock ? (
-                  <Badge
-                    variant='default'
-                    className='bg-gray-100 text-gray-900'
-                  >
+                  <Badge variant='default' className='bg-muted text-foreground'>
                     In Stock
                   </Badge>
                 ) : (
@@ -130,29 +210,10 @@ export default function ProductDetail() {
                 )}
               </div>
 
-              <div className='text-3xl font-bold text-gray-900 mb-6'>
+              <div className='text-3xl font-bold text-foreground mb-6'>
                 ${product.price}
               </div>
             </div>
-
-            {/* Vendor Info */}
-            <Card>
-              <CardHeader className='pb-3'>
-                <div className='flex items-center gap-3'>
-                  <Avatar>
-                    <AvatarFallback>
-                      <Store className='h-4 w-4' />
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <CardTitle className='text-lg'>
-                      {product.vendorName}
-                    </CardTitle>
-                    <CardDescription>Verified Vendor</CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-            </Card>
 
             {/* Quantity and Add to Cart */}
             {product.inStock && (
@@ -184,14 +245,15 @@ export default function ProductDetail() {
                     size='lg'
                     className='w-full'
                     onClick={handleAddToCart}
+                    disabled={!user}
                   >
                     <ShoppingCart className='mr-2 h-5 w-5' />
                     Add to Cart - ${(product.price * quantity).toFixed(2)}
                   </Button>
 
                   {addedToCart && (
-                    <div className='bg-gray-50 border border-gray-200 rounded-lg p-4'>
-                      <p className='text-gray-800 font-medium'>
+                    <div className='bg-muted border border-border rounded-lg p-4'>
+                      <p className='text-foreground font-medium'>
                         ✅ Added to cart! You now have {getTotalItems()} items
                         in your cart.
                       </p>
@@ -232,7 +294,7 @@ export default function ProductDetail() {
               <CardTitle>Product Description</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className='text-gray-700 leading-relaxed'>
+              <p className='text-muted-foreground leading-relaxed'>
                 {product.description}
               </p>
             </CardContent>
@@ -241,10 +303,10 @@ export default function ProductDetail() {
 
         {/* Related Products */}
         <div className='mt-12'>
-          <h2 className='text-2xl font-bold text-gray-900 mb-6'>
+          <h2 className='text-2xl font-bold text-foreground mb-6'>
             You might also like
           </h2>
-          <div className='text-center py-8 text-gray-600'>
+          <div className='text-center py-8 text-muted-foreground'>
             <p>Related products feature would be implemented here</p>
             <Link to='/products' className='mt-4 inline-block'>
               <Button variant='outline'>Browse More Products</Button>
