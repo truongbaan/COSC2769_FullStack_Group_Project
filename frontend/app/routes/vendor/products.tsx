@@ -186,7 +186,28 @@ export default function VendorProducts() {
         }
       } catch (error) {
         console.error("Error updating product:", error);
-        toast.error("Failed to update product. Please try again.");
+
+        // Extract specific error message from API response
+        let errorMessage = "Failed to update product. Please try again.";
+        if (error instanceof Error) {
+          const errorText = error.message;
+          // Check if it's an API error with JSON response
+          if (errorText.includes("API") && errorText.includes("{")) {
+            try {
+              const jsonStart = errorText.indexOf("{");
+              const jsonPart = errorText.substring(jsonStart);
+              const parsed = JSON.parse(jsonPart);
+              if (parsed.message) {
+                errorMessage = parsed.message;
+              }
+            } catch (parseError) {
+              // If parsing fails, keep the default message
+              console.error("Error parsing API error:", parseError);
+            }
+          }
+        }
+
+        toast.error(errorMessage);
       } finally {
         setEditing(false);
       }
@@ -526,7 +547,7 @@ export default function VendorProducts() {
               <Input
                 id='edit-image'
                 type='file'
-                accept='image/*'
+                accept='image/png,image/jpeg'
                 onChange={handleEditImageChange}
                 className='w-full'
               />
