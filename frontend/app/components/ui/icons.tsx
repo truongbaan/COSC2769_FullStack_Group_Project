@@ -38,6 +38,7 @@ import {
   HiOutlineCreditCard,
   HiOutlineSun,
   HiOutlineMoon,
+  HiOutlineBars3,
 } from "react-icons/hi2";
 
 // App-wide icon aliases (monochrome, outline style)
@@ -77,6 +78,7 @@ export const UserPlus = HiOutlineUserPlus;
 export const CreditCard = HiOutlineCreditCard;
 export const Sun = HiOutlineSun;
 export const Moon = HiOutlineMoon;
+export const Menu = HiOutlineBars3;
 
 // shadcn ui helper icon names
 export const CheckIcon = HiOutlineCheck;

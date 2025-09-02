@@ -320,12 +320,18 @@ export default function Products() {
             >
               {compact ? "Comfortable" : "Compact"}
             </Button>
-            <div className='flex items-center gap-2'>
-              <ShoppingCart className='h-5 w-5' />
-              <span className='font-medium'>
-                {getTotalItems()} items in cart
-              </span>
-            </div>
+            <Link to='/cart'>
+              <Button
+                variant='ghost'
+                size='sm'
+                className='flex items-center gap-2'
+              >
+                <ShoppingCart className='h-5 w-5' />
+                <span className='font-medium'>
+                  {getTotalItems()} items in cart
+                </span>
+              </Button>
+            </Link>
           </div>
         </div>
 
