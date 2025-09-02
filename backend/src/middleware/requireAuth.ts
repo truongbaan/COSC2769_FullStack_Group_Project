@@ -21,15 +21,49 @@ declare global {
 
 export function requireAuth(role: string | string[] = '') {
     return async (req: Request, res: Response, next: NextFunction) => {
-        const token = req.cookies.access_token
+        let token = req.cookies.access_token
+        const refreshToken = req.cookies.refresh_token;
         if (!token) {
             return ErrorJsonResponse(res, 401, 'No token provided')
         }
 
         // Verify token with Supabase
-        const { data, error } = await supabase.auth.getUser(token)
-        if (error || !data.user) {
-            return ErrorJsonResponse(res, 401, 'Unauthorized: Invalid token')
+        let { data, error } = await supabase.auth.getUser(token)
+
+        if (error || !data.user) {//fail to verify, check if access token is expired
+            if (!refreshToken) {
+                return ErrorJsonResponse(res, 401, 'Unauthorized: Invalid token and no refresh token');
+            }
+
+            const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession({
+                refresh_token: refreshToken,
+            });
+
+            if (refreshError || !refreshData.session) {
+                return ErrorJsonResponse(res, 401, 'Unauthorized: Unable to refresh session');
+            }
+
+            console.log("Detect access token expired, attempt to refresh")
+
+            // update cookies with new tokens
+            res.cookie('access_token', refreshData.session.access_token, {
+                httpOnly: true,
+                secure: process.env.PRODUCTION_SITE === 'true',
+                path: '/',
+            });
+
+            res.cookie('refresh_token', refreshData.session.refresh_token, {
+                httpOnly: true,
+                secure: process.env.PRODUCTION_SITE === 'true',
+                path: '/',
+            });
+            await supabase.auth.setSession(refreshData.session);
+            token = refreshData.session.access_token;
+            
+            ({ data, error } = await supabase.auth.getUser(token));
+            if (error || !data.user) {
+                return ErrorJsonResponse(res, 401, 'Unauthorized: Invalid after refresh');
+            }
         }
 
         const roles: string[] =

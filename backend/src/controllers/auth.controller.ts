@@ -22,8 +22,6 @@ export const registerCustomerBodySchema = z.object({
     email: z.email("Invalid email format").trim(),
     password: passwordSchema,
     username: usernameSchema,
-    // profile_picture: z.string().trim(),
-    // role: z.literal("customer"),
     address: z.string().trim(),
     name: z.string().trim()
 }).strict();
@@ -32,8 +30,6 @@ export const registerShipperBodySchema = z.object({
     email: z.email("Invalid email format").trim(),
     password: passwordSchema,
     username: usernameSchema,
-    // profile_picture: z.string().trim(),
-    // role: z.literal("shipper"),
     hub_id: z.string().trim()
 }).strict();
 
@@ -41,8 +37,6 @@ export const registerVendorBodySchema = z.object({
     email: z.email("Invalid email format").trim(),
     password: passwordSchema,
     username: usernameSchema,
-    // profile_picture: z.string().trim(),
-    // role: z.literal("vendor"),
     business_address: z.string().trim(),
     business_name: z.string().trim()
 }).strict();
@@ -71,7 +65,7 @@ export const loginController = async (req: Request, res: Response) => {
             path: '/',
         })
 
-        //could be removed since not use, but might use later
+        // use when access token expired
         res.cookie('refresh_token', session.refresh_token, {
             httpOnly: true,
             secure: process.env.PRODUCTION_SITE === 'true', // http or https
