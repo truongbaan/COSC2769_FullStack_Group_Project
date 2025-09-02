@@ -6,7 +6,8 @@
     "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install",
     "install:frontend": "cd frontend && npm install",
     "install:backend": "cd backend && npm install",
-    "dev:all": "concurrently \"npm run dev --prefix frontend\" \"npm run dev --prefix backend\""
+    "dev:all": "concurrently \"npm run dev --prefix frontend\" \"npm run dev --prefix backend\"",
+    "start:all": "concurrently \"npm start --prefix frontend\" \"npm start --prefix backend\""
   },
   "repository": {
     "type": "git",
