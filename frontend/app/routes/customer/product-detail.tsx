@@ -248,7 +248,7 @@ export default function ProductDetail() {
                 </div>
 
                 {user && user?.role === "vendor" && (
-                  <Link to={`/vendor/product`}>
+                  <Link to={`/vendor/products`}>
                     <Button size='lg' className='w-full'>
                       Edit Product
                     </Button>
