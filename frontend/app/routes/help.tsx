@@ -37,7 +37,7 @@ export function meta({}: Route.MetaArgs) {
     { title: "Help & Support - Lazada Lite" },
     {
       name: "description",
-      content: "Get help and support for Lazada Lite platform",
+      content: "Get help and support for MUCK platform",
     },
   ];
 }
@@ -50,7 +50,7 @@ export default function Help() {
       questions: [
         {
           q: "What is Lazada Lite?",
-          a: "Lazada Lite is an educational e-commerce platform designed to demonstrate modern web development practices. It supports three user roles: customers, vendors, and shippers.",
+          a: "MUCK is an educational e-commerce platform designed to demonstrate modern web development practices. It supports three user roles: customers, vendors, and shippers.",
         },
         {
           q: "How do I create an account?",

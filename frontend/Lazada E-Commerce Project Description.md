@@ -1,6 +1,8 @@
 # Lazada Inspired E-Commerce System Project Description
+
 Created: 8/4/2025, 1:21:41 AM
 Last Updated: 8/4/2025, 1:28:41 AM
+
 ---
 
 ### User
@@ -16,13 +18,15 @@ create the FE for this in ts/react use react route v7, shadcn UI, tailwind v4
 Great — here’s a clean, scalable React + TypeScript frontend scaffold for the project using React Router v7, Tailwind CSS v4, and shadcn/ui. It includes routing for all roles, responsive layouts, form validation on the client, and components/pages wired for the described flows. You can hook APIs later.
 
 Instructions:
-1) Create app with Vite
-2) Install deps
-3) Configure Tailwind v4 and shadcn/ui
-4) Add routes, layouts, pages, components
-5) Wire basic client-side validation (matching spec)
+
+1. Create app with Vite
+2. Install deps
+3. Configure Tailwind v4 and shadcn/ui
+4. Add routes, layouts, pages, components
+5. Wire basic client-side validation (matching spec)
 
 Commands:
+
 - Set up project
   - npm create vite@latest lazada-lite-fe -- --template react-swc-ts
   - cd lazada-lite-fe
@@ -35,11 +39,13 @@ Commands:
   - npx shadcn@latest add button input label textarea select form card dropdown-menu avatar navigation-menu sheet toast sonner badge table
 
 Tailwind v4 config (tailwind.config.ts):
+
 - Tailwind v4 uses the next config. Replace content and add shadcn preset.
 
 Code files:
 
 tailwind.config.ts
+
 ```ts
 import type { Config } from "tailwindcss";
 
@@ -53,6 +59,7 @@ export default {
 ```
 
 src/index.css
+
 ```css
 @tailwind base;
 @tailwind components;
@@ -65,6 +72,7 @@ src/index.css
 ```
 
 src/main.tsx
+
 ```tsx
 import React from "react";
 import ReactDOM from "react-dom/client";
@@ -80,6 +88,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 ```
 
 src/router.tsx
+
 ```tsx
 import {
   createRootRoute,
@@ -249,6 +258,7 @@ declare module "@tanstack/react-router" {
 ```
 
 src/shared/state/auth.ts
+
 ```ts
 import { create } from "zustand";
 
@@ -277,9 +287,11 @@ export const auth = create<AuthState>((set) => ({
 ```
 
 Install Zustand:
+
 - npm i zustand
 
 src/shared/layouts/AppLayout.tsx
+
 ```tsx
 import { Outlet, Link } from "@tanstack/react-router";
 import Header from "../ui/Header";
@@ -287,9 +299,9 @@ import Footer from "../ui/Footer";
 
 export default function AppLayout() {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className='min-h-screen flex flex-col'>
       <Header />
-      <main className="flex-1 container mx-auto px-4 py-6">
+      <main className='flex-1 container mx-auto px-4 py-6'>
         <Outlet />
       </main>
       <Footer />
@@ -299,6 +311,7 @@ export default function AppLayout() {
 ```
 
 src/shared/ui/Header.tsx
+
 ```tsx
 import { Link, useRouter } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
@@ -310,30 +323,30 @@ export default function Header() {
   const router = useRouter();
 
   return (
-    <header className="border-b">
-      <div className="container mx-auto flex items-center justify-between px-4 py-3">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="h-8 w-8 bg-indigo-600 rounded" />
-          <span className="font-semibold">Lazada Lite</span>
+    <header className='border-b'>
+      <div className='container mx-auto flex items-center justify-between px-4 py-3'>
+        <Link to='/' className='flex items-center gap-2'>
+          <div className='h-8 w-8 bg-indigo-600 rounded' />
+          <span className='font-semibold'>Lazada Lite</span>
         </Link>
-        <nav className="flex items-center gap-3">
-          <Link to="/products" className="text-sm">
+        <nav className='flex items-center gap-3'>
+          <Link to='/products' className='text-sm'>
             View Products
           </Link>
-          <Link to="/about" className="text-sm">
+          <Link to='/about' className='text-sm'>
             About
           </Link>
-          <Link to="/help" className="text-sm">
+          <Link to='/help' className='text-sm'>
             Help
           </Link>
           {user ? (
-            <div className="flex items-center gap-2">
-              <Link to="/account" className="text-sm">
+            <div className='flex items-center gap-2'>
+              <Link to='/account' className='text-sm'>
                 My Account
               </Link>
               <Button
-                size="sm"
-                variant="secondary"
+                size='sm'
+                variant='secondary'
                 onClick={() => {
                   logout();
                   router.navigate({ to: "/" });
@@ -343,8 +356,8 @@ export default function Header() {
               </Button>
             </div>
           ) : (
-            <Link to="/login">
-              <Button size="sm">Login</Button>
+            <Link to='/login'>
+              <Button size='sm'>Login</Button>
             </Link>
           )}
         </nav>
@@ -355,20 +368,21 @@ export default function Header() {
 ```
 
 src/shared/ui/Footer.tsx
+
 ```tsx
 import { Link } from "@tanstack/react-router";
 
 export default function Footer() {
   return (
-    <footer className="border-t">
-      <div className="container mx-auto px-4 py-6 text-sm flex justify-between flex-wrap gap-3">
-        <div className="flex gap-4">
-          <Link to="/about">About</Link>
-          <Link to="/privacy">Privacy</Link>
-          <Link to="/help">Help</Link>
+    <footer className='border-t'>
+      <div className='container mx-auto px-4 py-6 text-sm flex justify-between flex-wrap gap-3'>
+        <div className='flex gap-4'>
+          <Link to='/about'>About</Link>
+          <Link to='/privacy'>Privacy</Link>
+          <Link to='/help'>Help</Link>
         </div>
-        <div className="text-muted-foreground">
-          © {new Date().getFullYear()} Lazada Lite (Student Project)
+        <div className='text-muted-foreground'>
+          © {new Date().getFullYear()} MUCK (Student Project)
         </div>
       </div>
     </footer>
@@ -379,6 +393,7 @@ export default function Footer() {
 Form helpers and UI library glue:
 
 src/lib/validators.ts
+
 ```ts
 import { z } from "zod";
 
@@ -429,6 +444,7 @@ src/components/ui (shadcn) is generated by the CLI. You already installed typica
 Auth pages:
 
 src/pages/auth/LoginPage.tsx
+
 ```tsx
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -457,10 +473,11 @@ export default function LoginPage() {
   const onSubmit = (data: FormValues) => {
     // TODO: replace with API call
     // For demo, pick a role by prefix
-    const role =
-      data.username.startsWith("ven") ? "vendor" :
-      data.username.startsWith("shi") ? "shipper" :
-      "customer";
+    const role = data.username.startsWith("ven")
+      ? "vendor"
+      : data.username.startsWith("shi")
+        ? "shipper"
+        : "customer";
     login({
       id: "u1",
       username: data.username,
@@ -473,47 +490,47 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto">
-      <h1 className="text-xl font-semibold mb-4">Login</h1>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <div className='max-w-md mx-auto'>
+      <h1 className='text-xl font-semibold mb-4'>Login</h1>
+      <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
         <div>
-          <Label htmlFor="username">Username</Label>
-          <Input id="username" {...register("username")} />
+          <Label htmlFor='username'>Username</Label>
+          <Input id='username' {...register("username")} />
           {formState.errors.username && (
-            <p className="text-red-600 text-sm">
+            <p className='text-red-600 text-sm'>
               {formState.errors.username.message}
             </p>
           )}
         </div>
         <div>
-          <Label htmlFor="password">Password</Label>
-          <Input id="password" type="password" {...register("password")} />
+          <Label htmlFor='password'>Password</Label>
+          <Input id='password' type='password' {...register("password")} />
           {formState.errors.password && (
-            <p className="text-red-600 text-sm">
+            <p className='text-red-600 text-sm'>
               {formState.errors.password.message}
             </p>
           )}
         </div>
-        <Button type="submit" className="w-full">
+        <Button type='submit' className='w-full'>
           Login
         </Button>
       </form>
 
-      <div className="mt-6 space-y-2">
-        <p className="text-sm">No account? Register:</p>
-        <div className="flex gap-2 flex-wrap">
-          <Link to="/register/customer">
-            <Button variant="outline" size="sm">
+      <div className='mt-6 space-y-2'>
+        <p className='text-sm'>No account? Register:</p>
+        <div className='flex gap-2 flex-wrap'>
+          <Link to='/register/customer'>
+            <Button variant='outline' size='sm'>
               Customer
             </Button>
           </Link>
-          <Link to="/register/vendor">
-            <Button variant="outline" size="sm">
+          <Link to='/register/vendor'>
+            <Button variant='outline' size='sm'>
               Vendor
             </Button>
           </Link>
-          <Link to="/register/shipper">
-            <Button variant="outline" size="sm">
+          <Link to='/register/shipper'>
+            <Button variant='outline' size='sm'>
               Shipper
             </Button>
           </Link>
@@ -527,15 +544,12 @@ export default function LoginPage() {
 Registration pages (customer/vendor/shipper). They share constraints: username, password, profile picture (File), and role-specific fields. We’ll mock submit and show client validation.
 
 src/pages/auth/RegisterCustomerPage.tsx
+
 ```tsx
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  usernameSchema,
-  passwordSchema,
-  minLen5,
-} from "@/lib/validators";
+import { usernameSchema, passwordSchema, minLen5 } from "@/lib/validators";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -549,14 +563,18 @@ const schema = z.object({
   address: minLen5,
   profilePic: z
     .any()
-    .refine((f) => f instanceof FileList && f.length > 0, "Profile picture required"),
+    .refine(
+      (f) => f instanceof FileList && f.length > 0,
+      "Profile picture required"
+    ),
 });
 
 type FormValues = z.infer<typeof schema>;
 
 export default function RegisterCustomerPage() {
-  const { register, handleSubmit, formState, setValue } =
-    useForm<FormValues>({ resolver: zodResolver(schema) });
+  const { register, handleSubmit, formState, setValue } = useForm<FormValues>({
+    resolver: zodResolver(schema),
+  });
   const login = auth((s) => s.login);
   const router = useRouter();
 
@@ -571,34 +589,46 @@ export default function RegisterCustomerPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto">
-      <h1 className="text-xl font-semibold mb-4">Register as Customer</h1>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <Field id="username" label="Username" error={formState.errors.username?.message}>
-          <Input id="username" {...register("username")} />
-        </Field>
-        <Field id="password" label="Password" error={formState.errors.password?.message}>
-          <Input id="password" type="password" {...register("password")} />
-        </Field>
-        <Field id="name" label="Name" error={formState.errors.name?.message}>
-          <Input id="name" {...register("name")} />
-        </Field>
-        <Field id="address" label="Address" error={formState.errors.address?.message}>
-          <Input id="address" {...register("address")} />
+    <div className='max-w-md mx-auto'>
+      <h1 className='text-xl font-semibold mb-4'>Register as Customer</h1>
+      <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
+        <Field
+          id='username'
+          label='Username'
+          error={formState.errors.username?.message}
+        >
+          <Input id='username' {...register("username")} />
         </Field>
         <Field
-          id="profilePic"
-          label="Profile Picture"
+          id='password'
+          label='Password'
+          error={formState.errors.password?.message}
+        >
+          <Input id='password' type='password' {...register("password")} />
+        </Field>
+        <Field id='name' label='Name' error={formState.errors.name?.message}>
+          <Input id='name' {...register("name")} />
+        </Field>
+        <Field
+          id='address'
+          label='Address'
+          error={formState.errors.address?.message}
+        >
+          <Input id='address' {...register("address")} />
+        </Field>
+        <Field
+          id='profilePic'
+          label='Profile Picture'
           error={formState.errors.profilePic?.message as string | undefined}
         >
           <Input
-            id="profilePic"
-            type="file"
-            accept="image/*"
+            id='profilePic'
+            type='file'
+            accept='image/*'
             onChange={(e) => setValue("profilePic", e.target.files as any)}
           />
         </Field>
-        <Button type="submit" className="w-full">
+        <Button type='submit' className='w-full'>
           Register
         </Button>
       </form>
@@ -621,22 +651,19 @@ function Field({
     <div>
       <Label htmlFor={id}>{label}</Label>
       {children}
-      {error && <p className="text-red-600 text-sm">{error}</p>}
+      {error && <p className='text-red-600 text-sm'>{error}</p>}
     </div>
   );
 }
 ```
 
 src/pages/auth/RegisterVendorPage.tsx
+
 ```tsx
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  usernameSchema,
-  passwordSchema,
-  minLen5,
-} from "@/lib/validators";
+import { usernameSchema, passwordSchema, minLen5 } from "@/lib/validators";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -650,14 +677,18 @@ const schema = z.object({
   businessAddress: minLen5,
   profilePic: z
     .any()
-    .refine((f) => f instanceof FileList && f.length > 0, "Profile picture required"),
+    .refine(
+      (f) => f instanceof FileList && f.length > 0,
+      "Profile picture required"
+    ),
 });
 
 type FormValues = z.infer<typeof schema>;
 
 export default function RegisterVendorPage() {
-  const { register, handleSubmit, formState, setValue } =
-    useForm<FormValues>({ resolver: zodResolver(schema) });
+  const { register, handleSubmit, formState, setValue } = useForm<FormValues>({
+    resolver: zodResolver(schema),
+  });
   const login = auth((s) => s.login);
   const router = useRouter();
 
@@ -672,42 +703,50 @@ export default function RegisterVendorPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto">
-      <h1 className="text-xl font-semibold mb-4">Register as Vendor</h1>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <Field id="username" label="Username" error={formState.errors.username?.message}>
-          <Input id="username" {...register("username")} />
-        </Field>
-        <Field id="password" label="Password" error={formState.errors.password?.message}>
-          <Input id="password" type="password" {...register("password")} />
+    <div className='max-w-md mx-auto'>
+      <h1 className='text-xl font-semibold mb-4'>Register as Vendor</h1>
+      <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
+        <Field
+          id='username'
+          label='Username'
+          error={formState.errors.username?.message}
+        >
+          <Input id='username' {...register("username")} />
         </Field>
         <Field
-          id="businessName"
-          label="Business Name"
+          id='password'
+          label='Password'
+          error={formState.errors.password?.message}
+        >
+          <Input id='password' type='password' {...register("password")} />
+        </Field>
+        <Field
+          id='businessName'
+          label='Business Name'
           error={formState.errors.businessName?.message}
         >
-          <Input id="businessName" {...register("businessName")} />
+          <Input id='businessName' {...register("businessName")} />
         </Field>
         <Field
-          id="businessAddress"
-          label="Business Address"
+          id='businessAddress'
+          label='Business Address'
           error={formState.errors.businessAddress?.message}
         >
-          <Input id="businessAddress" {...register("businessAddress")} />
+          <Input id='businessAddress' {...register("businessAddress")} />
         </Field>
         <Field
-          id="profilePic"
-          label="Profile Picture"
+          id='profilePic'
+          label='Profile Picture'
           error={formState.errors.profilePic?.message as string | undefined}
         >
           <Input
-            id="profilePic"
-            type="file"
-            accept="image/*"
+            id='profilePic'
+            type='file'
+            accept='image/*'
             onChange={(e) => setValue("profilePic", e.target.files as any)}
           />
         </Field>
-        <Button type="submit" className="w-full">
+        <Button type='submit' className='w-full'>
           Register
         </Button>
       </form>
@@ -730,13 +769,14 @@ function Field({
     <div>
       <Label htmlFor={id}>{label}</Label>
       {children}
-      {error && <p className="text-red-600 text-sm">{error}</p>}
+      {error && <p className='text-red-600 text-sm'>{error}</p>}
     </div>
   );
 }
 ```
 
 src/pages/auth/RegisterShipperPage.tsx
+
 ```tsx
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -755,7 +795,10 @@ const schema = z.object({
   hub: z.string().min(1, "Select a hub"),
   profilePic: z
     .any()
-    .refine((f) => f instanceof FileList && f.length > 0, "Profile picture required"),
+    .refine(
+      (f) => f instanceof FileList && f.length > 0,
+      "Profile picture required"
+    ),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -781,24 +824,34 @@ export default function RegisterShipperPage() {
   const selectedHub = watch("hub");
 
   return (
-    <div className="max-w-md mx-auto">
-      <h1 className="text-xl font-semibold mb-4">Register as Shipper</h1>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <Field id="username" label="Username" error={formState.errors.username?.message}>
-          <Input id="username" {...register("username")} />
+    <div className='max-w-md mx-auto'>
+      <h1 className='text-xl font-semibold mb-4'>Register as Shipper</h1>
+      <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
+        <Field
+          id='username'
+          label='Username'
+          error={formState.errors.username?.message}
+        >
+          <Input id='username' {...register("username")} />
         </Field>
-        <Field id="password" label="Password" error={formState.errors.password?.message}>
-          <Input id="password" type="password" {...register("password")} />
+        <Field
+          id='password'
+          label='Password'
+          error={formState.errors.password?.message}
+        >
+          <Input id='password' type='password' {...register("password")} />
         </Field>
         <div>
-          <Label htmlFor="hub">Distribution Hub</Label>
+          <Label htmlFor='hub'>Distribution Hub</Label>
           <select
-            id="hub"
-            className="mt-2 w-full border rounded px-3 py-2"
+            id='hub'
+            className='mt-2 w-full border rounded px-3 py-2'
             value={selectedHub ?? ""}
-            onChange={(e) => setValue("hub", e.target.value, { shouldValidate: true })}
+            onChange={(e) =>
+              setValue("hub", e.target.value, { shouldValidate: true })
+            }
           >
-            <option value="" disabled>
+            <option value='' disabled>
               Select a hub
             </option>
             {HUBS.map((h) => (
@@ -808,22 +861,24 @@ export default function RegisterShipperPage() {
             ))}
           </select>
           {formState.errors.hub && (
-            <p className="text-red-600 text-sm">{formState.errors.hub.message}</p>
+            <p className='text-red-600 text-sm'>
+              {formState.errors.hub.message}
+            </p>
           )}
         </div>
         <Field
-          id="profilePic"
-          label="Profile Picture"
+          id='profilePic'
+          label='Profile Picture'
           error={formState.errors.profilePic?.message as string | undefined}
         >
           <Input
-            id="profilePic"
-            type="file"
-            accept="image/*"
+            id='profilePic'
+            type='file'
+            accept='image/*'
             onChange={(e) => setValue("profilePic", e.target.files as any)}
           />
         </Field>
-        <Button type="submit" className="w-full">
+        <Button type='submit' className='w-full'>
           Register
         </Button>
       </form>
@@ -846,7 +901,7 @@ function Field({
     <div>
       <Label htmlFor={id}>{label}</Label>
       {children}
-      {error && <p className="text-red-600 text-sm">{error}</p>}
+      {error && <p className='text-red-600 text-sm'>{error}</p>}
     </div>
   );
 }
@@ -855,6 +910,7 @@ function Field({
 My Account:
 
 src/pages/account/MyAccountPage.tsx
+
 ```tsx
 import { auth } from "@/shared/state/auth";
 import { Input } from "@/components/ui/input";
@@ -866,43 +922,49 @@ export default function MyAccountPage() {
   const [file, setFile] = useState<File | null>(null);
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <h1 className="text-xl font-semibold">My Account</h1>
-      <div className="border rounded p-4 space-y-2">
+    <div className='max-w-2xl mx-auto space-y-6'>
+      <h1 className='text-xl font-semibold'>My Account</h1>
+      <div className='border rounded p-4 space-y-2'>
         <div>
-          <span className="font-medium">Username: </span>
+          <span className='font-medium'>Username: </span>
           {user.username}
         </div>
         <div>
-          <span className="font-medium">Role: </span>
+          <span className='font-medium'>Role: </span>
           {user.role}
         </div>
         {user.role === "customer" && (
           <div>
-            <span className="font-medium">Name: </span>
+            <span className='font-medium'>Name: </span>
             {user.name}
           </div>
         )}
         {user.role === "vendor" && (
           <div>
-            <span className="font-medium">Business: </span>
+            <span className='font-medium'>Business: </span>
             {user.businessName}
           </div>
         )}
         {user.role === "shipper" && (
           <div>
-            <span className="font-medium">Distribution Hub: </span>
+            <span className='font-medium'>Distribution Hub: </span>
             {user.distributionHub}
           </div>
         )}
       </div>
-      <div className="border rounded p-4 space-y-3">
-        <div className="font-medium">Change Profile Image</div>
-        <Input type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+      <div className='border rounded p-4 space-y-3'>
+        <div className='font-medium'>Change Profile Image</div>
+        <Input
+          type='file'
+          accept='image/*'
+          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+        />
         <Button
           onClick={() => {
             // TODO: upload to server, update avatar
-            alert(file ? "Uploaded new profile image" : "Select an image first");
+            alert(
+              file ? "Uploaded new profile image" : "Select an image first"
+            );
           }}
         >
           Upload
@@ -916,6 +978,7 @@ export default function MyAccountPage() {
 Vendor pages:
 
 src/pages/vendor/VendorProductsPage.tsx
+
 ```tsx
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
@@ -927,19 +990,19 @@ const mockProducts = [
 
 export default function VendorProductsPage() {
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">My Products</h1>
-        <Link to="/vendor/products/new">
+    <div className='space-y-4'>
+      <div className='flex items-center justify-between'>
+        <h1 className='text-xl font-semibold'>My Products</h1>
+        <Link to='/vendor/products/new'>
           <Button>Add New Product</Button>
         </Link>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
         {mockProducts.map((p) => (
-          <div key={p.id} className="border rounded p-4">
-            <div className="h-32 bg-gray-100 rounded mb-2" />
-            <div className="font-medium">{p.name}</div>
-            <div className="text-sm text-muted-foreground">${p.price}</div>
+          <div key={p.id} className='border rounded p-4'>
+            <div className='h-32 bg-gray-100 rounded mb-2' />
+            <div className='font-medium'>{p.name}</div>
+            <div className='text-sm text-muted-foreground'>${p.price}</div>
           </div>
         ))}
       </div>
@@ -949,6 +1012,7 @@ export default function VendorProductsPage() {
 ```
 
 src/pages/vendor/VendorAddProductPage.tsx
+
 ```tsx
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -963,8 +1027,9 @@ import { useRouter } from "@tanstack/react-router";
 type FormValues = z.infer<typeof productSchema>;
 
 export default function VendorAddProductPage() {
-  const { register, handleSubmit, setValue, formState } =
-    useForm<FormValues>({ resolver: zodResolver(productSchema) });
+  const { register, handleSubmit, setValue, formState } = useForm<FormValues>({
+    resolver: zodResolver(productSchema),
+  });
   const router = useRouter();
 
   const onSubmit = () => {
@@ -973,31 +1038,31 @@ export default function VendorAddProductPage() {
   };
 
   return (
-    <div className="max-w-lg">
-      <h1 className="text-xl font-semibold mb-4">Add New Product</h1>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <Field id="name" label="Name" error={formState.errors.name?.message}>
-          <Input id="name" {...register("name")} />
+    <div className='max-w-lg'>
+      <h1 className='text-xl font-semibold mb-4'>Add New Product</h1>
+      <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
+        <Field id='name' label='Name' error={formState.errors.name?.message}>
+          <Input id='name' {...register("name")} />
         </Field>
-        <Field id="price" label="Price" error={formState.errors.price?.message}>
-          <Input id="price" type="number" step="0.01" {...register("price")} />
+        <Field id='price' label='Price' error={formState.errors.price?.message}>
+          <Input id='price' type='number' step='0.01' {...register("price")} />
         </Field>
-        <Field id="image" label="Image">
+        <Field id='image' label='Image'>
           <Input
-            id="image"
-            type="file"
-            accept="image/*"
+            id='image'
+            type='file'
+            accept='image/*'
             onChange={(e) => setValue("image", e.target.files?.[0] as any)}
           />
         </Field>
         <Field
-          id="description"
-          label="Description"
+          id='description'
+          label='Description'
           error={formState.errors.description?.message}
         >
-          <Textarea id="description" rows={5} {...register("description")} />
+          <Textarea id='description' rows={5} {...register("description")} />
         </Field>
-        <Button type="submit">Create</Button>
+        <Button type='submit'>Create</Button>
       </form>
     </div>
   );
@@ -1018,7 +1083,7 @@ function Field({
     <div>
       <Label htmlFor={id}>{label}</Label>
       {children}
-      {error && <p className="text-red-600 text-sm">{error}</p>}
+      {error && <p className='text-red-600 text-sm'>{error}</p>}
     </div>
   );
 }
@@ -1027,6 +1092,7 @@ function Field({
 Customer pages:
 
 src/pages/customer/ProductsBrowsePage.tsx
+
 ```tsx
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -1045,8 +1111,9 @@ const mockProducts = Array.from({ length: 9 }).map((_, i) => ({
 type FormValues = z.infer<typeof priceFilterSchema>;
 
 export default function ProductsBrowsePage() {
-  const { register, handleSubmit, formState, watch } =
-    useForm<FormValues>({ resolver: zodResolver(priceFilterSchema) });
+  const { register, handleSubmit, formState, watch } = useForm<FormValues>({
+    resolver: zodResolver(priceFilterSchema),
+  });
 
   const onSubmit = (_: FormValues) => {
     // TODO: server-side filter via query params or API call
@@ -1064,26 +1131,42 @@ export default function ProductsBrowsePage() {
   });
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-semibold">View Products</h1>
-      <form onSubmit={handleSubmit(onSubmit)} className="flex gap-3 flex-wrap">
-        <Input placeholder="Search name..." {...register("q")} className="w-56" />
-        <Input placeholder="Min price" type="number" {...register("min")} className="w-32" />
-        <Input placeholder="Max price" type="number" {...register("max")} className="w-32" />
-        <Button type="submit">Apply</Button>
+    <div className='space-y-4'>
+      <h1 className='text-xl font-semibold'>View Products</h1>
+      <form onSubmit={handleSubmit(onSubmit)} className='flex gap-3 flex-wrap'>
+        <Input
+          placeholder='Search name...'
+          {...register("q")}
+          className='w-56'
+        />
+        <Input
+          placeholder='Min price'
+          type='number'
+          {...register("min")}
+          className='w-32'
+        />
+        <Input
+          placeholder='Max price'
+          type='number'
+          {...register("max")}
+          className='w-32'
+        />
+        <Button type='submit'>Apply</Button>
         {formState.errors.root && (
-          <p className="text-red-600 text-sm">{formState.errors.root.message}</p>
+          <p className='text-red-600 text-sm'>
+            {formState.errors.root.message}
+          </p>
         )}
       </form>
 
-      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+      <div className='grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3'>
         {filtered.map((p) => (
-          <div key={p.id} className="border rounded p-4">
-            <div className="h-32 bg-gray-100 rounded mb-2" />
-            <div className="font-medium">{p.name}</div>
-            <div className="text-sm text-muted-foreground">${p.price}</div>
-            <Link to="/products/$productId" params={{ productId: p.id }}>
-              <Button size="sm" className="mt-2">
+          <div key={p.id} className='border rounded p-4'>
+            <div className='h-32 bg-gray-100 rounded mb-2' />
+            <div className='font-medium'>{p.name}</div>
+            <div className='text-sm text-muted-foreground'>${p.price}</div>
+            <Link to='/products/$productId' params={{ productId: p.id }}>
+              <Button size='sm' className='mt-2'>
                 View
               </Button>
             </Link>
@@ -1096,6 +1179,7 @@ export default function ProductsBrowsePage() {
 ```
 
 src/pages/customer/ProductDetailPage.tsx
+
 ```tsx
 import { useParams, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
@@ -1106,25 +1190,26 @@ export default function ProductDetailPage() {
   const [added, setAdded] = useState(false);
 
   return (
-    <div className="max-w-2xl mx-auto space-y-4">
-      <div className="h-64 bg-gray-100 rounded" />
-      <h1 className="text-xl font-semibold">Product {productId}</h1>
-      <p className="text-muted-foreground">
+    <div className='max-w-2xl mx-auto space-y-4'>
+      <div className='h-64 bg-gray-100 rounded' />
+      <h1 className='text-xl font-semibold'>Product {productId}</h1>
+      <p className='text-muted-foreground'>
         Product description goes here. Max 500 chars (vendor defined).
       </p>
-      <div className="flex items-center gap-3">
+      <div className='flex items-center gap-3'>
         <Button onClick={() => setAdded(true)}>Add to shopping cart</Button>
-        <Link to="/cart">
-          <Button variant="outline">Go to cart</Button>
+        <Link to='/cart'>
+          <Button variant='outline'>Go to cart</Button>
         </Link>
       </div>
-      {added && <p className="text-green-600">Added to cart.</p>}
+      {added && <p className='text-green-600'>Added to cart.</p>}
     </div>
   );
 }
 ```
 
 src/pages/customer/CartPage.tsx
+
 ```tsx
 import { Button } from "@/components/ui/button";
 import { Link } from "@tanstack/react-router";
@@ -1139,29 +1224,31 @@ export default function CartPage() {
   const total = items.reduce((s, i) => s + i.price, 0);
 
   return (
-    <div className="max-w-2xl mx-auto space-y-4">
-      <h1 className="text-xl font-semibold">Shopping Cart</h1>
-      <div className="space-y-2">
+    <div className='max-w-2xl mx-auto space-y-4'>
+      <h1 className='text-xl font-semibold'>Shopping Cart</h1>
+      <div className='space-y-2'>
         {items.map((i) => (
           <div
             key={i.id}
-            className="flex items-center justify-between border rounded p-3"
+            className='flex items-center justify-between border rounded p-3'
           >
             <div>
-              <div className="font-medium">{i.name}</div>
-              <div className="text-sm text-muted-foreground">${i.price}</div>
+              <div className='font-medium'>{i.name}</div>
+              <div className='text-sm text-muted-foreground'>${i.price}</div>
             </div>
             <Button
-              variant="destructive"
-              onClick={() => setItems((prev) => prev.filter((x) => x.id !== i.id))}
+              variant='destructive'
+              onClick={() =>
+                setItems((prev) => prev.filter((x) => x.id !== i.id))
+              }
             >
               Remove
             </Button>
           </div>
         ))}
       </div>
-      <div className="flex items-center justify-between border-t pt-3">
-        <div className="font-semibold">Total: ${total}</div>
+      <div className='flex items-center justify-between border-t pt-3'>
+        <div className='font-semibold'>Total: ${total}</div>
         <Button
           onClick={() => {
             // TODO: call server to create order at random hub; then empty cart
@@ -1172,7 +1259,7 @@ export default function CartPage() {
           Order
         </Button>
       </div>
-      <Link to="/products" className="text-sm underline">
+      <Link to='/products' className='text-sm underline'>
         Continue shopping
       </Link>
     </div>
@@ -1183,6 +1270,7 @@ export default function CartPage() {
 Shipper pages:
 
 src/pages/shipper/OrdersShipperPage.tsx
+
 ```tsx
 import { Link } from "@tanstack/react-router";
 
@@ -1193,14 +1281,18 @@ const mockOrders = [
 
 export default function OrdersShipperPage() {
   return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Active Orders (My Hub)</h1>
-      <div className="space-y-2">
+    <div className='space-y-4'>
+      <h1 className='text-xl font-semibold'>Active Orders (My Hub)</h1>
+      <div className='space-y-2'>
         {mockOrders.map((o) => (
-          <Link key={o.id} to="/shipper/orders/$orderId" params={{ orderId: o.id }}>
-            <div className="border rounded p-3 hover:bg-accent">
-              <div className="font-medium">Order {o.id}</div>
-              <div className="text-sm text-muted-foreground">
+          <Link
+            key={o.id}
+            to='/shipper/orders/$orderId'
+            params={{ orderId: o.id }}
+          >
+            <div className='border rounded p-3 hover:bg-accent'>
+              <div className='font-medium'>Order {o.id}</div>
+              <div className='text-sm text-muted-foreground'>
                 {o.customer} • ${o.total} • {o.status}
               </div>
             </div>
@@ -1213,6 +1305,7 @@ export default function OrdersShipperPage() {
 ```
 
 src/pages/shipper/OrderDetailShipperPage.tsx
+
 ```tsx
 import { useParams, useRouter } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
@@ -1238,22 +1331,22 @@ export default function OrderDetailShipperPage() {
   }
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Order {orderId}</h1>
-      <div className="border rounded p-3 space-y-2">
-        <div className="font-medium">Receiver: Customer Address</div>
-        <ul className="list-disc ml-5">
+    <div className='space-y-4'>
+      <h1 className='text-xl font-semibold'>Order {orderId}</h1>
+      <div className='border rounded p-3 space-y-2'>
+        <div className='font-medium'>Receiver: Customer Address</div>
+        <ul className='list-disc ml-5'>
           {items.map((i) => (
             <li key={i.id}>
               {i.name} - ${i.price}
             </li>
           ))}
         </ul>
-        <div className="font-semibold">Total: ${total}</div>
+        <div className='font-semibold'>Total: ${total}</div>
       </div>
-      <div className="flex gap-2">
+      <div className='flex gap-2'>
         <Button onClick={() => setStatus("delivered")}>Mark Delivered</Button>
-        <Button variant="destructive" onClick={() => setStatus("canceled")}>
+        <Button variant='destructive' onClick={() => setStatus("canceled")}>
           Cancel
         </Button>
       </div>
@@ -1265,23 +1358,24 @@ export default function OrderDetailShipperPage() {
 Static pages:
 
 src/pages/HomePage.tsx
+
 ```tsx
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 
 export default function HomePage() {
   return (
-    <div className="max-w-3xl mx-auto text-center space-y-6">
-      <h1 className="text-2xl font-bold">Welcome to Lazada Lite</h1>
-      <p className="text-muted-foreground">
+    <div className='max-w-3xl mx-auto text-center space-y-6'>
+      <h1 className='text-2xl font-bold'>Welcome to Lazada Lite</h1>
+      <p className='text-muted-foreground'>
         A simplified e-commerce platform for Full Stack Development 2025B.
       </p>
-      <div className="flex gap-3 justify-center">
-        <Link to="/products">
+      <div className='flex gap-3 justify-center'>
+        <Link to='/products'>
           <Button>View Products</Button>
         </Link>
-        <Link to="/login">
-          <Button variant="outline">Login</Button>
+        <Link to='/login'>
+          <Button variant='outline'>Login</Button>
         </Link>
       </div>
     </div>
@@ -1290,15 +1384,14 @@ export default function HomePage() {
 ```
 
 src/pages/static/AboutPage.tsx
+
 ```tsx
 export default function AboutPage() {
   return (
-    <article className="prose max-w-3xl">
+    <article className='prose max-w-3xl'>
       <h1>About</h1>
-      <p>
-        This is a student project inspired by Lazada’s e-commerce system.
-      </p>
-      <p className="text-sm text-muted-foreground">
+      <p>This is a student project inspired by Lazada’s e-commerce system.</p>
+      <p className='text-sm text-muted-foreground'>
         Some content adapted from public sources for educational purposes.
       </p>
     </article>
@@ -1307,10 +1400,11 @@ export default function AboutPage() {
 ```
 
 src/pages/static/PrivacyPage.tsx
+
 ```tsx
 export default function PrivacyPage() {
   return (
-    <article className="prose max-w-3xl">
+    <article className='prose max-w-3xl'>
       <h1>Privacy Policy</h1>
       <p>
         We store minimal data for demo. In production, comply with regulations.
@@ -1321,10 +1415,11 @@ export default function PrivacyPage() {
 ```
 
 src/pages/static/HelpPage.tsx
+
 ```tsx
 export default function HelpPage() {
   return (
-    <article className="prose max-w-3xl">
+    <article className='prose max-w-3xl'>
       <h1>Help</h1>
       <p>For assistance, contact your instructor or check project README.</p>
     </article>
@@ -1333,6 +1428,7 @@ export default function HelpPage() {
 ```
 
 Notes and next steps:
+
 - Client-side validations strictly match the spec for username, password, and min length 5 for other fields.
 - Images are accepted from file inputs; you’ll wire uploads to your backend (store as BinData or filenames).
 - Responsiveness: product grid uses 1/2/3 columns for smartphone/tablet/desktop as required.
@@ -1340,6 +1436,5 @@ Notes and next steps:
 - Protect routes using beforeLoad guards; server should also enforce on API.
 
 If you want, I can add an API service layer (axios + react-query), environment handling, and types that match your backend schemas.
-
 
 ---

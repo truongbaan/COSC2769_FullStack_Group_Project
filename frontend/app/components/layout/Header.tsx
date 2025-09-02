@@ -124,10 +124,10 @@ export default function Header() {
         <Link to='/' className='flex items-center gap-2'>
           <div className='h-8 w-8 bg-black dark:bg-white rounded flex items-center justify-center'>
             <span className='text-white dark:text-black font-bold text-sm'>
-              L
+              M
             </span>
           </div>
-          <span className='font-semibold text-xl'>Lazada Lite</span>
+          <span className='font-semibold text-xl'>MUCK</span>
         </Link>
 
         <nav className='hidden md:flex items-center gap-6'>
