@@ -7,7 +7,7 @@
 
 import { type Request, type Response, type NextFunction } from 'express'
 import { ErrorJsonResponse } from "../utils/json_mes"
-import { Database, supabase } from "../db/db"
+import { Database, supabaseClient } from "../db/db"
 import { UserService } from '../service/user.service'
 
 declare global {
@@ -21,29 +21,27 @@ declare global {
 
 export function requireAuth(role: string | string[] = '') {
     return async (req: Request, res: Response, next: NextFunction) => {
-        let token = req.cookies.access_token
+        const token = req.cookies.access_token
         const refreshToken = req.cookies.refresh_token;
         if (!token) {
             return ErrorJsonResponse(res, 401, 'No token provided')
         }
 
         // Verify token with Supabase
-        let { data, error } = await supabase.auth.getUser(token)
+        let { data, error } = await supabaseClient.auth.getUser(token)
 
         if (error || !data.user) {//fail to verify, check if access token is expired
             if (!refreshToken) {
                 return ErrorJsonResponse(res, 401, 'Unauthorized: Invalid token and no refresh token');
             }
 
-            const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession({
+            const { data: refreshData, error: refreshError } = await supabaseClient.auth.refreshSession({
                 refresh_token: refreshToken,
             });
 
             if (refreshError || !refreshData.session) {
                 return ErrorJsonResponse(res, 401, 'Unauthorized: Unable to refresh session');
             }
-
-            console.log("Detect access token expired, attempt to refresh")
 
             // update cookies with new tokens
             res.cookie('access_token', refreshData.session.access_token, {
@@ -57,10 +55,9 @@ export function requireAuth(role: string | string[] = '') {
                 secure: process.env.PRODUCTION_SITE === 'true',
                 path: '/',
             });
-            await supabase.auth.setSession(refreshData.session);
-            token = refreshData.session.access_token;
+            await supabaseClient.auth.setSession(refreshData.session);//updates the client session with fresh tokens
             
-            ({ data, error } = await supabase.auth.getUser(token));
+            ({ data, error } = await supabaseClient.auth.getUser(refreshData.session.access_token));
             if (error || !data.user) {
                 return ErrorJsonResponse(res, 401, 'Unauthorized: Invalid after refresh');
             }
