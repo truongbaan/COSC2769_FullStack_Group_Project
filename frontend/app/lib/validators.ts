@@ -29,7 +29,18 @@ export const minLen5 = z.string().min(5, "Minimum length is 5");
 export const productSchema = z.object({
   name: z.string().min(10).max(20),
   price: z.coerce.number().positive(),
-  image: z.any().optional(),
+  image: z
+    .any()
+    .optional()
+    .refine((file) => !file || file instanceof File, "Invalid file type")
+    .refine(
+      (file) => !file || file.type?.startsWith("image/"),
+      "File must be an image"
+    )
+    .refine(
+      (file) => !file || file.size <= 10 * 1024 * 1024,
+      "File size must be less than 10MB"
+    ),
   description: z.string().max(500),
   category: z.enum(
     PRODUCT_CATEGORIES as unknown as [ProductCategory, ...ProductCategory[]],
@@ -98,7 +109,8 @@ export const profileImageUploadSchema = z.object({
       "File must be an image"
     )
     .refine(
-      (files) => files instanceof FileList && files[0]?.size <= 2 * 1024 * 1024,
+      (files) =>
+        files instanceof FileList && files[0]?.size <= 10 * 1024 * 1024,
       "File size must be less than 10MB"
     ),
 });

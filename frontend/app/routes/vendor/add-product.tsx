@@ -270,7 +270,7 @@ export default function AddProduct() {
                       <li>• Product name must be 10-20 characters long</li>
                       <li>• Price must be a positive number</li>
                       <li>• Description should be under 500 characters</li>
-                      <li>• Image must be PNG or JPEG format only</li>
+                      <li>• Image must be PNG or JPEG format, max 10MB</li>
                       <li>• High-quality product image is recommended</li>
                     </ul>
                   </div>
