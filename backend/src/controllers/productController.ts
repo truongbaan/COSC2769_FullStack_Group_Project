@@ -73,8 +73,7 @@ export const getProductsController = async (req: Request, res: Response) => {
       return ErrorJsonResponse(res, 400, err.issues[0].message);
     }
     console.log("getProductsController error: ", err);
-    return ErrorJsonResponse(res, 500, "Unexpected error while fetching products"
-    );
+    return ErrorJsonResponse(res, 500, "Unexpected error while fetching products");
   }
 };
 
@@ -194,6 +193,7 @@ export const createProductController = async (req: Request, res: Response) => {
     }
 
     const upload = await ImageService.uploadImage(file, "productimages");
+
     if (!upload.success) {
       return ErrorJsonResponse(res, 500, upload.error ?? "Failed to upload image");
     }
@@ -214,7 +214,8 @@ export const createProductController = async (req: Request, res: Response) => {
     if (err?.issues) {
       return ErrorJsonResponse(res, 400, err.issues[0]?.message ?? "Validation failed");
     }
-    return ErrorJsonResponse(res, 500, err?.message ?? "Unexpected error while creating product");
+    return ErrorJsonResponse(res, 500, err?.message ?? "Unexpected error while creating product"
+    );
   }
 };
 
@@ -277,17 +278,24 @@ export const updateProductStatusController = async (
       instock
     );
 
+    if (!updated) {
+      return ErrorJsonResponse(res, 404, "Product not found or not owned by vendor");
+    }
+
     //Delete old image if there's a new one
     if (newImagePath && oldRow?.image && oldRow.image !== newImagePath) {
       await ImageService.deleteImage(oldRow.image, "productimages");
     }
 
     return SuccessJsonResponse(res, 200, { product: updated });
-
   } catch (err: any) {
     console.error("updateProductStatusController error:", err);
     if (err?.issues) {
-      return ErrorJsonResponse(res, 400, err.issues[0]?.message ?? "Validation failed");
+      return ErrorJsonResponse(
+        res,
+        400,
+        err.issues[0]?.message ?? "Validation failed"
+      );
     }
     return ErrorJsonResponse(res, 500, "Unexpected error while updating product status");
   }
