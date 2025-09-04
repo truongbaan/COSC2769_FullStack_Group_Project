@@ -31,7 +31,7 @@ type FormValues = z.infer<typeof loginSchema>;
 export function meta({}: Route.MetaArgs) {
   return [
     { title: "Login - Lazada Lite" },
-    { name: "description", content: "Sign in to your Lazada Lite account" },
+    { name: "description", content: "Sign in to your MUCK account" },
   ];
 }
 
@@ -108,9 +108,7 @@ export default function Login() {
               <LogIn className='h-8 w-8' />
             </div>
             <CardTitle className='text-2xl'>Welcome Back</CardTitle>
-            <CardDescription>
-              Sign in to your Lazada Lite account
-            </CardDescription>
+            <CardDescription>Sign in to your MUCK account</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>

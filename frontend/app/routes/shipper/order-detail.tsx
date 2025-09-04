@@ -32,7 +32,7 @@ import {
   fetchOrderItemsApi,
 } from "~/lib/api";
 import type { OrderItemDetail } from "~/lib/api";
-import { getBackendImageUrl } from "~/lib/utils";
+import { getBackendImageUrl, getApiErrorMessage } from "~/lib/utils";
 import { toast } from "sonner";
 import {
   ArrowLeft,
@@ -142,8 +142,12 @@ export default function OrderDetail() {
         throw new Error("Failed to update order status");
       }
     } catch (error) {
-      toast.error("Failed to update order. Please try again.");
       console.error("Error updating order:", error);
+      const errorMessage = getApiErrorMessage(
+        error,
+        "Failed to update order. Please try again."
+      );
+      toast.error(errorMessage);
     } finally {
       setIsUpdating(false);
       setPendingAction(null);

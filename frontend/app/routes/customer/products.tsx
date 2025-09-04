@@ -25,7 +25,11 @@ import { Link } from "react-router";
 import { fetchProducts } from "~/lib/api";
 import type { ProductDto } from "~/lib/schemas";
 import { useCart } from "~/lib/cart";
-import { getBackendImageUrl, PRODUCT_CATEGORIES } from "~/lib/utils";
+import {
+  getBackendImageUrl,
+  PRODUCT_CATEGORIES,
+  getApiErrorMessage,
+} from "~/lib/utils";
 import { ShoppingCart, Search } from "~/components/ui/icons";
 import { toast } from "sonner";
 import {
@@ -184,7 +188,11 @@ export default function Products() {
       toast.success(`${product.name} added to cart!`);
     } catch (error) {
       console.error("Failed to add to cart:", error);
-      toast.error("Failed to add to cart. Please try again.");
+      const errorMessage = getApiErrorMessage(
+        error,
+        "Failed to add to cart. Please try again."
+      );
+      toast.error(errorMessage);
     }
   };
 
@@ -312,12 +320,18 @@ export default function Products() {
             >
               {compact ? "Comfortable" : "Compact"}
             </Button>
-            <div className='flex items-center gap-2'>
-              <ShoppingCart className='h-5 w-5' />
-              <span className='font-medium'>
-                {getTotalItems()} items in cart
-              </span>
-            </div>
+            <Link to='/cart'>
+              <Button
+                variant='ghost'
+                size='sm'
+                className='flex items-center gap-2'
+              >
+                <ShoppingCart className='h-5 w-5' />
+                <span className='font-medium'>
+                  {getTotalItems()} items in cart
+                </span>
+              </Button>
+            </Link>
           </div>
         </div>
 
@@ -375,10 +389,6 @@ export default function Products() {
                     {product.description}
                   </p>
                 )}
-
-                <div className='text-sm text-muted-foreground flex items-center gap-2'>
-                  <span>by {product.vendorName}</span>
-                </div>
 
                 <div className='mt-1 text-2xl font-semibold text-foreground'>
                   ${product.price}

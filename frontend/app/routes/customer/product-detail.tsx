@@ -22,7 +22,7 @@ import { Avatar, AvatarFallback } from "~/components/ui/avatar";
 import { fetchProduct } from "~/lib/api";
 import type { ProductDto } from "~/lib/schemas";
 import { useCart } from "~/lib/cart";
-import { getBackendImageUrl } from "~/lib/utils";
+import { getBackendImageUrl, getApiErrorMessage } from "~/lib/utils";
 import {
   ShoppingCart,
   Star,
@@ -114,7 +114,11 @@ export default function ProductDetail() {
       toast.success("Added to cart!");
     } catch (err) {
       console.error("Failed to add to cart:", err);
-      toast.error("Failed to add to cart. Please try again.");
+      const errorMessage = getApiErrorMessage(
+        err,
+        "Failed to add to cart. Please try again."
+      );
+      toast.error(errorMessage);
     }
   };
 
@@ -225,7 +229,9 @@ export default function ProductDetail() {
                       variant='ghost'
                       size='sm'
                       onClick={() => updateQuantity(-1)}
-                      disabled={quantity <= 1}
+                      disabled={
+                        quantity <= 1 || !user || user?.role === "vendor"
+                      }
                     >
                       <Minus className='h-4 w-4' />
                     </Button>
@@ -234,6 +240,7 @@ export default function ProductDetail() {
                       variant='ghost'
                       size='sm'
                       onClick={() => updateQuantity(1)}
+                      disabled={!user || user?.role === "vendor"}
                     >
                       <Plus className='h-4 w-4' />
                     </Button>
@@ -243,9 +250,9 @@ export default function ProductDetail() {
                 <div className='space-y-3'>
                   <Button
                     size='lg'
+                    disabled={!user || user?.role === "vendor"}
                     className='w-full'
                     onClick={handleAddToCart}
-                    disabled={!user}
                   >
                     <ShoppingCart className='mr-2 h-5 w-5' />
                     Add to Cart - ${(product.price * quantity).toFixed(2)}
@@ -261,7 +268,12 @@ export default function ProductDetail() {
                   )}
 
                   <Link to='/cart' className='w-full'>
-                    <Button variant='outline' size='lg' className='w-full'>
+                    <Button
+                      variant='outline'
+                      size='lg'
+                      className='w-full'
+                      disabled={!user || user?.role === "vendor"}
+                    >
                       View Cart ({getTotalItems()} items)
                     </Button>
                   </Link>

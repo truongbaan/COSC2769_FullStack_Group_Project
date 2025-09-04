@@ -5,18 +5,18 @@
 # Author: Tran Hoang Linh
 # ID: s4043097 */
 
-import { configureStore, combineReducers } from '@reduxjs/toolkit';
-import { persistStore, persistReducer } from 'redux-persist';
-import authSlice from './slices/authSlice';
-import cartSlice from './slices/cartSlice';
+import { configureStore, combineReducers } from "@reduxjs/toolkit";
+import { persistStore, persistReducer } from "redux-persist";
+import authSlice from "./slices/authSlice";
+import cartSlice from "./slices/cartSlice";
 
 // Create a storage interface that works in both SSR and client environments
-import type { Storage } from 'redux-persist';
+import type { Storage } from "redux-persist";
 
 const createSafeStorage = (): Storage => {
   // Check if we're in a browser environment
-  const isClient = typeof window !== 'undefined' && window.localStorage;
-  
+  const isClient = typeof window !== "undefined" && window.localStorage;
+
   if (isClient) {
     return {
       getItem: (key: string) => {
@@ -57,9 +57,9 @@ const storage = createSafeStorage();
 
 // Persist configuration
 const persistConfig = {
-  key: 'root',
+  key: "root",
   storage,
-  whitelist: ['auth', 'cart'], // Only persist auth and cart
+  whitelist: ["auth", "cart"], // Only persist auth and cart
 };
 
 // Root reducer
@@ -77,10 +77,17 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        ignoredActions: ['persist/FLUSH', 'persist/REHYDRATE', 'persist/PAUSE', 'persist/PERSIST', 'persist/PURGE', 'persist/REGISTER'],
+        ignoredActions: [
+          "persist/FLUSH",
+          "persist/REHYDRATE",
+          "persist/PAUSE",
+          "persist/PERSIST",
+          "persist/PURGE",
+          "persist/REGISTER",
+        ],
       },
     }),
-  devTools: process.env.NODE_ENV !== 'production',
+  devTools: process.env.NODE_ENV !== "production",
 });
 
 export const persistor = persistStore(store);

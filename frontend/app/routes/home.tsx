@@ -22,10 +22,10 @@ import { Separator } from "~/components/ui/separator";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Lazada Lite - E-Commerce Platform" },
+    { title: "MUCK - E-Commerce Platform" },
     {
       name: "description",
-      content: "Welcome to Lazada Lite - Your one-stop e-commerce solution",
+      content: "Welcome to MUCK - Your one-stop e-commerce solution",
     },
   ];
 }
@@ -156,8 +156,15 @@ export default function Home() {
                     Order tracking
                   </li>
                 </ul>
-                <Link to='/register/customer'>
-                  <Button className='w-full py-3 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300'>
+                <Link
+                  to='/register/customer'
+                  tabIndex={user ? -1 : 0}
+                  aria-disabled={!!user}
+                >
+                  <Button
+                    className='w-full py-3 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300'
+                    disabled={!!user}
+                  >
                     Sign Up as Customer
                   </Button>
                 </Link>
@@ -197,8 +204,15 @@ export default function Home() {
                     Analytics and insights
                   </li>
                 </ul>
-                <Link to='/register/vendor'>
-                  <Button className='w-full py-3 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300'>
+                <Link
+                  to='/register/vendor'
+                  tabIndex={user ? -1 : 0}
+                  aria-disabled={!!user}
+                >
+                  <Button
+                    className='w-full py-3 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300'
+                    disabled={!!user}
+                  >
                     Sign Up as Vendor
                   </Button>
                 </Link>
@@ -240,7 +254,10 @@ export default function Home() {
                   </li>
                 </ul>
                 <Link to='/register/shipper'>
-                  <Button className='w-full py-3 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300'>
+                  <Button
+                    disabled={!!user}
+                    className='w-full py-3 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300'
+                  >
                     Sign Up as Shipper
                   </Button>
                 </Link>
@@ -319,9 +336,9 @@ export default function Home() {
               Ready to Get Started?
             </h2>
             <p className='text-md lg:text-lg text-primary-foreground/80 mb-10 leading-relaxed max-w-2xl'>
-              Join thousands of users who trust Lazada Lite for their e-commerce
-              needs. Whether you're buying, selling, or delivering, we've got
-              you covered.
+              Join thousands of users who trust MUCK for their e-commerce needs.
+              Whether you're buying, selling, or delivering, we've got you
+              covered.
             </p>
             <div className='flex flex-col sm:flex-row gap-6 justify-start'>
               <Link to='/login'>
