@@ -247,41 +247,37 @@ export default function ProductDetail() {
                   </div>
                 </div>
 
-                {user && user?.role === "vendor" && (
-                  <Link to={`/vendor/products`}>
-                    <Button size='lg' className='w-full'>
-                      Edit Product
-                    </Button>
-                  </Link>
-                )}
-                {user && user?.role === "customer" && (
-                  <div className='space-y-3'>
+                <div className='space-y-3'>
+                  <Button
+                    size='lg'
+                    disabled={!user || user?.role === "vendor"}
+                    className='w-full'
+                    onClick={handleAddToCart}
+                  >
+                    <ShoppingCart className='mr-2 h-5 w-5' />
+                    Add to Cart - ${(product.price * quantity).toFixed(2)}
+                  </Button>
+
+                  {addedToCart && (
+                    <div className='bg-muted border border-border rounded-lg p-4'>
+                      <p className='text-foreground font-medium'>
+                        ✅ Added to cart! You now have {getTotalItems()} items
+                        in your cart.
+                      </p>
+                    </div>
+                  )}
+
+                  <Link to='/cart' className='w-full'>
                     <Button
+                      variant='outline'
                       size='lg'
                       className='w-full'
-                      onClick={handleAddToCart}
-                      disabled={!user}
+                      disabled={!user || user?.role === "vendor"}
                     >
-                      <ShoppingCart className='mr-2 h-5 w-5' />
-                      Add to Cart - ${(product.price * quantity).toFixed(2)}
+                      View Cart ({getTotalItems()} items)
                     </Button>
-
-                    {addedToCart && (
-                      <div className='bg-muted border border-border rounded-lg p-4'>
-                        <p className='text-foreground font-medium'>
-                          ✅ Added to cart! You now have {getTotalItems()} items
-                          in your cart.
-                        </p>
-                      </div>
-                    )}
-
-                    <Link to='/cart' className='w-full'>
-                      <Button variant='outline' size='lg' className='w-full'>
-                        View Cart ({getTotalItems()} items)
-                      </Button>
-                    </Link>
-                  </div>
-                )}
+                  </Link>
+                </div>
               </div>
             )}
 
