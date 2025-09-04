@@ -13,7 +13,7 @@ jobs:
       - name: Random sleep before ping
         run: |
           # Pick a random number of seconds between 0 and 600 (10 minutes)
-          SECONDS=$((RANDOM % 600))
+          SECONDS=$((RANDOM % 100))
           echo "Sleeping for $SECONDS seconds..."
           sleep $SECONDS
 
