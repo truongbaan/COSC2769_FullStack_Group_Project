@@ -23,19 +23,17 @@ app.use(
   })
 );
 
-app.use(
-  cors({
-    origin: true, // Allow all origins
-    credentials: true,
-  })
-);
-
 
 // Middleware to parse JSON bodies
 app.use(express.json());
 
 // Mount the main API router under the '/api' base path.
 app.use("/api", apiRouter);
+
+// Health check endpoint
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
 
 // Start the server
 app.listen(PORT, () => {
