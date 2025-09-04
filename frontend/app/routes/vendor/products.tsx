@@ -451,7 +451,7 @@ export default function VendorProducts() {
 
       {/* Edit Product Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className='sm:max-w-[525px]'>
+        <DialogContent className='w-[95vw] sm:max-w-[525px] max-h-[85vh] overflow-y-auto'>
           <DialogHeader>
             <DialogTitle>Edit Product</DialogTitle>
             <DialogDescription>
@@ -460,8 +460,8 @@ export default function VendorProducts() {
           </DialogHeader>
 
           <div className='grid gap-4 py-4'>
-            <div className='grid grid-cols-4 items-center gap-4'>
-              <Label htmlFor='edit-name' className='text-right'>
+            <div className='grid grid-cols-1 md:grid-cols-4 items-center gap-2 md:gap-4'>
+              <Label htmlFor='edit-name' className='md:text-right'>
                 Name
               </Label>
               <Input
@@ -470,13 +470,13 @@ export default function VendorProducts() {
                 onChange={(e) =>
                   setEditForm({ ...editForm, name: e.target.value })
                 }
-                className='col-span-3'
+                className='md:col-span-3'
                 placeholder='Product name (10-20 characters)'
               />
             </div>
 
-            <div className='grid grid-cols-4 items-center gap-4'>
-              <Label htmlFor='edit-price' className='text-right'>
+            <div className='grid grid-cols-1 md:grid-cols-4 items-center gap-2 md:gap-4'>
+              <Label htmlFor='edit-price' className='md:text-right'>
                 Price
               </Label>
               <Input
@@ -491,17 +491,17 @@ export default function VendorProducts() {
                     price: parseFloat(e.target.value) || 0,
                   })
                 }
-                className='col-span-3'
+                className='md:col-span-3'
                 placeholder='0.00'
               />
             </div>
 
-            <div className='grid grid-cols-4 items-center gap-4'>
-              <Label htmlFor='edit-category' className='text-right'>
+            <div className='grid grid-cols-1 md:grid-cols-4 items-center gap-2 md:gap-4'>
+              <Label htmlFor='edit-category' className='md:text-right'>
                 Category
               </Label>
 
-              <div className='col-span-3'>
+              <div className='md:col-span-3'>
                 <Select
                   value={editForm.category}
                   onValueChange={(v) =>
@@ -523,11 +523,11 @@ export default function VendorProducts() {
             </div>
           </div>
 
-          <div className='grid grid-cols-4 items-start gap-4'>
-            <Label htmlFor='edit-image' className='text-right pt-2'>
+          <div className='grid grid-cols-1 md:grid-cols-4 items-start gap-2 md:gap-4'>
+            <Label htmlFor='edit-image' className='md:text-right pt-0 md:pt-2'>
               Product Image
             </Label>
-            <div className='col-span-3 space-y-3'>
+            <div className='md:col-span-3 space-y-3'>
               <Input
                 id='edit-image'
                 type='file'
@@ -559,8 +559,11 @@ export default function VendorProducts() {
             </div>
           </div>
 
-          <div className='grid grid-cols-4 items-start gap-4'>
-            <Label htmlFor='edit-description' className='text-right pt-2'>
+          <div className='grid grid-cols-1 md:grid-cols-4 items-start gap-2 md:gap-4'>
+            <Label
+              htmlFor='edit-description'
+              className='md:text-right pt-0 md:pt-2'
+            >
               Description
             </Label>
             <Textarea
@@ -569,17 +572,17 @@ export default function VendorProducts() {
               onChange={(e) =>
                 setEditForm({ ...editForm, description: e.target.value })
               }
-              className='col-span-3'
+              className='md:col-span-3 h-40 max-h-[45vh] overflow-y-auto resize-y'
               placeholder='Product description (max 500 characters)'
               rows={4}
             />
           </div>
 
-          <div className='grid grid-cols-4 items-center gap-4'>
-            <Label htmlFor='edit-instock' className='text-right'>
+          <div className='grid grid-cols-1 md:grid-cols-4 items-center gap-2 md:gap-4'>
+            <Label htmlFor='edit-instock' className='md:text-right'>
               In Stock
             </Label>
-            <div className='col-span-3'>
+            <div className='md:col-span-3'>
               <Switch
                 id='edit-instock'
                 checked={!!editForm.instock}
