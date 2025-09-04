@@ -279,7 +279,7 @@ export const updateProductStatusController = async (
     );
 
     if (!updated) {
-      return ErrorJsonResponse(res, 404, "Product not found or not owned by vendor");
+      return ErrorJsonResponse(res, 404, "Product not found/ not owned by vendor/ invalid update");
     }
 
     //Delete old image if there's a new one
