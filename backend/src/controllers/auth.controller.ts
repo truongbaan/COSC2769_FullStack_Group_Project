@@ -62,6 +62,7 @@ export const loginController = async (req: Request, res: Response) => {
         res.cookie('access_token', session.access_token, {
             httpOnly: true,
             secure: process.env.PRODUCTION_SITE === 'true', // http or https
+            sameSite: process.env.PRODUCTION_SITE === 'true' ? "none" : "lax", // required for cross-site cookies
             path: '/',
         })
 
@@ -69,6 +70,7 @@ export const loginController = async (req: Request, res: Response) => {
         res.cookie('refresh_token', session.refresh_token, {
             httpOnly: true,
             secure: process.env.PRODUCTION_SITE === 'true', // http or https
+            sameSite: process.env.PRODUCTION_SITE === 'true' ? "none" : "lax", // required for cross-site cookies
             path: '/',
         })
 
@@ -153,12 +155,14 @@ function addCookie(res : Response, session : any){
     res.cookie('access_token', session.access_token, {
             httpOnly: true,
             secure: process.env.PRODUCTION_SITE === 'true', // http or https
+            sameSite: process.env.PRODUCTION_SITE === 'true' ? "none" : "lax", // required for cross-site cookies
             path: '/',
     })
     
     res.cookie('refresh_token', session.refresh_token, {
         httpOnly: true,
         secure: process.env.PRODUCTION_SITE === 'true', // http or https
+        sameSite: process.env.PRODUCTION_SITE === 'true' ? "none" : "lax", // required for cross-site cookies
         path: '/',
     })
 }

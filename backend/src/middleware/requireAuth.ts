@@ -47,12 +47,14 @@ export function requireAuth(role: string | string[] = '') {
             res.cookie('access_token', refreshData.session.access_token, {
                 httpOnly: true,
                 secure: process.env.PRODUCTION_SITE === 'true',
+                sameSite: process.env.PRODUCTION_SITE === 'true' ? "none" : "lax", // required for cross-site cookies
                 path: '/',
             });
 
             res.cookie('refresh_token', refreshData.session.refresh_token, {
                 httpOnly: true,
                 secure: process.env.PRODUCTION_SITE === 'true',
+                sameSite: process.env.PRODUCTION_SITE === 'true' ? "none" : "lax", // required for cross-site cookies
                 path: '/',
             });
             await supabaseClient.auth.setSession(refreshData.session);//updates the client session with fresh tokens
