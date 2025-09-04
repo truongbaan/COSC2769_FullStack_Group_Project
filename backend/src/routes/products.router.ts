@@ -2,9 +2,89 @@
 # Course: COSC2769 - Full Stack Development 
 # Semester: 2025B 
 # Assessment: Assignment 02 
-# Author: Truong Ba An
-# ID: s3999568 */
+# Author: Nguyen Vo Truong Toan
+# ID:  s3979056
+*/
 
-import { Router, Request, Response } from 'express';
+import { Router } from "express";
+import multer from "multer";
+import { requireAuth } from "../middleware/requireAuth";
+import { validationMiddleware } from "../middleware/validation.middleware";
+import {
+  addToCartBody,
+  addToCartController,
+  addToCartParams,
+} from "../controllers/shoppingCartController";
+
+import {
+  createProductBodySchema,
+  getProductsController,
+  getProductsQuerySchema,
+  getVendorProductsController,
+} from "../controllers/productController";
+
+import {
+  createProductController,
+  getProductByIdController,
+  getProductByIdParamsSchema,
+  updateProductStatusBodySchema,
+  updateProductStatusController,
+} from "../controllers/productController";
+
+const upload = multer();
 
 const ProductRouter = Router();
+
+// Customers/ Guests get products with pagination and fitlers
+ProductRouter.get(
+  "/",
+  // requireAuth(["vendor", "customer"]),
+  validationMiddleware(getProductsQuerySchema, "query"),
+  getProductsController
+);
+
+// Customers/ Guests get products with pagination and fitlers
+ProductRouter.get(
+  "/vendorProducts",
+  requireAuth("vendor"),
+  validationMiddleware(getProductsQuerySchema, "query"),
+  getVendorProductsController
+);
+
+// Get product details by id
+ProductRouter.get(
+  "/:productId",
+  // requireAuth(["vendor", "customer"]),
+  validationMiddleware(getProductByIdParamsSchema, "params"),
+  getProductByIdController
+);
+
+// Create a product
+ProductRouter.post(
+  "/",
+  requireAuth("vendor"),
+  upload.single("image"),
+  validationMiddleware(createProductBodySchema, "body"),
+  createProductController
+);
+
+// Customer add product to shopping cart
+ProductRouter.post(
+  "/:productId/addToCart",
+  requireAuth("customer"),
+  validationMiddleware(addToCartBody, "body"),
+  validationMiddleware(addToCartParams, "params"),
+  addToCartController
+);
+
+// Update a product
+ProductRouter.patch(
+  "/:productId",
+  requireAuth("vendor"),
+  upload.single("image"),
+  validationMiddleware(getProductByIdParamsSchema, "params"),
+  validationMiddleware(updateProductStatusBodySchema, "body"),
+  updateProductStatusController
+);
+
+export default ProductRouter;

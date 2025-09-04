@@ -1,0 +1,147 @@
+/* RMIT University Vietnam 
+# Course: COSC2769 - Full Stack Development 
+# Semester: 2025B 
+# Assessment: Assignment 02 
+# Author: Tran Hoang Linh
+# ID: s4043097 */
+
+import {
+  isRouteErrorResponse,
+  Links,
+  Meta,
+  Outlet,
+  Scripts,
+  ScrollRestoration,
+  useNavigate,
+} from "react-router";
+import { Provider } from "react-redux";
+import { PersistGate } from "redux-persist/lib/integration/react";
+import { useEffect } from "react";
+import { ThemeProvider } from "./lib/theme";
+
+import type { Route } from "./+types/root";
+import "./app.css";
+import Header from "./components/layout/Header";
+import Footer from "./components/layout/Footer";
+import { Toaster } from "~/components/ui/sonner";
+import { store, persistor } from "./lib/redux/store";
+import { useAuth } from "./lib/auth";
+import {
+  setGlobalLogoutHandler,
+  clearGlobalLogoutHandler,
+  logoutApi,
+} from "./lib/api";
+
+export const links: Route.LinksFunction = () => [
+  { rel: "preconnect", href: "https://fonts.googleapis.com" },
+  {
+    rel: "preconnect",
+    href: "https://fonts.gstatic.com",
+    crossOrigin: "anonymous",
+  },
+  {
+    rel: "stylesheet",
+    href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
+  },
+];
+
+export function Layout({ children }: { children: React.ReactNode }) {
+  const themeScript = `(() => { try { const s = localStorage.getItem('app-theme'); const t = s === 'light' || s === 'dark' ? s : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); const r = document.documentElement; if (t === 'dark') { r.classList.add('dark'); } else { r.classList.remove('dark'); } } catch (e) {} })();`;
+  return (
+    <html lang='en'>
+      <head>
+        <meta charSet='utf-8' />
+        <meta name='viewport' content='width=device-width, initial-scale=1' />
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <Links />
+      </head>
+      <body>
+        {children}
+        <ScrollRestoration />
+        <Scripts />
+        <Toaster position='top-center' richColors />
+      </body>
+    </html>
+  );
+}
+
+// Inner component that has access to Redux store
+function AppContent() {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Set up global logout handler for automatic token expiration logout
+    const handleGlobalLogout = async () => {
+      try {
+        await logoutApi();
+      } catch (e) {
+        // Ignore API failure; still clear local state to protect UX/security
+      } finally {
+        logout();
+        navigate("/");
+      }
+    };
+
+    setGlobalLogoutHandler(handleGlobalLogout);
+
+    // Cleanup on unmount
+    return () => {
+      clearGlobalLogoutHandler();
+    };
+  }, [logout, navigate]);
+
+  return (
+    <>
+      <Meta />
+      <div className='min-h-screen flex flex-col'>
+        <Header />
+        <main className='flex-1'>
+          <Outlet />
+        </main>
+        <Footer />
+      </div>
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <Provider store={store}>
+      <PersistGate loading={<div>Loading...</div>} persistor={persistor}>
+        <ThemeProvider>
+          <AppContent />
+        </ThemeProvider>
+      </PersistGate>
+    </Provider>
+  );
+}
+
+export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+  let message = "Oops!";
+  let details = "An unexpected error occurred.";
+  let stack: string | undefined;
+
+  if (isRouteErrorResponse(error)) {
+    message = error.status === 404 ? "404" : "Error";
+    details =
+      error.status === 404
+        ? "The requested page could not be found."
+        : error.statusText || details;
+  } else if (import.meta.env.DEV && error && error instanceof Error) {
+    details = error.message;
+    stack = error.stack;
+  }
+
+  return (
+    <main className='pt-16 p-4 container mx-auto'>
+      <h1>{message}</h1>
+      <p>{details}</p>
+      {stack && (
+        <pre className='w-full p-4 overflow-x-auto'>
+          <code>{stack}</code>
+        </pre>
+      )}
+    </main>
+  );
+}

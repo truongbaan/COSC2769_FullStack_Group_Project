@@ -5,36 +5,46 @@
 # Author: Truong Ba An
 # ID: s3999568 */
 
-import { Router, Request, Response } from 'express';
-import { ErrorJsonResponse, SuccessJsonResponse } from '../utils/json_mes';
-import { UserService, User } from '../service/user.service'
+import { Router } from "express";
+import {
+  getUsersQuerySchema,
+  getUsersController,
+  getUserByIdController,
+  getUserByIdParamsSchema,
+  deleteUserController,
+  updateUserByIdParamsSchema,
+  updateUserByIdController,
+  uploadProfilePictureController,
+} from "../controllers/user.controller";
+import { validationMiddleware } from "../middleware/validation.middleware";
+import multer from "multer";
 
+const upload = multer(); // memory storage
 const UserRouter = Router();
-
-//getting all users from db
-UserRouter.get('/', async (req: Request, res: Response) => {
-    const queries = Object.keys(req.query)
-    try {
-        if (queries.length === 0) {
-            const users: User[] | null = await UserService.getAllUsers()
-            if(!users){
-                return SuccessJsonResponse(res, 200, 'No users but still success call')
-            }
-            return SuccessJsonResponse(res, 200, users)
-        }
-        if (queries.length === 1 && 'id' in req.query) { // this is same as ?id=number
-            
-            const user : User | null = await UserService.getUserById(String(req.query.id))
-                
-            if (!user) { // return data is null
-                return ErrorJsonResponse(res, 404, 'user not found')
-            }
-            return res.json(user)
-        }
-        return ErrorJsonResponse(res, 500, 'Invalid query parameters')
-    } catch (error) {
-        return ErrorJsonResponse(res, 500, 'Failed to fetch user(s)')
-    }
-})
-
-export default UserRouter
+//for query get multiple users
+UserRouter.get(
+  "/",
+  validationMiddleware(getUsersQuerySchema, "query"),
+  getUsersController
+); //return list of User[]
+//for single user
+UserRouter.get(
+  "/:id",
+  validationMiddleware(getUserByIdParamsSchema, "params"),
+  getUserByIdController
+); //return User
+//delete user
+UserRouter.delete("/me", deleteUserController);
+//update password
+UserRouter.patch(
+  "/update-password",
+  validationMiddleware(updateUserByIdParamsSchema, "body"),
+  updateUserByIdController
+);
+//upload image
+UserRouter.post(
+  "/upload-image",
+  upload.single("file"),
+  uploadProfilePictureController
+);
+export default UserRouter;

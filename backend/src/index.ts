@@ -9,19 +9,33 @@ const PORT = 5000
 import express from 'express';
 import apiRouter from './routes/router';
 import cookieParser from 'cookie-parser';
+import cors from "cors";
 
 const app = express()
 
 //for cookies :D
-app.use(cookieParser())
+app.use(cookieParser());
+
+app.use(
+  cors({
+    origin: true, // Allow all origins
+    credentials: true,
+  })
+);
+
 
 // Middleware to parse JSON bodies
 app.use(express.json());
 
 // Mount the main API router under the '/api' base path.
-app.use('/api', apiRouter);
+app.use("/api", apiRouter);
+
+// Health check endpoint
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
 
 // Start the server
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
