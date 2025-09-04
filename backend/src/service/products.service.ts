@@ -187,8 +187,6 @@ export const ProductService = {
     return data;
   },
 
-
-
   async updateProduct(
     vendorId: string,
     productId: string,
@@ -209,6 +207,11 @@ export const ProductService = {
     if (typeof instock === "boolean") toUpdate.instock = instock;
     if (imagePath) toUpdate.image = imagePath;
 
+    //If no fields is updated
+    if (Object.keys(toUpdate).length === 0) {
+      return "NO_FIELDS";
+    }
+
     const query = supabase
       .from("products")
       .update(toUpdate)
@@ -225,7 +228,10 @@ export const ProductService = {
     }
     console.log(data);
 
-    if (!data) { return null; }
+    //If wrong product
+    if (!data) {
+      return "NOT_FOUND";
+    }
     return data;
   },
 };

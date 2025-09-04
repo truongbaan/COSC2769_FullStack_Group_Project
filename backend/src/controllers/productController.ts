@@ -300,7 +300,17 @@ export const updateProductStatusController = async (
       instock
     );
 
-    if (!updated) {
+    //If no fields is updated
+    if (updated === "NO_FIELDS") {
+      return ErrorJsonResponse(
+        res,
+        400,
+        "No fields provided to update"
+      );
+    }
+
+    //If wrong pro
+    if (updated === "NOT_FOUND") {
       return ErrorJsonResponse(
         res,
         404,
@@ -323,6 +333,7 @@ export const updateProductStatusController = async (
         err.issues[0]?.message ?? "Validation failed"
       );
     }
+
     return ErrorJsonResponse(
       res,
       500,
