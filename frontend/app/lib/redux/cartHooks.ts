@@ -79,6 +79,8 @@ export const useCart = () => {
       if (user) {
         try {
           await addToCartApi(product.id, quantity);
+          // Refresh from backend to capture cart item IDs and avoid re-sync duplication
+          await dispatch(fetchCart()).unwrap();
           dispatch(setSyncStatus(true));
         } catch (error) {
           console.error("Failed to add item to backend cart:", error);
