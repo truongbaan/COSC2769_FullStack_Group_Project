@@ -1,0 +1,22 @@
+name: Hourly API Query
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Run every hour at minute 0
+  workflow_dispatch:
+
+jobs:
+  query-api:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Random sleep before query
+        run: |
+          # Pick a random number of seconds between 0 and 300 (5 minutes)
+          SECONDS=$((RANDOM % 301))
+          echo "Sleeping for $SECONDS seconds..."
+          sleep $SECONDS
+
+      - name: Query API
+        run: |
+          curl -X GET "${{ secrets.DB_AUTO_QUERY }}"
