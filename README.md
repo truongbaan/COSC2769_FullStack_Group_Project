@@ -54,9 +54,22 @@ You can access the hosted version of the application at:
 ## Contribution
 This project is a group assignment. All team members share the same contribution score of `five`. Below are the detailed contributions of each member:
 
-- **Name**: [Your Name]  
-  **Student ID**: [Your Student ID]  
-  **Jobs**: [Description of tasks completed]
+- **Name**: Truong Ba An  
+  **Student ID**: s3999568  
+  **Jobs**: 
+  + Code:  
+    - Initialized and configured GitHub repository for backend  
+    - Scheduled and divided work among team members  
+    - Designed and maintained PostgreSQL database schema and relations (Supabase)  
+    - Structured backend project (router, controller, service layers)  
+    - Implemented backend functionality for User, Customer, Shipper, and Vendor modules, including login, registration, authentication, and authorization for all roles.
+    - Developed utility functions for JSON responses, password handling, and an image service for retrieving and reusing images from the database.
+    - Reviewed, guided, and merged backend code from team members; resolved conflicts  
+    - Performed manual black-box and white-box testing on frontend to detect bugs/UI issues  
+    - Deployed both frontend and backend servers  
+    - Configured Dockerfile to simplify local development setup  
+  + Report:  
+    - Wrote the **Project Description**, **Development Process**, and **Known Issues or Limitations** sections of the project report  
 
 - **Name**: [Your Name]  
   **Student ID**: [Your Student ID]  
