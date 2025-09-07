@@ -52,7 +52,7 @@ For API details, see the [API System Overview](docs/API_SYSTEM.md).
 You can access the hosted version of the application at: 
 
 ## Contribution
-This project is a group assignment. Below are the contributions of each member:
+This project is a group assignment. All team members share the same contribution score of `five`. Below are the detailed contributions of each member:
 
 - **Name**: [Your Name]  
   **Student ID**: [Your Student ID]  
