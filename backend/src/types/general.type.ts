@@ -17,6 +17,7 @@ export type UpdateServiceResult = {
   error?: string;
 };
 
+// schema for query get multiple users
 export const getUsersRoleQuerySchema = z
   .object({
     page: z
@@ -35,6 +36,8 @@ export type GetUsersRoleQueryType = z.output<typeof getUsersRoleQuerySchema>;
 const usernameRegex = /^[A-Za-z0-9]{8,15}$/;
 const passwordRegex =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,20}$/;
+
+// schema for username
 export const usernameSchema = z
   .string()
   .regex(usernameRegex, "Username must be 8-15 letters/digits")

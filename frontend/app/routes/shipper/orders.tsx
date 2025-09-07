@@ -50,7 +50,7 @@ export function meta({}: Route.MetaArgs) {
     { title: "Active Orders - Shipper Dashboard" },
     {
       name: "description",
-      content: "Manage your delivery orders on Lazada Lite",
+      content: "Manage your delivery orders on MUCK",
     },
   ];
 }

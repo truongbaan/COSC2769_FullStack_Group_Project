@@ -9,7 +9,7 @@ import type { Route } from "./+types/privacy";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Privacy Policy - Lazada Lite" },
+    { title: "Privacy Policy - MUCK" },
     { name: "description", content: "Privacy policy for MUCK platform" },
   ];
 }

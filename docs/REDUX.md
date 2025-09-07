@@ -331,4 +331,3 @@ await persistor.purge();
 
 ---
 
-If you need patterns not covered here (e.g., new async thunks, complex selector memoization with Reselect), mirror the structure in the existing slices and hooks to keep the codebase consistent.

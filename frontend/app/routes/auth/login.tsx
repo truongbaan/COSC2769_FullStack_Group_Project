@@ -30,7 +30,7 @@ type FormValues = z.infer<typeof loginSchema>;
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Login - Lazada Lite" },
+    { title: "Login - MUCK" },
     { name: "description", content: "Sign in to your MUCK account" },
   ];
 }

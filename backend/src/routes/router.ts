@@ -8,7 +8,7 @@
 
 //place to hold all routers
 
-
+// import all routers
 import { Router } from 'express';
 import authRouter from './auth.router';
 import UserRouter from './user.router';
@@ -20,6 +20,8 @@ import CustomerRouter from './customer.router';
 import { requireAuth } from '../middleware/requireAuth';
 import ShoppingCartRouter from './shopping_cart_items.router';
 import DistributionHubRouter from './distribution_hubs.router';
+
+// create the root router
 const apiRouter = Router();
 
 apiRouter.use("/auth", authRouter);

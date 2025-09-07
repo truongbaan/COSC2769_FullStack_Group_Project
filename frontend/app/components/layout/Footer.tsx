@@ -19,10 +19,10 @@ export default function Footer() {
             <div className='flex items-center gap-2'>
               <div className='h-6 w-6 bg-primary rounded flex items-center justify-center'>
                 <span className='text-primary-foreground font-bold text-xs'>
-                  L
+                  M
                 </span>
               </div>
-              <span className='font-semibold'>Lazada Lite</span>
+              <span className='font-semibold'>MUCK</span>
             </div>
             <p className='text-sm text-muted-foreground'>
               A simplified e-commerce platform for educational purposes.
@@ -92,7 +92,7 @@ export default function Footer() {
 
         <div className='border-t mt-8 pt-8 flex flex-col sm:flex-row justify-between items-center'>
           <div className='text-sm text-muted-foreground'>
-            © {new Date().getFullYear()} Lazada Lite. Student Project -
+            © {new Date().getFullYear()} MUCK Lite. Student Project -
             Educational Use Only.
           </div>
           <div className='text-sm text-muted-foreground mt-2 sm:mt-0'>
