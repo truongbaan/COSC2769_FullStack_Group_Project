@@ -71,7 +71,7 @@ This project is a group assignment. All team members share the same contribution
   **Student ID**: s4043097\
   **Jobs**:
 
-  - Code: FE implmentation
+  - Code: FE implmentation (I wrote the whole frontend folder by myself)
   - Report: Container (Architecture) Diagram, Sequence Diagrams, Frontend Implementation, UI/UX Design, FE Tools and Package Selection
 
 - **Name**: Nguyen Vo Truong Toan  
