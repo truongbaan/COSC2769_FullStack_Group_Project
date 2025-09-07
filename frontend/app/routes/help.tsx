@@ -49,8 +49,8 @@ export default function Help() {
       icon: <HelpCircle className='h-5 w-5' />,
       questions: [
         {
-          q: "What is Lazada Lite?",
-          a: "Lazada Lite is an educational e-commerce platform designed to demonstrate modern web development practices. It supports three user roles: customers, vendors, and shippers.",
+          q: "What is Muck?",
+          a: "Muck is an educational e-commerce platform designed to demonstrate modern web development practices. It supports three user roles: customers, vendors, and shippers.",
         },
         {
           q: "How do I create an account?",
