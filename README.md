@@ -52,7 +52,7 @@ For API details, see the [API System Overview](docs/API_SYSTEM.md).
 You can access the hosted version of the application at: 
 
 ## Contribution
-This project is a group assignment. Below are the contributions of each member:
+This project is a group assignment. All team members share the same contribution score of `five`. Below are the detailed contributions of each member:
 
 - **Name**: [Your Name]  
   **Student ID**: [Your Student ID]  
@@ -62,13 +62,19 @@ This project is a group assignment. Below are the contributions of each member:
   **Student ID**: [Your Student ID]  
   **Jobs**: [Description of tasks completed]
 
-- **Name**: [Your Name]  
-  **Student ID**: [Your Student ID]  
-  **Jobs**: [Description of tasks completed]
+- **Name**: Nguyen Vo Truong Toan  
+  **Student ID**: s3979056  
+  **Jobs**:  
+  + Code: Controllers/ Routes/ Services for Product Management Features, and Validation Middleware,
+  + Report: Introduction, ERD, Backend Implementation, Backend Tools & Package Selection, Visual Demonstration, Feature Checklist, and Evaluation
+  + Video: 
 
-- **Name**: [Your Name]  
-  **Student ID**: [Your Student ID]  
-  **Jobs**: [Description of tasks completed]
+- **Name**: Nguyen The Anh  
+  **Student ID**: s3975844  
+  **Jobs**:  
+  + Code: Controllers/ Routes/ Services for shopping cart, add product to cart, order management, and order item list
+  + Report: Introduction, ERD, Backend Implementation, Backend Tools & Package Selection, Visual Demonstration, Feature Checklist, and Evaluation
+  + Video:  
 
 For Redux-related contributions, refer to the [Redux Architecture Guide](docs/REDUX.md).
 
