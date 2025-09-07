@@ -65,7 +65,12 @@ This project is a group assignment. All team members share the same contribution
 - **Name**: Nguyen Vo Truong Toan  
   **Student ID**: s3979056  
   **Jobs**:  
-  + Code: Controllers/ Routes/ Services for Product Management Features, and Validation Middleware,
+  + Code: Validation Middleware & Controllers/ Routes/ Services for Products Management Features:
+             - Pagination
+             - All users (including Guests) can view all products, filter products by price range, search products by name and category.
+             - Customers and Vendors can View Details of a specific product.
+             - Vendors can view all their own products.
+             - Vendors can add and update products.
   + Report: Introduction, ERD, Backend Implementation, Backend Tools & Package Selection, Visual Demonstration, Feature Checklist, and Evaluation
   + Video: 
 
