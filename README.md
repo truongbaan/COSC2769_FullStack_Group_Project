@@ -63,7 +63,9 @@ This project is a group assignment. Below are the contributions of each member:
   **Jobs**: [Description of tasks completed]
 
 - **Name**: Nguyen Vo Truong Toan
-  **Student ID**: s3979056  
+  
+  **Student ID**: s3979056
+  
   **Jobs**:
   + Code: Controllers/ Routes/ Services for Product Management Features, and Validation Middleware,
   + Report: Introduction, ERD, Backend Implementation, Backend Tools & Package Selection, Visual Demonstration, Feature Checklist, Evaluation
