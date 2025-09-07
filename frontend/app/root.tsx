@@ -15,7 +15,7 @@ import {
   useNavigate,
 } from "react-router";
 import { Provider } from "react-redux";
-import { PersistGate } from "redux-persist/integration/react";
+import { PersistGate } from "redux-persist/lib/integration/react";
 import { useEffect } from "react";
 import { ThemeProvider } from "./lib/theme";
 

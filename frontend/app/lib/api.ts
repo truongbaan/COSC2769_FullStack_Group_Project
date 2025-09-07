@@ -102,7 +102,7 @@ async function request<T>(
 }
 
 // API endpoints (local mock uses /api-test; /api reserved for real backend)
-const API_BASE = "http://localhost:5000/api"; // you can swap to an env-based URL later
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000/api"; // you can swap to an env-based URL later
 
 // Products - Updated to match backend
 export async function fetchProducts(params?: {

@@ -27,7 +27,7 @@ import { useState, useEffect } from "react";
 import type { z } from "zod";
 import { toast } from "sonner";
 import { createProductApi } from "~/lib/api";
-import { PRODUCT_CATEGORIES } from "~/lib/utils";
+import { PRODUCT_CATEGORIES, getApiErrorMessage } from "~/lib/utils";
 import {
   Select,
   SelectContent,
@@ -96,8 +96,13 @@ export default function AddProduct() {
       toast.success("Product added");
       navigate("/vendor/products");
     } catch (error) {
-      toast.error("Failed to add product. Please try again.");
       console.error("Error adding product:", error);
+
+      const errorMessage = getApiErrorMessage(
+        error,
+        "Failed to add product. Please try again."
+      );
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -221,7 +226,7 @@ export default function AddProduct() {
                   <Input
                     id='image'
                     type='file'
-                    accept='image/*'
+                    accept='image/png,image/jpeg'
                     onChange={handleImageChange}
                   />
                   {previewImage && (
@@ -265,6 +270,7 @@ export default function AddProduct() {
                       <li>• Product name must be 10-20 characters long</li>
                       <li>• Price must be a positive number</li>
                       <li>• Description should be under 500 characters</li>
+                      <li>• Image must be PNG or JPEG format, max 10MB</li>
                       <li>• High-quality product image is recommended</li>
                     </ul>
                   </div>

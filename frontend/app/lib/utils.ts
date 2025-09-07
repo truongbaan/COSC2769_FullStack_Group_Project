@@ -53,3 +53,37 @@ export const PRODUCT_CATEGORIES = [
 ] as const;
 
 export type ProductCategory = (typeof PRODUCT_CATEGORIES)[number];
+
+/**
+ * Extracts specific error message from API error response
+ * @param error - The error object from API call
+ * @param fallbackMessage - Default message to show if specific error can't be extracted
+ * @returns The specific error message or fallback message
+ */
+export function getApiErrorMessage(
+  error: any,
+  fallbackMessage: string
+): string {
+  try {
+    if (error instanceof Error) {
+      const errorText = error.message;
+      // Check if it's an API error with JSON response (format: "API 400: {...}")
+      if (errorText.includes("API") && errorText.includes("{")) {
+        try {
+          const jsonStart = errorText.indexOf("{");
+          const jsonPart = errorText.substring(jsonStart);
+          const parsed = JSON.parse(jsonPart);
+          if (parsed.message) {
+            return parsed.message;
+          }
+        } catch (parseError) {
+          // If JSON parsing fails, continue to fallback
+          console.error("Error parsing API error:", parseError);
+        }
+      }
+    }
+    return fallbackMessage;
+  } catch {
+    return fallbackMessage;
+  }
+}

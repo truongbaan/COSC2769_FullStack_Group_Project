@@ -23,37 +23,41 @@ export type ProductsFilters = {
   priceMin?: number;
   priceMax?: number;
   name?: string;
-}
+};
 
 export type Pagination = {
   page: number;
   size: number;
-}
+};
 
 export type ProductsResult = { products: ProductRow[]; totalProducts: number };
 
 export const ProductService = {
-  async getCustomerProducts(pagination?: Pagination, filters?: ProductsFilters,): Promise<ProductsResult | null> {
-
+  async getCustomerProducts(
+    pagination?: Pagination,
+    filters?: ProductsFilters
+  ): Promise<ProductsResult | null> {
     const query = supabase
       .from("products")
       .select("*", { count: "exact" })
       .order("id", { ascending: false });
 
     if (filters?.category) {
-      query.eq('category', filters?.category); // WHERE category = {category}
+      query.eq("category", filters?.category); // WHERE category = {category}
     }
 
-    if (filters?.priceMin !== undefined) { //no skip 0
-      query.gte('price', filters?.priceMin); // WHERE price >= {min}
+    if (filters?.priceMin !== undefined) {
+      //no skip 0
+      query.gte("price", filters?.priceMin); // WHERE price >= {min}
     }
 
-    if (filters?.priceMax !== undefined) { //no skip 0
-      query.lte('price', filters?.priceMax); // WHERE price <= {max}
+    if (filters?.priceMax !== undefined) {
+      //no skip 0
+      query.lte("price", filters?.priceMax); // WHERE price <= {max}
     }
 
     if (filters?.name) {
-      query.ilike('name', `%${filters.name}%`); // WHERE name = {name}
+      query.ilike("name", `%${filters.name}%`); // WHERE name = {name}
     }
 
     // Only paginate when there are both page & size provided
@@ -78,15 +82,21 @@ export const ProductService = {
         continue;
       }
 
-      const { url } = await ImageService.getPublicImageUrl(r.image, "productimages");
+      const { url } = await ImageService.getPublicImageUrl(
+        r.image,
+        "productimages"
+      );
       r.image = url ?? null;
     }
 
     return { products: data, totalProducts: count ?? data.length };
   },
 
-  async getVendorProducts(vendorId: string, pagination?: Pagination, filters?: ProductsFilters): Promise<ProductsResult | null> {
-
+  async getVendorProducts(
+    vendorId: string,
+    pagination?: Pagination,
+    filters?: ProductsFilters
+  ): Promise<ProductsResult | null> {
     const query = supabase
       .from("products")
       .select("*", { count: "exact" })
@@ -94,19 +104,21 @@ export const ProductService = {
       .order("id", { ascending: false });
 
     if (filters?.category) {
-      query.eq('category', filters?.category); // WHERE category = {category}
+      query.eq("category", filters?.category); // WHERE category = {category}
     }
 
-    if (filters?.priceMin !== undefined) { //no skip 0
-      query.gte('price', filters?.priceMin); // WHERE price >= {min}
+    if (filters?.priceMin !== undefined) {
+      //no skip 0
+      query.gte("price", filters?.priceMin); // WHERE price >= {min}
     }
 
-    if (filters?.priceMax !== undefined) { //no skip 0
-      query.lte('price', filters?.priceMax); // WHERE price <= {max}
+    if (filters?.priceMax !== undefined) {
+      //no skip 0
+      query.lte("price", filters?.priceMax); // WHERE price <= {max}
     }
 
     if (filters?.name) {
-      query.eq('name', filters?.name); // WHERE name = {name}
+      query.eq("name", filters?.name); // WHERE name = {name}
     }
 
     // Only paginate when there are both page & size provided
@@ -131,7 +143,10 @@ export const ProductService = {
         continue;
       }
 
-      const { url } = await ImageService.getPublicImageUrl(r.image, "productimages");
+      const { url } = await ImageService.getPublicImageUrl(
+        r.image,
+        "productimages"
+      );
       r.image = url ?? null;
     }
 
@@ -139,11 +154,11 @@ export const ProductService = {
   },
 
   //Get Product By Id
-  async getProductById(id: string, opts?: { vendorId?: string }): Promise<ProductRow | null> {
-    let query = supabase
-      .from("products")
-      .select("*")
-      .eq("id", id);
+  async getProductById(
+    id: string,
+    opts?: { vendorId?: string }
+  ): Promise<ProductRow | null> {
+    let query = supabase.from("products").select("*").eq("id", id);
 
     if (opts?.vendorId) {
       // Chỉ áp cho vendor: giới hạn về sản phẩm của chính họ
@@ -163,7 +178,10 @@ export const ProductService = {
 
     let imageUrl: string | null = null;
     if (data.image) {
-      const res = await ImageService.getPublicImageUrl(data.image, "productimages");
+      const res = await ImageService.getPublicImageUrl(
+        data.image,
+        "productimages"
+      );
       imageUrl = res?.success ? res.url ?? null : null;
     }
 
@@ -174,20 +192,18 @@ export const ProductService = {
     const toInsert: ProductInsert = { ...product, id: generateUUID() };
 
     const { data, error } = await supabase
-      .from('products')
+      .from("products")
       .insert(toInsert)
       .select()
       .single();
 
     if (error || !data) {
-      console.error('Error creating product:', error);
+      console.error("Error creating product:", error);
       return null;
     }
 
     return data;
   },
-
-
 
   async updateProduct(
     vendorId: string,
@@ -197,9 +213,8 @@ export const ProductService = {
     category?: string,
     description?: string,
     imagePath?: string,
-    instock?: boolean,
+    instock?: boolean
   ) {
-
     const toUpdate: Record<string, any> = {};
 
     if (name !== undefined) toUpdate.name = name;
@@ -225,7 +240,9 @@ export const ProductService = {
     }
     console.log(data);
 
-    if (!data) { return null; }
+    if (!data) {
+      return null;
+    }
     return data;
   },
 };

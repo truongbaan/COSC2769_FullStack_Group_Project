@@ -24,13 +24,32 @@ import {
   Truck,
   Sun,
   Moon,
+  Menu,
 } from "~/components/ui/icons";
+import { XIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useTheme } from "~/lib/theme";
 
 export default function Header() {
   const { user, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
+
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobileOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  useEffect(() => {
+    if (mobileOpen) document.body.classList.add("overflow-hidden");
+    else document.body.classList.remove("overflow-hidden");
+    return () => document.body.classList.remove("overflow-hidden");
+  }, [mobileOpen]);
 
   const handleLogout = async () => {
     try {
@@ -164,6 +183,7 @@ export default function Header() {
               <Moon className='h-5 w-5' />
             )}
           </Button>
+
           {isAuthenticated() && user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -207,8 +227,140 @@ export default function Header() {
               </Link>
             </div>
           )}
+          {/* Mobile menu trigger (drawer) at far right - no Radix */}
+          <div className='md:hidden'>
+            <Button
+              variant='ghost'
+              size='icon'
+              aria-label='Open menu'
+              onClick={() => setMobileOpen(true)}
+            >
+              <Menu className='h-6 w-6' />
+            </Button>
+          </div>
         </div>
       </div>
+      {/* Overlay and Drawer */}
+      <div
+        aria-hidden={!mobileOpen}
+        className={`fixed inset-0 z-50 bg-black/30 backdrop-blur-[1px] transition-opacity duration-300 ease-out ${mobileOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+        onClick={() => setMobileOpen(false)}
+      />
+      <aside
+        role='dialog'
+        aria-modal='true'
+        aria-label='Mobile Menu'
+        className={`fixed right-0 top-0 z-50 h-full w-[85%] max-w-[360px] bg-background border-l shadow-2xl rounded-l-xl transform transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${mobileOpen ? "translate-x-0" : "translate-x-full"}`}
+      >
+        <div className='flex items-center justify-between px-4 py-3 border-b'>
+          <span className='font-semibold'>Menu</span>
+          <button
+            aria-label='Close menu'
+            className='rounded-xs p-1 text-muted-foreground hover:text-foreground focus:outline-hidden focus:ring-2 focus:ring-ring'
+            onClick={() => setMobileOpen(false)}
+          >
+            <XIcon className='h-5 w-5' />
+          </button>
+        </div>
+        <nav className='px-4 py-2 flex flex-col divide-y divide-border'>
+          <Link
+            to='/'
+            className='py-3 text-base'
+            onClick={() => setMobileOpen(false)}
+          >
+            Home
+          </Link>
+          <Link
+            to='/about'
+            className='py-3 text-base'
+            onClick={() => setMobileOpen(false)}
+          >
+            About
+          </Link>
+          <Link
+            to='/help'
+            className='py-3 text-base'
+            onClick={() => setMobileOpen(false)}
+          >
+            Help
+          </Link>
+          {(!user || user.role === "customer") && (
+            <Link
+              to='/products'
+              className='py-3 text-base'
+              onClick={() => setMobileOpen(false)}
+            >
+              Browse Products
+            </Link>
+          )}
+          {user && user.role === "vendor" && (
+            <>
+              <Link
+                to='/vendor/products'
+                className='py-3 text-base'
+                onClick={() => setMobileOpen(false)}
+              >
+                My Products
+              </Link>
+              <Link
+                to='/vendor/products/new'
+                className='py-3 text-base'
+                onClick={() => setMobileOpen(false)}
+              >
+                Add Product
+              </Link>
+            </>
+          )}
+          {user && user.role === "shipper" && (
+            <Link
+              to='/shipper/orders'
+              className='py-3 text-base'
+              onClick={() => setMobileOpen(false)}
+            >
+              Active Orders
+            </Link>
+          )}
+          {isAuthenticated() && user ? (
+            <>
+              <Link
+                to='/account'
+                className='py-3 text-base'
+                onClick={() => setMobileOpen(false)}
+              >
+                My Account
+              </Link>
+              <button
+                onClick={() => {
+                  setMobileOpen(false);
+                  handleLogout();
+                }}
+                className='py-3 text-left text-base w-full'
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <div className='py-3 flex gap-2'>
+              <Link
+                to='/login'
+                className='flex-1'
+                onClick={() => setMobileOpen(false)}
+              >
+                <Button variant='outline' className='w-full'>
+                  Login
+                </Button>
+              </Link>
+              <Link
+                to='/register/customer'
+                className='flex-1'
+                onClick={() => setMobileOpen(false)}
+              >
+                <Button className='w-full'>Sign Up</Button>
+              </Link>
+            </div>
+          )}
+        </nav>
+      </aside>
     </header>
   );
 }

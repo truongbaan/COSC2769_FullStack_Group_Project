@@ -15,6 +15,7 @@ export function meta({}: Route.MetaArgs) {
     {
       name: "description",
       content: "Learn about MUCK e-commerce platform",
+      content: "Learn about MUCK e-commerce platform",
     },
   ];
 }
@@ -33,7 +34,7 @@ export default function About() {
               Building a simpler way to shop, sell and ship
             </h1>
             <p className='text-lg text-muted-foreground leading-relaxed max-w-2xl mt-6'>
-              MUCK is an educational e-commerce platform demonstrating
+              Lazada Lite is an educational e-commerce platform demonstrating
               modern full‑stack practices with a clean, distraction‑free UX.
             </p>
             <div className='h-px w-full bg-border mt-8'></div>
