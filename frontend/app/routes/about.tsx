@@ -15,7 +15,6 @@ export function meta({}: Route.MetaArgs) {
     {
       name: "description",
       content: "Learn about MUCK e-commerce platform",
-      content: "Learn about MUCK e-commerce platform",
     },
   ];
 }

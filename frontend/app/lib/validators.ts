@@ -45,8 +45,7 @@ export const productSchema = z.object({
   category: z.enum(
     PRODUCT_CATEGORIES as unknown as [ProductCategory, ...ProductCategory[]],
     {
-      required_error: "Category is required",
-      invalid_type_error: "Invalid category",
+      message: "Please select a valid category",
     }
   ),
 });
