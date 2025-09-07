@@ -48,7 +48,7 @@ type PasswordChangeFormValues = z.infer<typeof passwordChangeSchema>;
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "My Account - Lazada Lite" },
+    { title: "My Account - MUCK" },
     {
       name: "description",
       content: "Manage your account settings and profile",

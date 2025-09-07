@@ -49,7 +49,7 @@ type ShipperForm = z.infer<typeof shipperRegistrationSchema>;
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Create Account - Lazada Lite" },
+    { title: "Create Account - MUCK" },
     {
       name: "description",
       content: "Register as customer, vendor, or shipper",

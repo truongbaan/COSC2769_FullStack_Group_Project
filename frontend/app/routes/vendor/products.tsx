@@ -46,7 +46,7 @@ import {
 export function meta({}: Route.MetaArgs) {
   return [
     { title: "My Products - Vendor Dashboard" },
-    { name: "description", content: "Manage your products on Lazada Lite" },
+    { name: "description", content: "Manage your products on MUCK" },
   ];
 }
 

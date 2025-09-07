@@ -39,11 +39,11 @@ import { toast } from "sonner";
 export function meta({}: Route.MetaArgs) {
   return [
     {
-      title: "Product Details - Lazada Lite",
+      title: "Product Details - MUCK",
     },
     {
       name: "description",
-      content: "Product details on Lazada Lite",
+      content: "Product details on MUCK",
     },
   ];
 }

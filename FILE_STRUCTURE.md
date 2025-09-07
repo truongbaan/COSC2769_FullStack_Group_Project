@@ -85,7 +85,7 @@ React + Vite application with Redux Toolkit and redux-persist.
   - `root.tsx`: Application root; mounts Redux Provider and PersistGate, sets global logout handler, renders layout shell.
   - `app.css`: Global styles.
   - `routes.ts`: Route descriptors or shared route helpers.
-  - `components/`: UI and layout components.
+  - `components/`: s.
     - `layout/`: Global layout components.
       - `Header.tsx`, `Footer.tsx`: App header/footer.
     - `home/`: Landing page components.

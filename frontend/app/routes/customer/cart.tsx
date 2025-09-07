@@ -37,7 +37,7 @@ import { getBackendImageUrl } from "~/lib/utils";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Shopping Cart - Lazada Lite" },
+    { title: "Shopping Cart - MUCK" },
     {
       name: "description",
       content: "Review and manage items in your shopping cart",

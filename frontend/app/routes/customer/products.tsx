@@ -52,10 +52,10 @@ type FormValues = z.infer<typeof priceFilterSchema>;
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Browse Products - Lazada Lite" },
+    { title: "Browse Products - MUCK" },
     {
       name: "description",
-      content: "Discover amazing products on Lazada Lite",
+      content: "Discover amazing products on MUCK",
     },
   ];
 }
