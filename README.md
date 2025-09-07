@@ -69,11 +69,12 @@ This project is a group assignment. Below are the contributions of each member:
   + Report: Introduction, ERD, Backend Implementation, Backend Tools & Package Selection, Visual Demonstration, Feature Checklist, and Evaluation
   + Video: 
 
-- **Name**: Nguyen The Anh
-  **Student ID**: s3975844
-  **Jobs**:
+- **Name**: Nguyen The Anh  
+  **Student ID**: s3975844  
+  **Jobs**:  
   + Code: Controllers/ Routes/ Services for shopping cart, add product to cart, order management, and order item list
-  + Report: Introduction, ERD, Backend Implementation, Backend Tools & Package Selection, Visual Demonstration, Feature Checklist, Evaluation
+  + Report: Introduction, ERD, Backend Implementation, Backend Tools & Package Selection, Visual Demonstration, Feature Checklist, and Evaluation
+  + Video:  
 
 For Redux-related contributions, refer to the [Redux Architecture Guide](docs/REDUX.md).
 
