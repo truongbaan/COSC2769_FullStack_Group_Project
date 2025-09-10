@@ -24,10 +24,10 @@ export const passwordSchema = z
     "Password 8-20, includes upper, lower, digit, special !@#$%^&*"
   );
 
-export const minLen5 = z.string().min(5, "Minimum length is 5");
+export const minLen5 = z.string().trim().min(5, "Minimum length is 5");
 
 export const productSchema = z.object({
-  name: z.string().min(10).max(20),
+  name: z.string().trim().min(10).max(20),
   price: z.coerce.number().positive(),
   image: z
     .any()
@@ -68,12 +68,12 @@ export const priceFilterSchema = z
   );
 
 export const loginSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
+  email: z.email("Please enter a valid email address"),
   password: passwordSchema,
 });
 
 export const customerRegistrationSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
+  email: z.email("Please enter a valid email address"),
   username: usernameSchema,
   password: passwordSchema,
   name: minLen5,
@@ -81,7 +81,7 @@ export const customerRegistrationSchema = z.object({
 });
 
 export const vendorRegistrationSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
+  email: z.email("Please enter a valid email address"),
   username: usernameSchema,
   password: passwordSchema,
   businessName: minLen5,
@@ -89,7 +89,7 @@ export const vendorRegistrationSchema = z.object({
 });
 
 export const shipperRegistrationSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
+  email: z.email("Please enter a valid email address"),
   username: usernameSchema,
   password: passwordSchema,
   hub: z.string().min(1, "Select a hub"),

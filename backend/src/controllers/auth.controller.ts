@@ -37,8 +37,8 @@ export const registerVendorBodySchema = z.object({
     email: z.email("Invalid email format").trim(),
     password: passwordSchema,
     username: usernameSchema,
-    business_address: z.string().trim(),
-    business_name: z.string().trim()
+    business_address: z.string().trim().min(5, { message: "Business address must be at least 5 characters long." }),
+    business_name: z.string().trim().min(5, { message: "Business name must be at least 5 characters long." })
 }).strict();
 
 export const loginController = async (req: Request, res: Response) => {
