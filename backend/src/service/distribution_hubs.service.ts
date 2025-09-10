@@ -6,6 +6,7 @@
 # ID: s3979056 */
 
 import { supabase, Database } from "../db/db";
+import { debugLog, debugError } from '../utils/debug';
 
 export type DistributionHub = Database["public"]["Tables"]["distribution_hubs"]["Row"];
 
@@ -23,10 +24,10 @@ export const DistributionHubService = {
             .range(offset, offset + size - 1);
 
         if (error) {
-            console.error('Error fetching user:', error)
+            debugError('Error fetching user:', error)
             throw error
         }
-        console.log(data)
+        debugLog(data)
 
         if (!data) {
             return null  // explicitly return null to trigger 404 in route

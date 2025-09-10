@@ -7,8 +7,7 @@
 import { supabase, Database } from "../db/db";
 import generateUUID from "../utils/generator";
 import { ImageService } from "./image.service";
-
-
+import { debugLog, debugError } from '../utils/debug';
 
 type productRow = { id: string; price: number }
 type cartCustomer = { id: string; product_id: string; quantity: number }
@@ -46,7 +45,7 @@ export const ShoppingCartService = {
       .range(offset, offset + size - 1);
 
     if (error) {
-      console.error("Cart read error:", error);
+      debugError("Cart read error:", error);
       throw new Error("DB_READ_FAILED");
     }
 
@@ -61,7 +60,7 @@ export const ShoppingCartService = {
       .in("id", productIds);
 
     if (errProduct) {
-      console.error("Product read error:", errProduct);
+      debugError("Product read error:", errProduct);
       throw new Error("DB_READ_FAILED");
     }
 
