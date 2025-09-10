@@ -39,10 +39,11 @@ export const useCart = () => {
   const lastSynced = useAppSelector(selectCartLastSynced);
   const totalItems = useAppSelector(selectTotalItems);
   const totalPrice = useAppSelector(selectTotalPrice);
+  const isCustomer = user?.role === "customer";
 
   // Auto-sync cart when user logs in
   useEffect(() => {
-    if (user && !isSync) {
+    if (isCustomer && !isSync) {
       if (items.length === 0) {
         // No local items, fetch from server
         dispatch(fetchCart()).catch((error) => {
@@ -59,7 +60,9 @@ export const useCart = () => {
               }
             }
             // After syncing, fetch fresh cart data from server
-            await dispatch(fetchCart()).unwrap();
+            if (isCustomer) {
+              await dispatch(fetchCart()).unwrap();
+            }
           } catch (error) {
             console.error("Failed to sync local cart items:", error);
             dispatch(setSyncStatus(false));
@@ -68,7 +71,7 @@ export const useCart = () => {
         syncLocalItems();
       }
     }
-  }, [user, isSync, dispatch, items]);
+  }, [isCustomer, isSync, dispatch, items]);
 
   const addItemToCart = useCallback(
     async (product: ProductDto, quantity: number = 1) => {
@@ -80,7 +83,9 @@ export const useCart = () => {
         try {
           await addToCartApi(product.id, quantity);
           // Refresh from backend to capture cart item IDs and avoid re-sync duplication
-          await dispatch(fetchCart()).unwrap();
+          if (isCustomer) {
+            await dispatch(fetchCart()).unwrap();
+          }
           dispatch(setSyncStatus(true));
         } catch (error) {
           console.error("Failed to add item to backend cart:", error);
@@ -93,7 +98,7 @@ export const useCart = () => {
         dispatch(setSyncStatus(false));
       }
     },
-    [dispatch, user]
+    [dispatch, user, isCustomer]
   );
 
   const removeItemFromCart = useCallback(
@@ -157,19 +162,23 @@ export const useCart = () => {
         }
 
         // Refresh from backend to ensure IDs and amounts match
-        await dispatch(fetchCart()).unwrap();
+        if (isCustomer) {
+          await dispatch(fetchCart()).unwrap();
+        }
         dispatch(setSyncStatus(true));
       } catch (error) {
         console.error("Failed to update cart quantity:", error);
         toast.error("Failed to update cart on server");
         // Reload server state to avoid drift
-        try {
-          await dispatch(fetchCart()).unwrap();
-        } catch {}
+        if (isCustomer) {
+          try {
+            await dispatch(fetchCart()).unwrap();
+          } catch {}
+        }
         dispatch(setSyncStatus(false));
       }
     },
-    [dispatch, user, items]
+    [dispatch, user, items, isCustomer]
   );
 
   const clearCartItems = useCallback(async () => {
@@ -198,17 +207,21 @@ export const useCart = () => {
         await Promise.allSettled(deletions);
       }
       // Confirm with fresh server state
-      await dispatch(fetchCart()).unwrap();
+      if (isCustomer) {
+        await dispatch(fetchCart()).unwrap();
+      }
       dispatch(setSyncStatus(true));
     } catch (error) {
       console.error("Failed to clear cart on server:", error);
       // Try to refresh to reflect actual server state
-      try {
-        await dispatch(fetchCart()).unwrap();
-      } catch {}
+      if (isCustomer) {
+        try {
+          await dispatch(fetchCart()).unwrap();
+        } catch {}
+      }
       dispatch(setSyncStatus(false));
     }
-  }, [dispatch, user, items]);
+  }, [dispatch, user, items, isCustomer]);
 
   const forceSync = useCallback(async () => {
     if (user) {
@@ -224,7 +237,9 @@ export const useCart = () => {
         }
 
         // After syncing, fetch fresh cart data from server to get proper item IDs
-        await dispatch(fetchCart()).unwrap();
+        if (isCustomer) {
+          await dispatch(fetchCart()).unwrap();
+        }
         dispatch(setSyncStatus(true));
 
         if (syncedItems > 0) {
@@ -241,7 +256,7 @@ export const useCart = () => {
     } else {
       toast.error("Please log in to sync your cart");
     }
-  }, [user, dispatch, items]);
+  }, [user, dispatch, items, isCustomer]);
 
   const getTotalItems = useCallback(() => {
     return totalItems;
