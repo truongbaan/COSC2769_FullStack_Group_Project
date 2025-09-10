@@ -9,6 +9,7 @@ import { z } from "zod";
 import { type Request, type Response } from "express";
 import { OrderService } from "../service/orders.service";
 import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes";
+import { debugLog, debugError } from '../utils/debug';
 
 export const getOrdersQuerrySchema = z.object({
   page: z.coerce.number().min(1).default(1),
@@ -42,7 +43,7 @@ export const getOrdersController = async (req: Request, res: Response) => {
     if (err?.issues) {
       return ErrorJsonResponse(res, 400, err.issues[0].message);
     }
-    console.log("ERRRRR: ", err);
+    debugLog("ERRRRR: ", err);
     return ErrorJsonResponse(res, 500, "Unexpected error while fetching orders");
   }
 };
@@ -86,7 +87,7 @@ export const updateOrderStatusController = async (req: Request, res: Response) =
       case "ALREADY_FINALIZED":
         return ErrorJsonResponse(res, 409, "Order already finalized (delivered/canceled)")
       default:
-        console.error("Unexpected error in updateOrderStatusController:", err)
+        debugError("Unexpected error in updateOrderStatusController:", err)
         return ErrorJsonResponse(res, 400, "Invalid request")
     }
   }

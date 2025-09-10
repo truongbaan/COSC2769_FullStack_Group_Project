@@ -12,6 +12,7 @@ import { VendorService } from "./vendor.service"
 import { Pagination } from "../types/general.type"
 import { ImageService } from "./image.service"
 import { comparePassword, hashPassword } from "../utils/password"
+import { debugLog, debugError } from '../utils/debug';
 
 const PROFILE_STORAGE = 'profileimages'
 export type UsersFilters = {
@@ -50,12 +51,18 @@ export const UserService = {
         const { data, error } = await query;
 
         if (error) {
-            console.error("Error fetching users:", error);
+            debugError("Error fetching users:", error);
             throw error;
         }
 
         if (!data) return null;
-
+        // DEBUG
+        debugLog('📊 Raw Supabase response:')
+        debugLog('  - Data:', data)
+        debugLog('  - Error:', error)
+        debugLog('  - Data length:', data?.length)
+        //
+        
         const usersWithImages = await Promise.all(
             data.map(async (user) => {
                 if (user.profile_picture) {
@@ -92,10 +99,10 @@ export const UserService = {
             .eq('id', id)
             .maybeSingle()
 
-        console.log(data)
+        debugLog(data)
 
         if (error) {
-            console.error(`Error fetching user ${id}:`, error)
+            debugError(`Error fetching user ${id}:`, error)
             throw error
         }
         if (!data || !data.role) {
@@ -150,7 +157,7 @@ export const UserService = {
 
         if (createError || !createdUser) {
             // Could be because leftover row exists in DB even if Auth is deleted
-            console.error("Error creating customer:", createError);
+            debugError("Error creating customer:", createError);
 
             // Try cleanup
             const { error: cleanupError } = await supabase
@@ -159,7 +166,7 @@ export const UserService = {
                 .eq('email', user.email);
 
             if (cleanupError) {
-                console.error(`Error deleting stale user ${user.email}:`, cleanupError);
+                debugError(`Error deleting stale user ${user.email}:`, cleanupError);
                 return null;
             }
 
@@ -178,7 +185,7 @@ export const UserService = {
                 .maybeSingle();
 
             if (retryError || !retriedUser) {
-                console.error("Error creating customer after cleanup:", retryError);
+                debugError("Error creating customer after cleanup:", retryError);
                 return null;
             }
             return retriedUser;
@@ -190,7 +197,7 @@ export const UserService = {
         //remove authen first
         const result = await deleteAuthenUser(id)
         if (!result.success) {
-            console.error(`Error deleting user ${id} in authentication`)
+            debugError(`Error deleting user ${id} in authentication`)
             return false
         }
 
@@ -201,7 +208,7 @@ export const UserService = {
             .eq('id', id)
 
         if (error) {
-            console.error(`Error deleting user ${id}:`, error)
+            debugError(`Error deleting user ${id}:`, error)
             return false
         }
 
@@ -218,7 +225,7 @@ export const UserService = {
                 .maybeSingle();
 
             if (fetchError || !user) {
-                console.error("Error fetching user:", fetchError);
+                debugError("Error fetching user:", fetchError);
                 return false;
             }
 
@@ -226,7 +233,7 @@ export const UserService = {
             // Handle password change
             if (password && newPassword) {
                 if (!comparePassword(password, user.password)) {
-                    console.error("Old password is incorrect");
+                    debugError("Old password is incorrect");
                     return false;
                 }
                 //change password in authen
@@ -238,7 +245,7 @@ export const UserService = {
                 updateData.password = hashPassword(newPassword);
 
             } else if ((password && !newPassword) || (!password && newPassword)) {
-                console.error("Both password and newPassword must be provided");
+                debugError("Both password and newPassword must be provided");
                 return false;
             }
             //profile pic update
@@ -247,7 +254,7 @@ export const UserService = {
                 if (user.profile_picture) {
                     const del = await ImageService.deleteImage(user.profile_picture, PROFILE_STORAGE)
                     if (!del) {
-                        console.log("Fail to delete image")
+                        debugError("Fail to delete image")
                         return false; //fail to delete images
                     }
                 }
@@ -256,7 +263,7 @@ export const UserService = {
 
             //update fail
             if (Object.keys(updateData).length === 0) {
-                console.error("No fields to update");
+                debugError("No fields to update");
                 return false;
             }
 
@@ -267,13 +274,13 @@ export const UserService = {
                 .eq("id", id);
 
             if (updateError) {
-                console.error("Error updating user:", updateError);
+                debugError("Error updating user:", updateError);
                 return false;
             }
 
             return true;
         } catch (err) {
-            console.error("Unexpected error in updateUser:", err);
+            debugError("Unexpected error in updateUser:", err);
             return false;
         }
     },

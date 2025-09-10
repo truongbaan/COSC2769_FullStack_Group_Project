@@ -8,6 +8,7 @@
 import { supabase, Database } from "../db/db"
 import { Pagination } from "../types/general.type"
 import { ImageService } from "./image.service"
+import { debugLog, debugError } from '../utils/debug';
 
 export type Shipper = Database['public']['Tables']['shippers']['Row']
 type ShipperUpdate = Database['public']['Tables']['shippers']['Update'] & { id: string }
@@ -42,15 +43,8 @@ export const ShipperService = {
 
         const { data, error } = await query;
 
-        // DEBUG, will be remove
-        console.log('📊 Raw Supabase response:')
-        console.log('  - Data:', data)
-        console.log('  - Error:', error)
-        console.log('  - Data length:', data?.length)
-        //
-
         if (error) {
-            console.error("Error fetching users:", error);
+            debugError("Error fetching users:", error);
             throw error;
         }
 
@@ -99,10 +93,10 @@ export const ShipperService = {
             .eq('id', id.trim().toLocaleLowerCase())
             .maybeSingle()
 
-        console.log(data)
+        debugLog(data)
 
         if (error) {
-            console.error(`Error fetching Shipper ${id}:`, error)
+            debugError(`Error fetching Shipper ${id}:`, error)
             throw error
         }
         if (!data) {
@@ -123,7 +117,7 @@ export const ShipperService = {
             .maybeSingle();
 
         if (error || !data) {
-            console.error('Error creating Shipper:', error);
+            debugError('Error creating Shipper:', error);
             return null;
         }
 
@@ -136,7 +130,7 @@ export const ShipperService = {
             .update(hub_id)
             .eq('id', id);
         if (error) {
-            console.error(`Error updating shipper ${id}:`, error);
+            debugError(`Error updating shipper ${id}:`, error);
             return false;
         }
         return true;

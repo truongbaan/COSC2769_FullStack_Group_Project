@@ -6,6 +6,7 @@
 # ID: s3999568 */
 
 import { supabase } from "../db/db";
+import { debugLog, debugError } from '../utils/debug';
 
 export type Storage = 'profileimages' | 'productimages';
 
@@ -42,7 +43,7 @@ export const ImageService = {
                 });
 
             if (error) {
-                console.error("Error uploading image:", error);
+                debugError("Error uploading image:", error);
                 return { success: false, error: error.message };
             }
 
@@ -87,7 +88,7 @@ export const ImageService = {
             .remove([filePath]);
 
         if (error) {
-            console.error('Error deleting image:', error.message);
+            debugError('Error deleting image:', error.message);
             return { success: false, error: "Can not delete image in bucket" };
         }
 

@@ -9,7 +9,7 @@ import { Request, Response } from "express"
 import { UserService } from "../service/user.service"
 import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes"
 import { passwordSchema } from "../types/general.type";
-import { signOutUser } from "../db/db";
+import { debugLog, debugError } from '../utils/debug';
 
 export const getUsersQuerySchema = z.object({
     page: z.string().default("-1").transform((val) => parseInt(val, 10)),
@@ -112,7 +112,7 @@ export const updateUserByIdController = async (req: Request, res: Response) => {
 
         return SuccessJsonResponse(res, 200, `Successfully update user ${req.user_id}`);
     } catch (err: any) {
-        console.error(err);
+        debugError(err);
         return ErrorJsonResponse(res, 500, "Internal server error");
     }
 }
@@ -131,7 +131,7 @@ export const uploadProfilePictureController = async (req:Request, res: Response)
 
         return SuccessJsonResponse(res, 200, `${result.url}`)
     } catch (err) {
-        console.error("Unexpected error in uploadImageController:", err);
+        debugError("Unexpected error in uploadImageController:", err);
         return ErrorJsonResponse(res, 500, "Unexpected error uploading image");
     }
 }

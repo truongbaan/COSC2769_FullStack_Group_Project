@@ -12,6 +12,7 @@ import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes";
 import { ImageService } from "../service/image.service";
 import { supabase } from "../db/db";
 import { CategorySchema } from "../types/general.type";
+import { debugLog, debugError } from '../utils/debug';
 
 export const getProductsQuerySchema = z
   .object({
@@ -72,8 +73,12 @@ export const getProductsController = async (req: Request, res: Response) => {
     if (err?.issues) {
       return ErrorJsonResponse(res, 400, err.issues[0].message);
     }
-    console.log("getProductsController error: ", err);
-    return ErrorJsonResponse(res, 500, "Unexpected error while fetching products");
+    debugLog("getProductsController error: ", err);
+    return ErrorJsonResponse(
+      res,
+      500,
+      "Unexpected error while fetching products"
+    );
   }
 };
 
@@ -122,8 +127,12 @@ export const getVendorProductsController = async (
     if (err?.issues) {
       return ErrorJsonResponse(res, 400, err.issues[0].message);
     }
-    console.log("getProductsController error: ", err);
-    return ErrorJsonResponse(res, 500, "Unexpected error while fetching products");
+    debugLog("getProductsController error: ", err);
+    return ErrorJsonResponse(
+      res,
+      500,
+      "Unexpected error while fetching products"
+    );
   }
 };
 
@@ -157,8 +166,12 @@ export const getProductByIdController = async (req: Request, res: Response) => {
     if (err?.issues) {
       return ErrorJsonResponse(res, 400, err.issues[0].message);
     }
-    console.log("getProductsController error: ", err);
-    return ErrorJsonResponse(res, 500, "Unexpected error while fetching products");
+    debugLog("getProductsController error: ", err);
+    return ErrorJsonResponse(
+      res,
+      500,
+      "Unexpected error while fetching products"
+    );
   }
 };
 
@@ -193,9 +206,12 @@ export const createProductController = async (req: Request, res: Response) => {
     }
 
     const upload = await ImageService.uploadImage(file, "productimages");
-
     if (!upload.success) {
-      return ErrorJsonResponse(res, 500, upload.error ?? "Failed to upload image");
+      return ErrorJsonResponse(
+        res,
+        500,
+        upload.error ?? "Failed to upload image"
+      );
     }
 
     const payload: ProductInsertNoId = {
@@ -210,11 +226,18 @@ export const createProductController = async (req: Request, res: Response) => {
     }
     return SuccessJsonResponse(res, 201, { product: created });
   } catch (err: any) {
-    console.error("createProductController error:", err);
+    debugError("createProductController error:", err);
     if (err?.issues) {
-      return ErrorJsonResponse(res, 400, err.issues[0]?.message ?? "Validation failed");
+      return ErrorJsonResponse(
+        res,
+        400,
+        err.issues[0]?.message ?? "Validation failed"
+      );
     }
-    return ErrorJsonResponse(res, 500, err?.message ?? "Unexpected error while creating product"
+    return ErrorJsonResponse(
+      res,
+      500,
+      err?.message ?? "Unexpected error while creating product"
     );
   }
 };
@@ -289,7 +312,7 @@ export const updateProductStatusController = async (
 
     return SuccessJsonResponse(res, 200, { product: updated });
   } catch (err: any) {
-    console.error("updateProductStatusController error:", err);
+    debugError("updateProductStatusController error:", err);
     if (err?.issues) {
       return ErrorJsonResponse(
         res,
@@ -297,6 +320,10 @@ export const updateProductStatusController = async (
         err.issues[0]?.message ?? "Validation failed"
       );
     }
-    return ErrorJsonResponse(res, 500, "Unexpected error while updating product status");
+    return ErrorJsonResponse(
+      res,
+      500,
+      "Unexpected error while updating product status"
+    );
   }
 };
