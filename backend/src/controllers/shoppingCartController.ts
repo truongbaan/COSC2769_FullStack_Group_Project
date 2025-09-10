@@ -9,6 +9,7 @@ import { z } from "zod"
 import { type Request, type Response } from "express"
 import { ShoppingCartService } from "../service/shopping_carts.service"
 import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes"
+import { debugLog, debugError } from '../utils/debug';
 
 export const getCartQuerrySchema = z.object({
   page: z.coerce.number().min(1).default(1),
@@ -37,7 +38,7 @@ export const getCartController = async (req: Request, res: Response) => {
     if (err?.issues) {
       return ErrorJsonResponse(res, 400, err.issues?.[0]?.message ?? "Validation failed");
     }
-    console.log("ERR getCart:", err);
+    debugLog("ERR getCart:", err);
     return ErrorJsonResponse(res, 500, "Unexpected error while fetching cart");
   }
 };
@@ -90,7 +91,7 @@ export async function addToCartController(req: Request, res: Response) {
     const item = await ShoppingCartService.addToCart(customerId, productId, quantity);
     return SuccessJsonResponse(res, 200, { item });
   } catch (e: any) {
-    console.error("ADD_CART_ERROR:", e);
+    debugError("ADD_CART_ERROR:", e);
     return ErrorJsonResponse(res, e.status ?? 500, e.message ?? "ADD_CART_FAILED");
   }
 }
@@ -112,7 +113,7 @@ export async function checkoutController(req: Request, res: Response) {
       },
     })
   } catch (err) {
-    console.error(err)
+    debugError(err)
     return ErrorJsonResponse(res, 500, (err as Error).message)
   }
 }

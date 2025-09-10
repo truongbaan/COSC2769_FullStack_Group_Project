@@ -9,6 +9,7 @@ import * as z from "zod";
 import { Request, Response } from "express";
 import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes";
 import { DistributionHubService } from "../service/distribution_hubs.service";
+import { debugLog, debugError } from '../utils/debug';
 
 export const getAllHubsQuerrySchema = z.object({
     page: z.coerce.number().min(1).default(1),
@@ -37,7 +38,7 @@ export const getAllDistributionHubsController = async (req: Request, res: Respon
         if (err?.issues?.length) {
             return ErrorJsonResponse(res, 400, err.issues[0].message || "Invalid query parameters");
         }
-        console.error(err);
+        debugError(err);
         return ErrorJsonResponse(res, 500, "Unexpected error while fetching distribution hubs");
     }
 };

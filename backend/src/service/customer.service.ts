@@ -8,6 +8,7 @@
 import { supabase, Database } from "../db/db"
 import { Pagination } from "../types/general.type"
 import { ImageService } from "./image.service"
+import { debugLog, debugError } from '../utils/debug';
 
 export type Customer = Database['public']['Tables']['customers']['Row']
 type CustomerUpdate = Database['public']['Tables']['customers']['Update'] & { id: string }
@@ -43,15 +44,15 @@ export const CustomerService = {
 
         const { data, error } = await query;
 
-        // DEBUG, will be remove
-        console.log('📊 Raw Supabase response:')
-        console.log('  - Data:', data)
-        console.log('  - Error:', error)
-        console.log('  - Data length:', data?.length)
+        // DEBUG
+        debugLog('📊 Raw Supabase response:')
+        debugLog('  - Data:', data)
+        debugLog('  - Error:', error)
+        debugLog('  - Data length:', data?.length)
         //
 
         if (error) {
-            console.error("Error fetching users:", error);
+            debugError("Error fetching users:", error);
             throw error;
         }
 
@@ -101,10 +102,10 @@ export const CustomerService = {
             .eq('id', id.trim().toLocaleLowerCase())
             .maybeSingle()
 
-        console.log(data)
+        debugLog(data)
 
         if (error) {
-            console.error(`Error fetching Customer ${id}:`, error)
+            debugError(`Error fetching Customer ${id}:`, error)
             throw error
         }
         if (!data) {
@@ -115,7 +116,7 @@ export const CustomerService = {
     },
 
     async createCustomer(customer: Customer): Promise<Customer | null> {
-        console.log("Customer data in createCustomer", customer)
+        debugLog("Customer data in createCustomer", customer)
         const { data, error } = await supabase
             .from('customers')
             .insert({
@@ -127,7 +128,7 @@ export const CustomerService = {
             .maybeSingle();
 
         if (error || !data) {
-            console.error('Error creating customer:', error);
+            debugError('Error creating customer:', error);
             return null;
         }
 
@@ -143,7 +144,7 @@ export const CustomerService = {
             })
             .eq('id', id);
         if (error) {
-            console.error(`Error updating customer ${id}:`, error);
+            debugError(`Error updating customer ${id}:`, error);
             return false;
         }
         return true;

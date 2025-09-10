@@ -8,6 +8,7 @@
 import { supabase, Database } from "../db/db"
 import { Pagination } from "../types/general.type"
 import { ImageService } from "./image.service"
+import { debugLog, debugError } from '../utils/debug';
 
 export type Vendor = Database['public']['Tables']['vendors']['Row']
 type VendorUpdate = Database['public']['Tables']['vendors']['Update'] & { id: string }
@@ -40,15 +41,8 @@ export const VendorService = {
 
         const { data, error } = await query;
 
-        // DEBUG, will be remove
-        console.log('📊 Raw Supabase response:')
-        console.log('  - Data:', data)
-        console.log('  - Error:', error)
-        console.log('  - Data length:', data?.length)
-        //
-
         if (error) {
-            console.error("Error fetching users:", error);
+            debugError("Error fetching users:", error);
             throw error;
         }
 
@@ -98,10 +92,10 @@ export const VendorService = {
             .eq('id', id.trim().toLocaleLowerCase())
             .maybeSingle()
 
-        console.log(data)
+        debugLog(data)
 
         if (error) {
-            console.error(`Error fetching Vendor ${id}:`, error)
+            debugError(`Error fetching Vendor ${id}:`, error)
             throw error
         }
         if (!data) {
@@ -124,7 +118,7 @@ export const VendorService = {
             .maybeSingle();
 
         if (error || !data) {
-            console.error('Error creating vendor:', error);
+            debugError('Error creating vendor:', error);
             return null;
         }
 
@@ -140,7 +134,7 @@ export const VendorService = {
             })
             .eq('id', id);
         if (error) {
-            console.error(`Error updating vendor ${id}:`, error);
+            debugError(`Error updating vendor ${id}:`, error);
             return false;
         }
         return true;

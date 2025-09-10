@@ -9,6 +9,7 @@ import { z } from "zod"
 import { type Request, type Response } from "express"
 import { OrderItemService } from "../service/order_items.service"
 import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes"
+import { debugLog, debugError } from '../utils/debug';
 
 export const getOrderItemsParamsSchema = z.object({
   id: z.string().min(1), // order_id
@@ -34,7 +35,7 @@ export async function getOrderItemsController(req: Request, res: Response) {
       count: items.length,
     });
   } catch (e) {
-    console.error(e);
+    debugError(e);
     return ErrorJsonResponse(res, 500, "Failed to load order items");
   }
 }

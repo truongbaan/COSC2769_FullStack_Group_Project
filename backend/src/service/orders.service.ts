@@ -5,6 +5,7 @@
 # Author: Nguyen The Anh
 # ID: s3975844*/
 import { supabase, Database } from "../db/db";
+import { debugLog, debugError } from '../utils/debug';
 
 export type OrderStatus = "active" | "delivered" | "canceled"; //Statuses of an order
 export type Order = Database["public"]["Tables"]["orders"]["Row"]; //take the orders table from database
@@ -26,7 +27,7 @@ export const OrderService = {
       .maybeSingle();
 
     if (distributionErr) {
-      console.error("Error fetching shipper hub:", distributionErr);
+      debugError("Error fetching shipper hub:", distributionErr);
       throw new Error("DB_READ_FAILED");
     }
 
@@ -51,7 +52,7 @@ export const OrderService = {
       .range(offset, offset + size - 1);
 
     if (error) {
-      console.error("Error fetching order:", error);
+      debugError("Error fetching order:", error);
       throw error;
     }
     return data ?? null;
@@ -74,7 +75,7 @@ export const OrderService = {
       .maybeSingle();
 
     if (shipperError) {
-      console.error("Error fetching shipper hub:", shipperError);
+      debugError("Error fetching shipper hub:", shipperError);
       throw new Error("DB_READ_FAILED");
     }
 
@@ -92,7 +93,7 @@ export const OrderService = {
     .maybeSingle();
 
   if (readErr) {
-    console.error("READ_ORDER_ERROR:", readErr);
+    debugError("READ_ORDER_ERROR:", readErr);
     throw new Error("DB_READ_FAILED");
   }
   if (!order) throw new Error("NOT_FOUND");
@@ -113,7 +114,7 @@ export const OrderService = {
   
     
     if (updErr) {
-      console.error("UPDATE_ERROR:", updErr); //Debugging purpose
+      debugError("UPDATE_ERROR:", updErr); //Debugging purpose
       throw new Error("DB_WRITE_FAILED");
     }
 

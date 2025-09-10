@@ -6,6 +6,7 @@
 # ID: s3999568 */
 
 import * as bcrypt from 'bcrypt';
+import { debugLog, debugError } from '../utils/debug';
 
 const saltRounds = 10;
 
@@ -14,7 +15,7 @@ export function comparePassword(password: string, hash: string): boolean {
         const isMatch = bcrypt.compareSync(password, hash);
         return isMatch;
     } catch (error) {
-        console.error("Error comparing password:", error);
+        debugError("Error comparing password:", error);
         throw error;
     }
 }
@@ -24,7 +25,7 @@ export function hashPassword(password: string): string {
         const hashedPassword = bcrypt.hashSync(password, saltRounds);
         return hashedPassword;
     } catch (error) {
-        console.error("Error hashing password:", error);
+        debugError("Error hashing password:", error);
         throw error;
     }
 }

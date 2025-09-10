@@ -6,7 +6,7 @@
 # ID: s3979056 */
 
 import { supabase, Database } from "../db/db";
-
+import { debugLog, debugError } from '../utils/debug';
 import generateUUID from "../utils/generator";
 import { ImageService } from "./image.service";
 
@@ -69,10 +69,10 @@ export const ProductService = {
     const { data, error, count } = await query;
 
     if (error) {
-      console.error("Error fetching product:", error);
+      debugError("Error fetching product:", error);
       throw error;
     }
-    console.log(data);
+    debugLog(data);
 
     if (!data) return null;
 
@@ -130,10 +130,10 @@ export const ProductService = {
     const { data, error, count } = await query;
 
     if (error) {
-      console.error("Error fetching product:", error);
+      debugError("Error fetching product:", error);
       throw error;
     }
-    console.log(data);
+    debugLog(data);
 
     if (!data) return null;
 
@@ -167,10 +167,10 @@ export const ProductService = {
 
     const { data, error } = await query.maybeSingle();
 
-    console.log("data", data);
+    debugLog("data", data);
 
     if (error) {
-      console.error(`Error fetching product ${id}:`, error);
+      debugError(`Error fetching product ${id}:`, error);
       throw error;
     }
 
@@ -198,7 +198,7 @@ export const ProductService = {
       .single();
 
     if (error || !data) {
-      console.error("Error creating product:", error);
+      debugError("Error creating product:", error);
       return null;
     }
 
@@ -235,10 +235,10 @@ export const ProductService = {
     const { data, error } = await query;
 
     if (error) {
-      console.error("Error fetching product:", error);
+      debugError("Error fetching product:", error);
       throw error;
     }
-    console.log(data);
+    debugLog(data);
 
     if (!data) {
       return null;
