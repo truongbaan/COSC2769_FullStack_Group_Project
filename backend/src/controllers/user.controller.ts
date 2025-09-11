@@ -10,6 +10,7 @@ import { UserService } from "../service/user.service"
 import { ErrorJsonResponse, SuccessJsonResponse } from "../utils/json_mes"
 import { passwordSchema } from "../types/general.type";
 import { debugLog, debugError } from '../utils/debug';
+import { ImageService } from "../service/image.service";
 
 export const getUsersQuerySchema = z.object({
     page: z.string().default("-1").transform((val) => parseInt(val, 10)),
@@ -129,7 +130,9 @@ export const uploadProfilePictureController = async (req:Request, res: Response)
             return ErrorJsonResponse(res, 500, `${result.error}`);
         }
 
-        return SuccessJsonResponse(res, 200, `${result.url}`)
+        //provide the url that could use directly in img tag
+        const imageResult = await ImageService.getPublicImageUrl(result.url!, "profileimages")
+        return SuccessJsonResponse(res, 200, `${imageResult.url}`)
     } catch (err) {
         debugError("Unexpected error in uploadImageController:", err);
         return ErrorJsonResponse(res, 500, "Unexpected error uploading image");
