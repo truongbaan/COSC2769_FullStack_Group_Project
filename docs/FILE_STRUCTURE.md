@@ -7,11 +7,8 @@ This document provides a high-level overview of the repository layout and the pu
 ## Root
 
 - `docker-compose.yml`: Orchestration for multi-container development (frontend + backend).
-- `Dockerfile`: Root-level Dockerfile (may be used for aggregate or deployment images).
 - `package.json`, `package-lock.json`: Root-level package metadata (if used for tooling at the root).
 - `README.md`: Root project overview.
-- `COMPLETE_API_DOCUMENTATION.md`: Consolidated backend API reference.
-- `note.txt`: Miscellaneous notes.
 - `backend/`: Backend service.
 - `frontend/`: Frontend web app.
 
@@ -25,7 +22,6 @@ Node.js + TypeScript + Express API server.
 - `backend.api.md`: Human-readable API notes.
 - `package.json`, `package-lock.json`: Backend dependencies and scripts.
 - `tsconfig.json`: TypeScript configuration for backend build.
-- `note.txt`: Miscellaneous notes.
 - `src/`: TypeScript source code.
   - `index.ts`: Express app bootstrap (server entry), sets up middleware and mounts routers.
   - `db/`
@@ -69,7 +65,7 @@ Node.js + TypeScript + Express API server.
 
 React + Vite application with Redux Toolkit and redux-persist.
 
-- `Dockerfile`: Dockerfile for the frontend service.
+- `Dockerfile.frontend`: Dockerfile for the frontend service.
 - `package.json`, `package-lock.json`: Frontend dependencies and scripts.
 - `tsconfig.json`: TypeScript configuration for the frontend.
 - `vite.config.ts`: Vite build and dev server config.
